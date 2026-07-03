@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
@@ -8,6 +9,7 @@ import PageTransition from "@/components/PageTransition";
 import HeroVideoPreload from "@/components/HeroVideoPreload";
 import JsonLd from "@/components/JsonLd";
 import FormConversionTracker from "@/components/FormConversionTracker";
+import UtmTracker from "@/components/UtmTracker";
 import { getOrganizationJsonLd, getWebsiteJsonLd, pageSeo, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const interDisplay = localFont({
@@ -99,6 +101,9 @@ export default function RootLayout({
       <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-hidden">
         <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
         <FormConversionTracker />
+        <Suspense fallback={null}>
+          <UtmTracker />
+        </Suspense>
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)

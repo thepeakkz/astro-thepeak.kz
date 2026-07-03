@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parseUtmAttribution, UTM_COOKIE_NAME } from "@/lib/utm";
 
 // Helper function to escape HTML special characters for Telegram HTML mode
 function escapeHtml(text: string): string {
@@ -79,6 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { contactMethod, project } = parseComment(comment);
+    const utmAttribution = parseUtmAttribution(request.cookies.get(UTM_COOKIE_NAME)?.value);
     const phoneHref = normalizePhoneHref(phone);
     const sourceText = source && typeof source === "string" ? source.trim() : "Не указан";
     const safeName = escapeHtml(name.trim());
@@ -87,12 +89,41 @@ export async function POST(request: NextRequest) {
     const safeContactMethod = escapeHtml(formatContactMethod(contactMethod));
     const safeProject = escapeHtml(project);
     const safeSource = escapeHtml(sourceText);
+    const formatTouchpoint = (
+      label: string,
+      touchpoint: NonNullable<typeof utmAttribution>["firstTouch"],
+      escapeValues = true
+    ) => {
+      const safe = (value: string) => escapeValues ? escapeHtml(value) : value;
+      return [
+      `${label}: ${safe(touchpoint.source)}`,
+      ...Object.entries(touchpoint.params).map(
+        ([key, value]) => `${safe(key)}: ${safe(value)}`
+      ),
+      ...Object.entries(touchpoint.clickIds).map(
+        ([key, value]) => `${safe(key)}: ${safe(value)}`
+      ),
+      `Посадочная: ${safe(touchpoint.landingPage)}`,
+      `Время: ${safe(touchpoint.capturedAt)}`,
+    ];
+    };
+    const telegramUtm = utmAttribution
+      ? [
+          "",
+          ...formatTouchpoint("Первый источник", utmAttribution.firstTouch),
+          "",
+          ...formatTouchpoint("Последний источник", utmAttribution.lastTouch),
+          `Устройство: ${escapeHtml(utmAttribution.deviceType)}`,
+          `Путь: ${utmAttribution.userPath.map(escapeHtml).join(" → ")}`,
+        ]
+      : [];
 
     const text = [
       safeName,
       `<a href="tel:${safePhoneHref}">${safePhone}</a>`,
       safeContactMethod,
       `Источник: ${safeSource}`,
+      ...telegramUtm,
       "",
       safeProject
     ].join("\n");
@@ -123,7 +154,17 @@ export async function POST(request: NextRequest) {
       `Телефон: ${phone.trim()}`,
       `Способ связи: ${formatContactMethod(contactMethod)}`,
       `Комментарий: ${project}`,
-      `Источник: ${sourceText}`
+      `Источник: ${sourceText}`,
+      ...(utmAttribution
+        ? [
+            "",
+            ...formatTouchpoint("Первый источник", utmAttribution.firstTouch, false),
+            "",
+            ...formatTouchpoint("Последний источник", utmAttribution.lastTouch, false),
+            `Устройство: ${utmAttribution.deviceType}`,
+            `Путь: ${utmAttribution.userPath.join(" → ")}`,
+          ]
+        : [])
     ].join("\n");
 
     const trelloPromise = fetch(trelloUrl.toString(), {
