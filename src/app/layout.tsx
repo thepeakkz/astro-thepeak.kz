@@ -61,7 +61,7 @@ export default function RootLayout({
       <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-hidden">
         <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-P2JMZQ7ZL0"
+          src="https://www.googletagmanager.com/gtag/js?id=G-HCKHMPWG4L"
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -70,7 +70,7 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
 
-            gtag('config', 'G-P2JMZQ7ZL0');
+            gtag('config', 'G-HCKHMPWG4L');
           `}
         </Script>
         <Script id="meta-pixel" strategy="afterInteractive">
