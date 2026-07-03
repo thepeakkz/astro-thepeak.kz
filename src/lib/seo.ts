@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CONTACTS } from "@/config/contacts";
 import { allCasesData } from "@/data/cases";
 
-export const SITE_URL = "https://thepeak.kz";
+export const SITE_URL = "https://www.thepeak.kz";
 export const SITE_NAME = "ThePeak";
 
 export const SEO_GEO = {
