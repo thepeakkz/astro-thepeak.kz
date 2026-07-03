@@ -7,6 +7,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import PageTransition from "@/components/PageTransition";
 import HeroVideoPreload from "@/components/HeroVideoPreload";
 import JsonLd from "@/components/JsonLd";
+import FormConversionTracker from "@/components/FormConversionTracker";
 import { getOrganizationJsonLd, getWebsiteJsonLd, pageSeo, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const interDisplay = localFont({
@@ -58,21 +59,46 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" className={`${interDisplay.variable} h-full antialiased`} data-scroll-behavior="smooth">
-      <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-hidden">
-        <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
+      <head>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-HCKHMPWG4L"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="beforeInteractive">
           {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
 
-            gtag('config', 'G-HCKHMPWG4L');
+              gtag('config', 'G-HCKHMPWG4L');
           `}
         </Script>
+        <Script id="google-engagement-event" strategy="beforeInteractive">
+          {`
+              // Helper function to delay opening a URL until a gtag event is sent.
+              // Call it in response to an action that should navigate to a URL.
+              function gtagSendEvent(url) {
+                var callback = function () {
+                  if (typeof url === 'string') {
+                    window.location = url;
+                  }
+                };
+                gtag('event', 'user_engagement', {
+                  'event_callback': callback,
+                  'event_timeout': 2000,
+                });
+                return false;
+              }
+
+              function gtag_report_conversion(url) {
+                return gtagSendEvent(url);
+              }
+          `}
+        </Script>
+      </head>
+      <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-hidden">
+        <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
+        <FormConversionTracker />
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
