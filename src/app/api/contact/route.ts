@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { formatTelegramLead } from "@/lib/lead-notification";
 import { parseUtmAttribution, UTM_COOKIE_NAME } from "@/lib/utm";
 
 // Helper function to escape HTML special characters for Telegram HTML mode
@@ -7,18 +8,6 @@ function escapeHtml(text: string): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
-}
-
-function normalizePhoneHref(phone: string): string {
-  const trimmedPhone = phone.trim();
-  const hasPlus = trimmedPhone.startsWith("+");
-  const digitsOnly = trimmedPhone.replace(/\D/g, "");
-
-  if (!digitsOnly) {
-    return trimmedPhone;
-  }
-
-  return `${hasPlus ? "+" : ""}${digitsOnly}`;
 }
 
 function parseComment(comment: unknown) {
@@ -81,14 +70,7 @@ export async function POST(request: NextRequest) {
 
     const { contactMethod, project } = parseComment(comment);
     const utmAttribution = parseUtmAttribution(request.cookies.get(UTM_COOKIE_NAME)?.value);
-    const phoneHref = normalizePhoneHref(phone);
     const sourceText = source && typeof source === "string" ? source.trim() : "Не указан";
-    const safeName = escapeHtml(name.trim());
-    const safePhone = escapeHtml(phone.trim());
-    const safePhoneHref = escapeHtml(phoneHref);
-    const safeContactMethod = escapeHtml(formatContactMethod(contactMethod));
-    const safeProject = escapeHtml(project);
-    const safeSource = escapeHtml(sourceText);
     const formatTouchpoint = (
       label: string,
       touchpoint: NonNullable<typeof utmAttribution>["firstTouch"],
@@ -107,26 +89,13 @@ export async function POST(request: NextRequest) {
       `Время: ${safe(touchpoint.capturedAt)}`,
     ];
     };
-    const telegramUtm = utmAttribution
-      ? [
-          "",
-          ...formatTouchpoint("Первый источник", utmAttribution.firstTouch),
-          "",
-          ...formatTouchpoint("Последний источник", utmAttribution.lastTouch),
-          `Устройство: ${escapeHtml(utmAttribution.deviceType)}`,
-          `Путь: ${utmAttribution.userPath.map(escapeHtml).join(" → ")}`,
-        ]
-      : [];
-
-    const text = [
-      safeName,
-      `<a href="tel:${safePhoneHref}">${safePhone}</a>`,
-      safeContactMethod,
-      `Источник: ${safeSource}`,
-      ...telegramUtm,
-      "",
-      safeProject
-    ].join("\n");
+    const text = formatTelegramLead({
+      name: name.trim(),
+      phone: phone.trim(),
+      form: sourceText,
+      comment: project,
+      attribution: utmAttribution,
+    });
 
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
@@ -140,6 +109,7 @@ export async function POST(request: NextRequest) {
         chat_id: chatId,
         text: text,
         parse_mode: "HTML",
+        link_preview_options: { is_disabled: true },
       }),
     });
 

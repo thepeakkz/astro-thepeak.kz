@@ -12,28 +12,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: absoluteUrl("/services/web"),
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.9,
-    },
-    {
       url: absoluteUrl("/cases"),
       lastModified,
       changeFrequency: "weekly",
       priority: 0.9,
-    },
-    {
-      url: absoluteUrl("/team/sofya"),
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: absoluteUrl("/gallery"),
-      lastModified,
-      changeFrequency: "monthly",
-      priority: 0.5,
     },
     {
       url: absoluteUrl("/privacy"),
