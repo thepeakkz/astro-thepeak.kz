@@ -20,6 +20,7 @@ export default function TimedLeadPopup() {
     message: "",
     privacyConsent: true,
   });
+  const [phoneError, setPhoneError] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,8 +50,24 @@ export default function TimedLeadPopup() {
     setIsOpen(false);
   };
 
+  const isPhoneValid = () => {
+    if (!formData.contact) return false;
+    const phone = formData.contact;
+    const digits = phone.replace(/\D/g, "");
+    if (phone.startsWith("+7") || phone.startsWith("+1") || phone.startsWith("+33")) return digits.length === 11;
+    if (phone.startsWith("+375") || phone.startsWith("+380") || phone.startsWith("+996") || phone.startsWith("+998") || phone.startsWith("+49") || phone.startsWith("+44")) return digits.length === 12;
+    return digits.length > 5;
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setPhoneError(false);
+
+    if (!isPhoneValid()) {
+      setPhoneError(true);
+      return;
+    }
+
     if (!formData.name.trim() || !formData.contact.trim() || !formData.privacyConsent) {
       setStatus("error");
       return;
@@ -150,7 +167,7 @@ export default function TimedLeadPopup() {
                   disabled={status === "loading"}
                   placeholder="Иван Иванов"
                   value={formData.name}
-                  onChange={(event) => setFormData({ ...formData, name: event.target.value })}
+                  onChange={(event) => setFormData({ ...formData, name: event.target.value.replace(/\d/g, "") })}
                   className="w-full border border-white/10 bg-white/5 px-4 py-3 font-sans text-sm text-white outline-none transition-colors placeholder:text-neutral-500 focus:border-white/30 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
@@ -161,12 +178,18 @@ export default function TimedLeadPopup() {
                 </label>
                 <PhoneInput
                   value={formData.contact}
-                  onChange={(contact) => setFormData({ ...formData, contact })}
+                  onChange={(contact) => {
+                    setFormData({ ...formData, contact });
+                    setPhoneError(false);
+                  }}
                   theme="dark"
                   variant="box"
                   required
                   disabled={status === "loading"}
                 />
+                {phoneError && (
+                  <p className="text-red-500 font-sans text-xs mt-1">Пожалуйста, введите полный номер телефона</p>
+                )}
               </div>
 
               <div className="space-y-1.5">

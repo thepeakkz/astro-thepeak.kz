@@ -174,9 +174,26 @@ export default function ContactSection() {
           privacyConsent: true,
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [phoneError, setPhoneError] = useState(false);
+
+  const isPhoneValid = () => {
+    if (!formData.contact) return false;
+    const phone = formData.contact;
+    const digits = phone.replace(/\D/g, "");
+    if (phone.startsWith("+7") || phone.startsWith("+1") || phone.startsWith("+33")) return digits.length === 11;
+    if (phone.startsWith("+375") || phone.startsWith("+380") || phone.startsWith("+996") || phone.startsWith("+998") || phone.startsWith("+49") || phone.startsWith("+44")) return digits.length === 12;
+    return digits.length > 5;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPhoneError(false);
+
+    if (!isPhoneValid()) {
+      setPhoneError(true);
+      return;
+    }
+
     if (!formData.name.trim() || !formData.contact.trim() || !formData.privacyConsent) {
       setStatus("error");
       return;
@@ -268,7 +285,7 @@ export default function ContactSection() {
                 disabled={status === "loading"}
                 placeholder="Иван Иванов"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/\d/g, "") })}
                 className="w-full font-sans text-sm text-white bg-white/5 border border-white/10 focus:border-white/30 px-4 py-3 outline-none transition-colors duration-200 rounded-none placeholder-neutral-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
@@ -279,11 +296,17 @@ export default function ContactSection() {
               </label>
               <PhoneInput
                 value={formData.contact}
-                onChange={(val) => setFormData({ ...formData, contact: val })}
+                onChange={(val) => {
+                  setFormData({ ...formData, contact: val });
+                  setPhoneError(false);
+                }}
                 theme="dark"
                 variant="box"
                 required
               />
+              {phoneError && (
+                <p className="text-red-500 font-sans text-xs mt-1">Пожалуйста, введите полный номер телефона</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
