@@ -22,6 +22,9 @@
 # production
 /build
 
+# local-only service page (excluded from deployments)
+/src/app/services/web/
+
 # local case video backups
 /public/cases/**/*.mp4
 /public/cases/**/*.webm

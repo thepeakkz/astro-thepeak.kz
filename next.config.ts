@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/service/web',
+        destination: '/services/web',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
+

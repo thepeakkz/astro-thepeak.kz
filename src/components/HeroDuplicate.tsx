@@ -7,6 +7,7 @@ import { formatTypography } from "@/utils/typography";
 
 export default function HeroDuplicate() {
   const videoRef = React.useRef<HTMLVideoElement>(null);
+  const hasVideoEndedRef = React.useRef(false);
   const [isVideoPlaying, setIsVideoPlaying] = React.useState(false);
   const logoIds = [2, 12, 20, 21, 24, 38, 39, 40, 41, 44];
   // Two copies for seamless loop (translateX -50% = exactly one set)
@@ -19,10 +20,14 @@ export default function HeroDuplicate() {
       return;
     }
 
+    if (hasVideoEndedRef.current) {
+      return;
+    }
+
     video.muted = true;
     video.defaultMuted = true;
     video.autoplay = true;
-    video.loop = true;
+    video.loop = false;
     video.playsInline = true;
     video.setAttribute("autoplay", "");
     video.setAttribute("muted", "");
@@ -54,7 +59,13 @@ export default function HeroDuplicate() {
       setIsVideoPlaying(true);
     };
     const handlePause = () => {
-      setIsVideoPlaying(false);
+      if (!hasVideoEndedRef.current) {
+        setIsVideoPlaying(false);
+      }
+    };
+    const handleEnded = () => {
+      hasVideoEndedRef.current = true;
+      setIsVideoPlaying(true);
     };
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -69,6 +80,7 @@ export default function HeroDuplicate() {
     video.addEventListener("canplay", handleCanPlay);
     video.addEventListener("playing", handlePlaying);
     video.addEventListener("pause", handlePause);
+    video.addEventListener("ended", handleEnded);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     document.addEventListener("pointerdown", handleUserGesture, { once: true, passive: true });
     document.addEventListener("touchstart", handleUserGesture, { once: true, passive: true });
@@ -78,6 +90,7 @@ export default function HeroDuplicate() {
       video.removeEventListener("canplay", handleCanPlay);
       video.removeEventListener("playing", handlePlaying);
       video.removeEventListener("pause", handlePause);
+      video.removeEventListener("ended", handleEnded);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       document.removeEventListener("pointerdown", handleUserGesture);
       document.removeEventListener("touchstart", handleUserGesture);
@@ -92,7 +105,6 @@ export default function HeroDuplicate() {
           ref={videoRef}
           autoPlay
           muted
-          loop
           playsInline
           preload="metadata"
           poster="/bg-mobile-poster.jpg"
