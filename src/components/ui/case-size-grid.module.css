@@ -1,7 +1,6 @@
 .grid {
   --case-gap: 0.75rem;
   --case-col-gap: 3rem;
-  --case-row-height: calc(75cqw - 0.5625rem);
 
   container-type: inline-size;
   display: grid;
@@ -14,6 +13,7 @@
 }
 
 .item {
+  --case-row-height: calc(75cqw - 0.5625rem);
   height: var(--case-row-height);
   min-width: 0;
   position: relative;
@@ -44,9 +44,11 @@
 
 @media (min-width: 640px) {
   .grid {
-    --case-row-height: calc(50cqw - 0.75rem);
-
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .item {
+    --case-row-height: calc(50cqw - 0.75rem);
   }
 
   .middle {
@@ -57,9 +59,11 @@
 
 @media (min-width: 1024px) {
   .grid {
-    --case-row-height: calc(37.5cqw - 0.84375rem);
-
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .item {
+    --case-row-height: calc(37.5cqw - 0.84375rem);
   }
 
   .large {
@@ -69,8 +73,11 @@
 
 @media (min-width: 1536px) {
   .grid {
-    --case-row-height: calc(30cqw - 0.9rem);
-
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
+
+  .item {
+    --case-row-height: calc(30cqw - 0.9rem);
+  }
 }
+

@@ -83,15 +83,21 @@ interface ServiceCardProps {
   title: string;
   description: string;
   shape?: string;
+  meta?: string;
   isCTA?: boolean;
+  insetOutline?: boolean;
+  outlineGridIndex?: number;
   onClick?: () => void;
 }
 
-const ServiceCard: React.FC<ServiceCardProps> = ({
+export const ServiceCard: React.FC<ServiceCardProps> = ({
   title,
   description,
   shape,
+  meta,
   isCTA = false,
+  insetOutline = false,
+  outlineGridIndex = 0,
   onClick,
 }) => {
   const [scope, animate] = useAnimate();
@@ -144,9 +150,22 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     }
   };
 
+  const insetTopClasses =
+    outlineGridIndex === 0
+      ? "before:border-t"
+      : outlineGridIndex === 1
+        ? "sm:before:border-t"
+        : "";
+  const insetLeftClasses =
+    outlineGridIndex % 2 === 0
+      ? "before:border-l lg:before:border-l-0"
+      : "before:border-l sm:before:border-l-0";
+  const borderClasses = insetOutline
+    ? `before:pointer-events-none before:absolute before:inset-0 before:z-20 before:border-r before:border-b before:border-brand-gray/15 ${insetTopClasses} ${insetLeftClasses}`
+    : "border-r border-b border-brand-gray/15";
   const cardClasses = isCTA
-    ? "group relative flex flex-col justify-between pt-[clamp(1.25rem,2.5vw,3rem)] pr-[clamp(1.25rem,2.5vw,3rem)] pb-[clamp(1.25rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] bg-brand-red text-white border-r border-b border-brand-gray/15 min-h-[clamp(12rem,22vw,25rem)] cursor-pointer overflow-hidden"
-    : "group relative flex flex-col justify-between pt-[clamp(1.25rem,2.5vw,3rem)] pr-[clamp(1.25rem,2.5vw,3rem)] pb-[clamp(1.25rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] bg-white text-brand-gray border-r border-b border-brand-gray/15 min-h-[clamp(12rem,22vw,25rem)] overflow-hidden cursor-pointer";
+    ? `group relative flex flex-col justify-between pt-[clamp(1.25rem,2.5vw,3rem)] pr-[clamp(1.25rem,2.5vw,3rem)] pb-[clamp(1.25rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] bg-brand-red text-white min-h-[clamp(12rem,22vw,25rem)] cursor-pointer overflow-hidden ${borderClasses}`
+    : `group relative flex flex-col justify-between pt-[clamp(1.25rem,2.5vw,3rem)] pr-[clamp(1.25rem,2.5vw,3rem)] pb-[clamp(1.25rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] bg-white text-brand-gray min-h-[clamp(12rem,22vw,25rem)] overflow-hidden cursor-pointer ${borderClasses}`;
 
   const overlayBg = isCTA ? "bg-brand-gray text-white" : "bg-brand-red text-white";
 
@@ -159,7 +178,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     >
       {/* Default State Content */}
       <div className="flex flex-col mb-4 h-full z-0">
-        <div>
+        <div className="relative">
+          {meta && (
+            <span className="absolute right-0 top-0 font-mono text-[10px] text-brand-red">
+              {meta}
+            </span>
+          )}
           {shape && (
             <div className="mb-6 md:mb-[clamp(1rem,1.8vw,2.2rem)] select-none">
               <img
@@ -189,7 +213,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
         className={`absolute inset-0 hidden md:flex flex-col pt-[clamp(1.5rem,2.5vw,3rem)] pr-[clamp(1.5rem,2.5vw,3rem)] pb-[clamp(1.5rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] z-10 pointer-events-none ${overlayBg}`}
       >
         <div className="flex flex-col h-full w-full">
-          <div>
+          <div className="relative">
+            {meta && (
+              <span className="absolute right-0 top-0 font-mono text-[10px] text-white/80">
+                {meta}
+              </span>
+            )}
             {shape && (
               <div className="mb-[clamp(1rem,1.8vw,2.2rem)] select-none">
                 <img

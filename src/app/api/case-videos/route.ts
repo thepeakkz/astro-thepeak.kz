@@ -2,11 +2,12 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { NextRequest } from "next/server";
 import { caseMediaManifest } from "@/data/case-media-manifest";
+import { optimizeCloudinaryVideoUrl } from "@/utils/media";
 
 const IMAGE_EXTENSIONS = new Set([".avif", ".gif", ".jpeg", ".jpg", ".png", ".webp"]);
 const VIDEO_EXTENSIONS = new Set([".m4v", ".mov", ".mp4", ".webm"]);
 const CLOUDINARY_CASES_FOLDER = "cases";
-const CLOUDINARY_VIDEO_TRANSFORMATION = "q_auto:best";
+const CLOUDINARY_VIDEO_TRANSFORMATION = "f_auto,q_auto";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -219,6 +220,10 @@ async function getCloudinaryVideos(slug: string, localPosters: CaseMediaItem[]):
                 }
 
                 const nestedPath = resource.public_id.slice(folderPrefix.length);
+                const assetName = path.parse(nestedPath).name.toLowerCase();
+                if (assetName === "cover" || assetName === "cover-poster" || assetName.startsWith("cover")) {
+                    return false;
+                }
                 return nestedPath.length > 0 && !nestedPath.includes("/");
             })
             .map((resource) => {
@@ -250,6 +255,11 @@ async function getLocalMedia(slug: string, allowedTypes: Set<CaseMediaItem["type
         const media = await Promise.all(
             entries.flatMap((entry) => {
                 if (!entry.isFile()) {
+                    return [];
+                }
+
+                const baseName = path.parse(entry.name).name.toLowerCase();
+                if (baseName === "cover" || baseName === "cover-poster" || baseName.startsWith("cover")) {
                     return [];
                 }
 
@@ -324,8 +334,9 @@ function getManifestMedia(
     return (caseMediaManifest[slug] || [])
         .filter((item) => allowedTypes.has(item.type))
         .map((item) => {
+            const src = item.type === "video" ? optimizeCloudinaryVideoUrl(item.src) : item.src;
             if (item.type !== "video" || item.posterSrc) {
-                return { ...item };
+                return { ...item, src };
             }
 
             const poster =
@@ -334,6 +345,7 @@ function getManifestMedia(
 
             return {
                 ...item,
+                src,
                 height: poster?.height ?? item.height,
                 posterSrc: poster?.src,
                 width: poster?.width ?? item.width,
@@ -359,22 +371,35 @@ export async function GET(request: NextRequest) {
     const cloudinaryVideos = process.env.PLAYWRIGHT_TEST === "1"
         ? null
         : await getCloudinaryVideos(slug, localPosters);
-    const fallbackVideos = getManifestMedia(slug, new Set(["video"]), localPosters);
+
+    const manifestMedia = getManifestMedia(slug, new Set(["video", "image"]), localPosters);
+    const localImages = await getLocalMedia(slug, new Set(["image"]));
+
+    let media: CaseMediaItem[] = [];
 
     if (cloudinaryVideos && cloudinaryVideos.length > 0) {
-        const localImages = excludeVideoPostersFromImages(await getLocalMedia(slug, new Set(["image"])), cloudinaryVideos);
-        const media = [...cloudinaryVideos, ...localImages].sort((a, b) => a.name.localeCompare(b.name, "ru"));
-
-        return Response.json({ media, videos: media.filter((item) => item.type === "video") });
+        const images = excludeVideoPostersFromImages(
+            [...manifestMedia.filter((item) => item.type === "image"), ...localImages],
+            cloudinaryVideos,
+        );
+        media = [...cloudinaryVideos, ...images];
+    } else if (manifestMedia.length > 0) {
+        const images = excludeVideoPostersFromImages(localImages, manifestMedia);
+        media = [...manifestMedia, ...images];
+    } else {
+        media = localImages;
     }
 
-    if (fallbackVideos.length > 0) {
-        const localImages = excludeVideoPostersFromImages(await getLocalMedia(slug, new Set(["image"])), fallbackVideos);
-        const media = [...fallbackVideos, ...localImages].sort((a, b) => a.name.localeCompare(b.name, "ru"));
+    // De-duplicate media items by src to prevent repeating elements
+    const seen = new Set<string>();
+    media = media.filter((item) => {
+        if (seen.has(item.src)) return false;
+        seen.add(item.src);
+        return true;
+    });
 
-        return Response.json({ media, videos: media.filter((item) => item.type === "video") });
-    }
+    media.sort((a, b) => a.name.localeCompare(b.name, "ru"));
 
-    const media = await getLocalMedia(slug, new Set(["image"]));
     return Response.json({ media, videos: media.filter((item) => item.type === "video") });
 }
+

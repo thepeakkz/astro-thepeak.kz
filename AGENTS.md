@@ -23,3 +23,12 @@ For every case media gallery, keep the responsive grid consistent:
 3. Tablet screens: 3 media columns.
 4. Mobile screens: 2 media columns.
 5. Clicking a case video must open it fullscreen immediately.
+
+# Client Logo Showcase Rules
+
+When displaying client logos on service/details pages:
+1. Render logos in their original, color formats (do not force grayscale/opacity unless requested).
+2. Display them in their original aspect ratios with an identical height (using `h-[height] w-auto object-contain`).
+3. If requested, implement a seamless infinite marquee/ticker (moving `-50%` using `marquee-scroll-horizontal` animation).
+4. Do not wrap them in rounded circles/cards unless specifically requested.
+

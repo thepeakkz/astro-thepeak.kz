@@ -910,5 +910,178 @@ export const caseMediaManifest: Record<string, CaseMediaManifestItem[]> = {
             "width": 1080,
             "height": 1920
         }
+    ],
+    "compass": [
+        {
+            "type": "video",
+            "name": "Compass шоурил",
+            "src": "/cases/compass/Compass.mp4",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 1",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998701/yapil/case/Compass/1.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 2",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998702/yapil/case/Compass/2.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 3",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998702/yapil/case/Compass/3.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 4",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998702/yapil/case/Compass/4.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 5",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998703/yapil/case/Compass/5.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 6",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998703/yapil/case/Compass/6.webp",
+            "width": 1080,
+            "height": 1080
+        }
+    ],
+
+    "bebble": [
+        {
+            "type": "image",
+            "name": "Макет 1",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998698/yapil/case/Bebble/1.webp",
+            "width": 1080,
+            "height": 1920
+        },
+        {
+            "type": "image",
+            "name": "Макет 2",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998699/yapil/case/Bebble/2.webp",
+            "width": 1080,
+            "height": 1920
+        },
+        {
+            "type": "image",
+            "name": "Макет 3",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998699/yapil/case/Bebble/3.webp",
+            "width": 1080,
+            "height": 1920
+        },
+        {
+            "type": "image",
+            "name": "Макет 4",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998699/yapil/case/Bebble/4.webp",
+            "width": 1080,
+            "height": 1920
+        }
+    ],
+    "boya": [
+        {
+            "type": "image",
+            "name": "Обложка",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998699/yapil/case/Boya.webp",
+            "width": 1080,
+            "height": 1080
+        }
+    ],
+    "rv": [
+        {
+            "type": "video",
+            "name": "Шоурил",
+            "src": "https://res.cloudinary.com/f75p1yiv/video/upload/v1782998838/yapil/case/RV/RV.mp4",
+            "width": 1920,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 0",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/0.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 1",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/1.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 2",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/2.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 3",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/3.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 4",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998835/yapil/case/RV/4.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 5",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998835/yapil/case/RV/5.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 6",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998835/yapil/case/RV/6.webp",
+            "width": 1080,
+            "height": 1080
+        },
+        {
+            "type": "image",
+            "name": "Макет 7",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998835/yapil/case/RV/7.webp",
+            "width": 1080,
+            "height": 1080
+        }
+    ],
+    "igorkochergin": [
+        {
+            "type": "image",
+            "name": "Макет 1",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998832/yapil/case/Igorkochergin/1.webp",
+            "width": 1080,
+            "height": 1920
+        },
+        {
+            "type": "image",
+            "name": "Макет 2",
+            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998833/yapil/case/Igorkochergin/2.webp",
+            "width": 1080,
+            "height": 1920
+        }
     ]
 };
+

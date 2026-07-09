@@ -4,8 +4,8 @@ import React from "react";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import { formatTypography } from "@/utils/typography";
-import { ArrowLeft } from "lucide-react";
-import CasesBentoGrid from "@/components/CasesBentoGrid";
+
+import CasesProduxGrid from "@/components/CasesProduxGrid";
 import { allCasesData } from "@/data/cases";
 import { cn } from "@/lib/utils";
 import HeroWave from "@/components/ui/dynamic-wave-canvas-background";
@@ -40,15 +40,12 @@ export default function CasesClient() {
 
         {/* HEADER */}
         <header className="px-[var(--page-margin)] pt-24 pb-12 border-b border-white/10 relative z-10">
-          <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors text-xs uppercase tracking-widest font-mono mb-8 group">
-            <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
-            Назад на главную
-          </Link>
-          <h1 className="text-5xl md:text-7xl font-sans font-bold tracking-tighter uppercase mb-4">
+
+          <h1 className="no-invert text-5xl md:text-7xl font-sans font-bold tracking-tighter uppercase mb-4">
             {formatTypography("Кейсы")}
           </h1>
-          <p className="text-white/60 font-mono text-xs uppercase tracking-widest max-w-xl">
-            Проекты, разработанные нашей командой: от комплексного SMM до масштабного видеопроизводства.
+          <p className="no-invert text-white/60 font-mono text-xs max-w-xl">
+            {formatTypography("Проекты, разработанные нашей командой: от комплексного SMM до масштабного видеопроизводства.")}
           </p>
         </header>
 
@@ -81,7 +78,7 @@ export default function CasesClient() {
             </div>
 
             {filteredCases.length > 0 ? (
-              <CasesBentoGrid
+              <CasesProduxGrid
                 cases={filteredCases}
               />
             ) : (

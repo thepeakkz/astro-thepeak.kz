@@ -20,12 +20,12 @@ export default function HomeClient() {
       <div className="col-span-12 block w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] md:hidden">
         <StatsBlock />
       </div>
+      <ClientLogosBlock />
       <ServicesAnimate />
       <HeroScrollAnimation
         cover={<WorkStages />}
         second={<CasesMasonrySection />}
       />
-      <ClientLogosBlock />
       <Team />
       <ContactSection />
       <TimedLeadPopup />

@@ -37,15 +37,6 @@ function getMediaAspectRatio(item: CaseGalleryItem) {
     return item.type === "video" ? "9 / 16" : "1 / 1";
 }
 
-function getMimeType(src: string) {
-    const normalizedSrc = src.toLowerCase().split("?")[0];
-
-    if (normalizedSrc.endsWith(".webm")) return "video/webm";
-    if (normalizedSrc.endsWith(".mov")) return "video/quicktime";
-    if (normalizedSrc.endsWith(".m4v")) return "video/x-m4v";
-    return "video/mp4";
-}
-
 function formatTime(seconds: number) {
     if (!Number.isFinite(seconds) || seconds <= 0) {
         return "0:00";
@@ -297,13 +288,14 @@ export default function CaseVideoGallery({ slug }: CaseVideoGalleryProps) {
                                     ref={(node) => {
                                         videoRefs.current[item.src] = node;
                                     }}
+                                    src={item.src}
                                     className="block h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.01]"
                                     controls={false}
                                     controlsList="nodownload noplaybackrate noremoteplayback"
                                     disablePictureInPicture
                                     playsInline
                                     poster={item.posterSrc}
-                                    preload="metadata"
+                                    preload={item.posterSrc ? "none" : "metadata"}
                                     width={item.width}
                                     height={item.height}
                                     aria-label={item.name || `Видео кейса ${index + 1}`}
@@ -332,9 +324,7 @@ export default function CaseVideoGallery({ slug }: CaseVideoGalleryProps) {
                                             progress: (video.currentTime / video.duration) * 100,
                                         });
                                     }}
-                                >
-                                    <source src={item.src} type={getMimeType(item.src)} />
-                                </video>
+                                />
                                 <button
                                     type="button"
                                     className="absolute inset-0 z-10 cursor-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"

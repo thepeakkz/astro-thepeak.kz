@@ -9,6 +9,7 @@ test("main routes render without an application error", async ({ page }) => {
 });
 
 test("case videos request fullscreen immediately", async ({ page }) => {
+
   await page.addInitScript(() => {
     Element.prototype.requestFullscreen = function requestFullscreen() {
       document.documentElement.dataset.fullscreenRequested = "true";
@@ -25,6 +26,7 @@ test("case videos request fullscreen immediately", async ({ page }) => {
 });
 
 test("case gallery uses the required responsive column count", async ({ page }) => {
+
   await page.goto("/cases/ark");
   const gallery = page.getByTestId("case-gallery-grid");
   await expect(gallery).toBeVisible();

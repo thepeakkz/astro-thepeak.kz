@@ -63,7 +63,7 @@ export default function PageTransition({ children }: PageTransitionProps) {
   const [previousChildren, setPreviousChildren] = useState<React.ReactNode>(null);
   const [previousScrollY, setPreviousScrollY] = useState(0);
   const [isFallbackEntering, setIsFallbackEntering] = useState(false);
-  const [isInitialHomeEntering, setIsInitialHomeEntering] = useState(() => pathname === "/");
+  const [isInitialHomeEntering, setIsInitialHomeEntering] = useState(false);
 
   useLayoutEffect(() => {
     const pending = pendingTransition.current;

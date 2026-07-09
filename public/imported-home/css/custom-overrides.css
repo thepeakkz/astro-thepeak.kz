@@ -1,0 +1,88 @@
+/* Keep text readable when it overlaps light and dark areas of imagery. */
+.tn-elem[data-elem-type="text"] {
+  isolation: auto !important;
+  mix-blend-mode: difference !important;
+}
+
+.tn-elem[data-elem-type="text"] .tn-atom {
+  color: #fff !important;
+}
+
+/* Principles cards: 8px horizontal and bottom inset for all copy. */
+@media screen and (min-width: 1200px) {
+  #rec1135289426 .tn-elem[data-elem-id="1725452960945"],
+  #rec1135289426 .tn-elem[data-elem-id="1725452960949"] {
+    left: calc(50% - 600px + 48px) !important;
+    width: 354px !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1750835729323"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835729321"] {
+    left: calc(50% - 600px + 423px) !important;
+    width: 354px !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1750835752406"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835752410"] {
+    left: calc(50% - 600px + 798px) !important;
+    width: 354px !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1725452960949"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835729321"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835752410"] {
+    top: auto !important;
+    bottom: 18px !important;
+    height: auto !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1725452960945"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835729323"] {
+    top: auto !important;
+    bottom: 95px !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1750835752406"] {
+    top: auto !important;
+    bottom: 73px !important;
+  }
+}
+
+@media screen and (min-width: 960px) and (max-width: 1199px) {
+  #rec1135289426 .tn-elem[data-elem-id="1725452960945"],
+  #rec1135289426 .tn-elem[data-elem-id="1725452960949"] {
+    left: calc(50% - 480px + 18px) !important;
+    width: 284px !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1750835729323"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835729321"] {
+    left: calc(50% - 480px + 338px) !important;
+    width: 284px !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1750835752406"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835752410"] {
+    left: calc(50% - 480px + 658px) !important;
+    width: 284px !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1725452960949"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835729321"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835752410"] {
+    top: auto !important;
+    bottom: 18px !important;
+    height: auto !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1725452960945"],
+  #rec1135289426 .tn-elem[data-elem-id="1750835729323"] {
+    top: auto !important;
+    bottom: 118px !important;
+  }
+
+  #rec1135289426 .tn-elem[data-elem-id="1750835752406"] {
+    top: auto !important;
+    bottom: 96px !important;
+  }
+}

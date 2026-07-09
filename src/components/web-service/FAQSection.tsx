@@ -59,7 +59,7 @@ export function FAQSection() {
                                     >
                                         <div className="flex items-center gap-4 flex-grow min-w-0 pr-4">
                                             <HelpCircle className="w-5 h-5 text-white/30 group-hover:text-[#FD4B32] transition-colors shrink-0" />
-                                            <h3 className="no-invert font-headline font-semibold text-base md:text-lg text-white group-hover:text-white/80 transition-colors">
+                                            <h3 className="no-invert font-headline font-semibold text-sm text-white group-hover:text-white/80 transition-colors leading-relaxed">
                                                 {formatTypography(faq.q)}
                                             </h3>
                                         </div>

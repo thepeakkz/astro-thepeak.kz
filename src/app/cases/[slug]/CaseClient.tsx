@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import CaseVideoGallery from "@/components/CaseVideoGallery";
 import { formatTypography } from "@/utils/typography";
-import { ArrowLeft } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
+import LazyPdfReader from "@/components/LazyPdfReader";
 import { cn } from "@/lib/utils";
+import { optimizeCloudinaryVideoUrl } from "@/utils/media";
 import { CONTACTS } from "@/config/contacts";
 import {
     IconPlus,
@@ -21,6 +23,7 @@ import { Button01 } from "@/components/ui/nextjsshop-button";
 import PhoneInput from "@/components/ui/PhoneInput";
 import PrivacyConsentCheckbox from "@/components/PrivacyConsentCheckbox";
 import HeroWave from "@/components/ui/dynamic-wave-canvas-background";
+import CaseDescriptionColumns from "@/components/CaseDescriptionColumns";
 
 const GRAIN_STYLE: React.CSSProperties = {
     backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
@@ -54,6 +57,12 @@ const CASE_HERO_MEDIA: Record<string, { src: string; type: "image" | "video" }> 
     "mg-kazakhstan": { src: "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782641225/mg1_qmtkuy.mp4", type: "video" },
     omo: { src: "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782641223/OMO_%D1%85_Almaty_marathon_1_oqdkmb.mp4", type: "video" },
     velmar: { src: "/cases/Velmar.webp", type: "image" },
+    compass: { src: "/cases/compass/cover.webp", type: "image" },
+    "shanding-logistics": { src: "https://res.cloudinary.com/dxvynbrut/image/upload/v1783590405/cases/shanding-logistics/cover.webp", type: "image" },
+    bebble: { src: "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998842/yapil/case/bebble.webp", type: "image" },
+    boya: { src: "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998699/yapil/case/Boya.webp", type: "image" },
+    rv: { src: "https://res.cloudinary.com/f75p1yiv/video/upload/v1782998845/yapil/case/%D0%A0%D1%8B%D0%BA%D1%83%D0%BD%D0%BE%D0%B2%20%D0%B8%20%D0%9A%D1%83%D0%B4%D1%80%D1%8F%D1%88%D0%BE%D0%B2.webm", type: "video" },
+    igorkochergin: { src: "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998845/yapil/case/%D0%98%D0%B3%D0%BE%D1%80%D1%8C%20%D0%9A%D0%BE%D1%87%D0%B5%D1%80%D0%B3%D0%B8%D0%BD.webp", type: "image" },
 };
 
 interface ContactInfoDarkProps {
@@ -83,6 +92,10 @@ interface CaseData {
     insta_url?: string;
     contentBlocks?: readonly CaseContentBlock[];
     metrics?: readonly CaseMetric[];
+    brandbookUrl?: string;
+    showreelUrl?: string;
+    mockupImages?: readonly string[];
+    heroMedia?: { src: string; type: "image" | "video" };
 }
 
 function CaseMetricsSection({ metrics }: { metrics: readonly CaseMetric[] }) {
@@ -98,9 +111,6 @@ function CaseMetricsSection({ metrics }: { metrics: readonly CaseMetric[] }) {
                         key={`${metric.value}-${metric.label}`}
                         className="min-h-36 bg-white/[0.03] p-5 md:p-6"
                     >
-                        <span className="no-invert mb-8 block font-sans text-[10px] uppercase tracking-[0.3em] text-white/25">
-                            {String(index + 1).padStart(2, "0")}
-                        </span>
                         <div className="no-invert font-sans text-[clamp(2rem,4vw,4.6rem)] font-semibold leading-none text-white">
                             {formatTypography(metric.value)}
                         </div>
@@ -245,13 +255,52 @@ function ContactInfoDark({
 
 export default function CaseClient({ data, slug }: { data: CaseData; slug: string }) {
     const caseTitle = data.title || data.name || slug;
-    const heroMedia = CASE_HERO_MEDIA[slug];
+    const isWebsiteCase = data.service?.toLowerCase().includes("сайт") || data.service?.toLowerCase().includes("лендинг");
+    const showMetrics = data.metrics && data.metrics.length > 0 && !isWebsiteCase;
+    const rawHeroMedia = CASE_HERO_MEDIA[slug] || data.heroMedia;
+    const heroMedia = rawHeroMedia
+        ? { ...rawHeroMedia, src: optimizeCloudinaryVideoUrl(rawHeroMedia.src) }
+        : null;
+    const showreelVideoRef = useRef<HTMLVideoElement | null>(null);
+    const [isShowreelMuted, setIsShowreelMuted] = useState(true);
+    const [activeLightboxImg, setActiveLightboxImg] = useState<string | null>(null);
+
+    const [showreelVisible, setShowreelVisible] = useState(false);
+    const showreelContainerRef = useRef<HTMLDivElement | null>(null);
+
+    React.useEffect(() => {
+        const node = showreelContainerRef.current;
+        if (!node) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setShowreelVisible(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: "200px 0px" }
+        );
+
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [data.showreelUrl]);
+
+    const toggleShowreelSound = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (showreelVideoRef.current) {
+            const nextMuted = !showreelVideoRef.current.muted;
+            showreelVideoRef.current.muted = nextMuted;
+            setIsShowreelMuted(nextMuted);
+        }
+    };
+
     const [formData, setFormData] = useState({
         name: "",
         contact: "+7",
         contactMethod: "WhatsApp",
         message: "",
-          privacyConsent: true,
+        privacyConsent: true,
     });
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -331,17 +380,7 @@ export default function CaseClient({ data, slug }: { data: CaseData; slug: strin
                         style={{ ...GRAIN_STYLE, opacity: 0.13 }}
                     />
 
-                    <div className="relative z-10 px-[var(--page-margin)] pt-40">
-                        <Link
-                            href="/cases"
-                            className="no-invert inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors duration-300 font-sans text-xs uppercase tracking-[0.2em]"
-                        >
-                            <ArrowLeft className="w-3 h-3" />
-                            {formatTypography("Все кейсы")}
-                        </Link>
-                    </div>
-
-                    <div className="relative z-10 px-[var(--page-margin)] pt-16 pb-20 md:pb-28">
+                    <div className="relative z-10 px-[var(--page-margin)] pt-40 pb-20 md:pb-28">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-8 items-end">
                             <div className="lg:col-span-8 space-y-6">
                                 <h1
@@ -400,49 +439,111 @@ export default function CaseClient({ data, slug }: { data: CaseData; slug: strin
                 </section>
 
                 {/* ── MAIN CONTENT Blocks ───────────────────────────── */}
-                {data.metrics && data.metrics.length > 0 && <CaseMetricsSection metrics={data.metrics} />}
+                {showMetrics && data.metrics && <CaseMetricsSection metrics={data.metrics} />}
 
-                {data.contentBlocks && data.metrics && data.metrics.length > 0 && (
-                    <CaseTwoColumnContent blocks={data.contentBlocks} />
+                {data.contentBlocks && data.contentBlocks.length > 0 && (
+                    <CaseDescriptionColumns paragraphs={data.contentBlocks.map(block => block.text)} />
                 )}
 
-                {data.contentBlocks && (!data.metrics || data.metrics.length === 0) && data.contentBlocks.map((block, idx) => (
-                    <section
-                        key={idx}
-                        className="relative border-b border-white/10"
-
-                    >
+                {/* ── Showreel Video Section ── */}
+                {data.showreelUrl && (
+                    <section className="relative border-b border-white/10 px-[var(--page-margin)] py-16 md:py-24">
                         <div
                             className="pointer-events-none absolute inset-0 z-0"
-                            style={{ ...GRAIN_STYLE, opacity: 0.06 }}
+                            style={{ ...GRAIN_STYLE, opacity: 0.05 }}
                         />
-                        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-px px-[var(--page-margin)] py-20 md:py-28">
-                            <div className="lg:col-span-3 flex flex-col justify-between gap-6 mb-8 lg:mb-0">
-                                <div>
-                                    <span className="no-invert font-sans text-[10px] uppercase tracking-[0.3em] text-white/25 block mb-3">
-                                        {block.chapter}
-                                    </span>
-                                    <div className="h-px w-10 bg-white/15" />
-                                </div>
+                        <div className="relative z-10">
+                            
+                            <div 
+                                ref={showreelContainerRef}
+                                onClick={toggleShowreelSound}
+                                className="relative w-full aspect-video border border-white/10 overflow-hidden bg-black group/showreel cursor-pointer rounded-[4px] shadow-[0_8px_30px_rgba(0,0,0,0.3)]"
+                            >
+                                <video
+                                    ref={showreelVideoRef}
+                                    src={showreelVisible ? optimizeCloudinaryVideoUrl(data.showreelUrl) : undefined}
+                                    autoPlay
+                                    muted={isShowreelMuted}
+                                    loop
+                                    playsInline
+                                    className="w-full h-full object-cover"
+                                />
                                 <div
-                                    className="no-invert font-sans font-semibold text-white/05 select-none"
-                                    style={{ fontSize: "clamp(5rem, 8vw, 9rem)", lineHeight: 1 }}
-                                    aria-hidden
+                                    className="absolute bottom-4 right-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur transition hover:bg-black/80"
                                 >
-                                    {String(idx + 1).padStart(2, "0")}
+                                    {isShowreelMuted ? (
+                                        <VolumeX size={16} />
+                                    ) : (
+                                        <Volume2 size={16} className="text-[#4ade80]" />
+                                    )}
                                 </div>
-                            </div>
-                            <div className="lg:col-span-9 lg:pl-16">
-                                <p
-                                    className="no-invert font-sans text-white/85 leading-[1.6]"
-                                    style={{ fontSize: "clamp(1.15rem, 2vw, 1.65rem)", letterSpacing: "-0.02em" }}
-                                >
-                                    {formatTypography(block.text)}
-                                </p>
                             </div>
                         </div>
                     </section>
-                ))}
+                )}
+
+                {/* ── Brandbook PDF Section ── */}
+                {data.brandbookUrl && (
+                    <section className="relative border-b border-white/10 px-[var(--page-margin)] py-16 md:py-24">
+                        <div
+                            className="pointer-events-none absolute inset-0 z-0"
+                            style={{ ...GRAIN_STYLE, opacity: 0.05 }}
+                        />
+                        <div className="relative z-10">
+                            <LazyPdfReader url={data.brandbookUrl} />
+                        </div>
+                    </section>
+                )}
+
+                {/* ── Mockup Images Gallery Section ── */}
+                {data.mockupImages && data.mockupImages.length > 0 && (
+                    <section className="relative border-b border-white/10 px-[var(--page-margin)] py-16 md:py-24">
+                        <div
+                            className="pointer-events-none absolute inset-0 z-0"
+                            style={{ ...GRAIN_STYLE, opacity: 0.05 }}
+                        />
+                        <div className="relative z-10">
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {data.mockupImages.map((src, index) => (
+                                    <div 
+                                        key={src} 
+                                        onClick={() => setActiveLightboxImg(src)}
+                                        className="w-full overflow-hidden border border-white/5 rounded-[2px] cursor-zoom-in group/mockup relative"
+                                    >
+                                        <img
+                                            src={src}
+                                            alt={`${caseTitle} — макет ${index + 1}`}
+                                            className="w-full h-auto block transition-transform duration-700 ease-out group-hover/mockup:scale-[1.01]"
+                                            loading="lazy"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* ── Lightbox Overlay ── */}
+                {activeLightboxImg && (
+                    <div
+                        className="fixed inset-0 z-[999] flex items-center justify-center bg-black/95 cursor-zoom-out p-4 md:p-8"
+                        onClick={() => setActiveLightboxImg(null)}
+                    >
+                        <img
+                            src={activeLightboxImg}
+                            alt="Увеличенное изображение"
+                            className="max-h-full max-w-full object-contain select-none transition-all duration-300"
+                        />
+                        <button
+                            onClick={() => setActiveLightboxImg(null)}
+                            className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-2"
+                            aria-label="Закрыть"
+                        >
+                            <IconPlus className="w-8 h-8 rotate-45 text-white" />
+                        </button>
+                    </div>
+                )}
 
                 {/* ── REELS GRID GALLERY ────────────────────────────── */}
                 <CaseVideoGallery slug={slug} />

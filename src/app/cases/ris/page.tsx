@@ -3,10 +3,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
+import { preloadedCache } from "@/hooks/usePagePreloader";
 import HeroWave from "@/components/ui/dynamic-wave-canvas-background";
 import CaseVideoGallery from "@/components/CaseVideoGallery";
 import { formatTypography } from "@/utils/typography";
-import { ArrowLeft } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { CONTACTS } from "@/config/contacts";
 import {
@@ -205,7 +206,7 @@ export default function RisCasePage() {
         {/* ── HERO ─────────────────────────────────────────── */}
         <section className="relative min-h-screen flex flex-col justify-end overflow-hidden border-b border-white/10">
           <video
-            src="/cases/ris.mp4"
+            src={preloadedCache["/cases/ris.mp4"] || "/cases/ris.mp4"}
             autoPlay
             loop
             muted
@@ -220,17 +221,8 @@ export default function RisCasePage() {
             style={{ ...GRAIN_STYLE, opacity: 0.13 }}
           />
 
-          <div className="relative z-10 px-[var(--page-margin)] pt-40">
-            <Link
-              href="/cases"
-              className="no-invert inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors duration-300 font-sans text-xs uppercase tracking-[0.2em]"
-            >
-              <ArrowLeft className="w-3 h-3" />
-              {formatTypography("Все кейсы")}
-            </Link>
-          </div>
-
-          <div className="relative z-10 px-[var(--page-margin)] pt-16 pb-20 md:pb-28">
+          
+          <div className="relative z-10 px-[var(--page-margin)] pt-40 pb-20 md:pb-28">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-8 items-end">
               <div className="lg:col-span-8 space-y-6">
                 <h1

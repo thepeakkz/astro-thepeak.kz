@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
 import { createSeoMetadata, getBreadcrumbJsonLd, pageSeo } from "@/lib/seo";
 import { formatTypography } from "@/utils/typography";
@@ -15,31 +14,6 @@ export default function PrivacyPage() {
           { name: "Политика конфиденциальности", path: "/privacy" },
         ])}
       />
-      {/* Header */}
-      <header className="border-b border-brand-gray/10 px-[var(--page-margin)] py-5">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 font-sans text-xs font-bold uppercase tracking-widest text-brand-gray/50 hover:text-brand-red transition-colors duration-200"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="flex-shrink-0"
-          >
-            <path
-              d="M10 3L5 8L10 13"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          На главную
-        </Link>
-      </header>
 
       {/* Content */}
       <main className="px-[var(--page-margin)] py-[clamp(3rem,6vw,6rem)]">

@@ -7,6 +7,7 @@ import GridGuide from "@/components/GridGuide";
 import SmoothScroll from "@/components/SmoothScroll";
 import PageTransition from "@/components/PageTransition";
 import HeroVideoPreload from "@/components/HeroVideoPreload";
+import GlobalPreloader from "@/components/GlobalPreloader";
 import JsonLd from "@/components/JsonLd";
 import FormConversionTracker from "@/components/FormConversionTracker";
 import UtmTracker from "@/components/UtmTracker";
@@ -99,6 +100,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-hidden">
+        <GlobalPreloader />
         <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
         <FormConversionTracker />
         <Suspense fallback={null}>

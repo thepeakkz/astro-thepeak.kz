@@ -8,7 +8,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    baseURL: "http://127.0.0.1:3100",
+    baseURL: "http://localhost:3000",
     trace: "on-first-retry",
   },
   projects: [
@@ -16,9 +16,9 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["iPhone 13"] } },
   ],
   webServer: {
-    command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
+    command: "npm run dev -- --hostname localhost --port 3000",
     env: { PLAYWRIGHT_TEST: "1" },
-    url: "http://127.0.0.1:3100",
+    url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

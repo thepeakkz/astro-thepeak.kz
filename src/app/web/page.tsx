@@ -33,6 +33,8 @@ const GRAIN_STYLE: React.CSSProperties = {
 const webCases = allCasesData.filter(item => 
   item.services.includes("WEB") || 
   item.services.includes("Дизайн") || 
+  item.services.includes("Многостраничный сайт") || 
+  item.services.includes("Лендинг") || 
   item.href === "/cases/uaz" ||
   item.href === "/cases/tinga-logistics"
 );
@@ -291,11 +293,10 @@ const faqs = [
   },
 ];
 
-// Gallery images mapping
 const galleryImages = [
-  { src: "/cases/compass.webp", alt: "Compass site", title: "Compass", href: "/cases/compass" },
+  { src: "/cases/compass/cover.webp", alt: "Compass site", title: "Compass", href: "/cases/compass" },
   { src: "/cases/bebble.webp", alt: "Bebble site", title: "Bebble", href: "/cases/bebble" },
-  { src: "/cases/shanding.webp", alt: "Shanding site", title: "Shanding", href: "/cases/shanding" },
+  { src: "https://res.cloudinary.com/dxvynbrut/image/upload/v1783590405/cases/shanding-logistics/cover.webp", alt: "Shanding site", title: "Shanding Logistics", href: "/cases/shanding-logistics" },
   { src: "/cases/tinga-logistics.webp", alt: "Tinga site", title: "Tinga Logistics", href: "/cases/tinga-logistics" },
   { src: "/cases/uaz.webp", alt: "UAZ site", title: "UAZ Kazakhstan", href: "/cases/uaz" },
 ];
@@ -622,7 +623,7 @@ export default function WebDirectionPage() {
                       >
                         <div className="flex items-center gap-4 flex-grow min-w-0 pr-4">
                           <HelpCircle className="w-5 h-5 text-white/30 group-hover:text-[#FD4B32] transition-colors shrink-0" />
-                          <h3 className="font-headline font-semibold text-base md:text-lg text-white group-hover:text-white/80 transition-colors">
+                          <h3 className="font-headline font-semibold text-sm text-white group-hover:text-white/80 transition-colors leading-relaxed">
                             {formatTypography(faq.q)}
                           </h3>
                         </div>
