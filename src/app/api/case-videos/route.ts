@@ -360,6 +360,36 @@ function excludeVideoPostersFromImages(images: CaseMediaItem[], videos: CaseMedi
     return images.filter((image) => !posterSrcs.has(image.src));
 }
 
+function isSameVideoAsset(a: CaseMediaItem, b: CaseMediaItem) {
+    return Boolean(
+        findPosterForVideoName(a.name, [b]) ||
+            findPosterForVideoName(b.name, [a]) ||
+            findPosterForVideoName(getCloudinaryPublicName(a.src), [b]) ||
+            findPosterForVideoName(getCloudinaryPublicName(b.src), [a]),
+    );
+}
+
+function excludeDuplicateLocalVideos(localVideos: CaseMediaItem[], knownVideos: CaseMediaItem[]) {
+    return localVideos.filter((localVideo) => !knownVideos.some((knownVideo) => isSameVideoAsset(localVideo, knownVideo)));
+}
+
+function attachLocalPostersToVideos(videos: CaseMediaItem[], localPosters: CaseMediaItem[]) {
+    return videos.map((video) => {
+        if (video.posterSrc) {
+            return video;
+        }
+
+        const poster = findPosterForVideoName(video.name, localPosters) || findPosterForVideoName(video.src, localPosters);
+
+        return {
+            ...video,
+            height: poster?.height ?? video.height,
+            posterSrc: poster?.src,
+            width: poster?.width ?? video.width,
+        };
+    });
+}
+
 export async function GET(request: NextRequest) {
     const slug = request.nextUrl.searchParams.get("slug")?.trim();
 
@@ -374,20 +404,30 @@ export async function GET(request: NextRequest) {
 
     const manifestMedia = getManifestMedia(slug, new Set(["video", "image"]), localPosters);
     const localImages = await getLocalMedia(slug, new Set(["image"]));
+    const localVideos = attachLocalPostersToVideos(
+        await getLocalMedia(slug, new Set(["video"])),
+        localPosters,
+    );
 
     let media: CaseMediaItem[] = [];
 
     if (cloudinaryVideos && cloudinaryVideos.length > 0) {
+        const localOnlyVideos = excludeDuplicateLocalVideos(localVideos, cloudinaryVideos);
         const images = excludeVideoPostersFromImages(
             [...manifestMedia.filter((item) => item.type === "image"), ...localImages],
-            cloudinaryVideos,
+            [...cloudinaryVideos, ...localOnlyVideos],
         );
-        media = [...cloudinaryVideos, ...images];
+        media = [...cloudinaryVideos, ...localOnlyVideos, ...images];
     } else if (manifestMedia.length > 0) {
-        const images = excludeVideoPostersFromImages(localImages, manifestMedia);
-        media = [...manifestMedia, ...images];
+        const localOnlyVideos = excludeDuplicateLocalVideos(
+            localVideos,
+            manifestMedia.filter((item) => item.type === "video"),
+        );
+        const images = excludeVideoPostersFromImages(localImages, [...manifestMedia, ...localOnlyVideos]);
+        media = [...manifestMedia, ...localOnlyVideos, ...images];
     } else {
-        media = localImages;
+        const images = excludeVideoPostersFromImages(localImages, localVideos);
+        media = [...localVideos, ...images];
     }
 
     // De-duplicate media items by src to prevent repeating elements
@@ -402,4 +442,3 @@ export async function GET(request: NextRequest) {
 
     return Response.json({ media, videos: media.filter((item) => item.type === "video") });
 }
-

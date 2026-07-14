@@ -8,7 +8,7 @@ export default function ClientLogosBlock() {
     20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
   ];
   const baseRow3 = [38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52];
-  const baseRow4 = [53, 54, 55, 56, 57, 58, 59];
+  const baseRow4 = [53, 54, 55, 56, 57, 58, 59, 60];
 
   function createInfiniteItems(baseArray: number[]) {
     const mapped = baseArray.map((id) => ({
@@ -26,7 +26,7 @@ export default function ClientLogosBlock() {
 
   return (
     <section
-      className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] overflow-hidden border-b border-brand-gray/10 pt-0 pb-0 bg-white select-none"
+      className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] overflow-hidden pt-0 pb-0 bg-white select-none"
       id="client-logos"
     >
       {/* CSS for custom reverse marquee animation */}
@@ -49,7 +49,7 @@ export default function ClientLogosBlock() {
       />
 
       {/* 4 Rows of Carousels */}
-      <div className="flex flex-col w-full border-t border-brand-gray/15">
+      <div className="flex flex-col w-full">
         {/* Row 1 (starts with 12, scrolls left) */}
         <div
           className="relative w-full h-[60px] sm:h-[80px] md:h-[84px] overflow-hidden border-b border-brand-gray/15"

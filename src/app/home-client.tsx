@@ -17,7 +17,7 @@ export default function HomeClient() {
     <>
       <Navigation />
       <HeroDuplicate />
-      <div className="col-span-12 block w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] md:hidden">
+      <div className="col-span-12 block w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] md:hidden border-b border-brand-gray/10">
         <StatsBlock />
       </div>
       <ClientLogosBlock />

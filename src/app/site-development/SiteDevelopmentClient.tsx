@@ -138,7 +138,7 @@ function TimelineWeek({
   progress: MotionValue<number>;
   reduceMotion: boolean;
 }) {
-  const start = 0.1 + index * 0.025;
+  const start = 0.1 + index * 0.055;
   const opacity = useTransform(
     progress,
     [start, start + 0.12],
@@ -171,8 +171,8 @@ function TimelineBar({
   progress: MotionValue<number>;
   reduceMotion: boolean;
 }) {
-  const start = 0.14 + index * 0.07;
-  const end = 0.45 + index * 0.078;
+  const start = 0.14 + index * 0.11;
+  const end = 0.45 + index * 0.12;
   const opacity = useTransform(
     progress,
     [start, end],
@@ -425,6 +425,8 @@ export default function SiteDevelopmentClient() {
     return sessionInitialLoadDone;
   });
 
+
+
   useEffect(() => {
     if (preloadedCache["/site-development-hero.mp4"]) {
       setVideoSrc(preloadedCache["/site-development-hero.mp4"]);
@@ -457,15 +459,16 @@ export default function SiteDevelopmentClient() {
       window.removeEventListener("peak-preload-finished", handlePreloadFinished as EventListener);
     };
   }, []);
+
   const timelineSectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress: timelineScrollProgress } = useScroll({
     target: timelineSectionRef,
     offset: ["start 90%", "center center"],
   });
   const smoothTimelineProgress = useSpring(timelineScrollProgress, {
-    stiffness: 90,
-    damping: 24,
-    mass: 0.45,
+    stiffness: 45,
+    damping: 20,
+    mass: 0.85,
   });
   const timelineTitleY = useTransform(
     smoothTimelineProgress,
@@ -497,15 +500,16 @@ export default function SiteDevelopmentClient() {
     [0.76, 1],
     shouldReduceMotion ? [1, 1] : [0, 1],
   );
+
   const stagesSectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress: stagesScrollProgress } = useScroll({
     target: stagesSectionRef,
     offset: ["start 35%", "end center"],
   });
   const smoothStagesProgress = useSpring(stagesScrollProgress, {
-    stiffness: 80,
-    damping: 20,
-    mass: 0.5,
+    stiffness: 40,
+    damping: 18,
+    mass: 0.9,
   });
 
   const stagesProgress = useTransform(smoothStagesProgress, [0.32, 0.78], [0, 1]);
@@ -694,7 +698,7 @@ export default function SiteDevelopmentClient() {
           </div>
 
           {/* Cards overlap the following section by exactly half their height on tablet and wider screens. */}
-          <div className="relative z-10 mt-auto w-full overflow-visible md:absolute md:inset-x-0 md:bottom-0 md:mt-0 md:translate-y-1/2">
+          <div className="hidden md:block relative z-10 mt-auto w-full overflow-visible md:absolute md:inset-x-0 md:bottom-0 md:mt-0 md:translate-y-1/2">
             <div className="px-[var(--page-margin)]">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-6 md:overflow-visible">
                 {/* Card 1: 10+ лет */}
@@ -777,6 +781,88 @@ export default function SiteDevelopmentClient() {
             </div>
           </div>
         </section>
+        
+        {/* Mobile cards as a second block */}
+        <section className="block md:hidden bg-[#f6f6fa] px-[var(--page-margin)] pt-8 pb-4">
+          <div className="grid grid-cols-1 gap-3">
+            {/* Card 1: 10+ лет */}
+            <div className="flex h-auto min-h-[clamp(17rem,70vw,24rem)] flex-col bg-black p-[clamp(1.5rem,3vw,2.5rem)] text-white">
+              <div className="flex justify-between items-start">
+                <div className="font-headline text-[clamp(3.5rem,6vw,7rem)] font-bold leading-[0.8] tracking-[-0.05em]">
+                  10+
+                  <br />
+                  лет
+                </div>
+                <span className="font-mono text-xs text-white/40 pt-1.5">[ 01 ]</span>
+              </div>
+              <div className="mt-auto font-headline text-[clamp(1.5rem,2.2vw,2.4rem)] font-medium leading-[1.0] tracking-[-0.03em]">
+                {formatTypography("развиваемся")}
+                <br />
+                {formatTypography("в\u00a0своём деле")}
+              </div>
+            </div>
+
+            {/* Card 2: Более 100 проектов */}
+            <div className="flex h-auto min-h-[clamp(17rem,70vw,24rem)] flex-col justify-between border border-black/10 bg-white p-[clamp(1.5rem,3vw,2.5rem)] text-[#111]">
+              <div className="flex justify-between items-start">
+                <div className="font-headline text-[clamp(1.75rem,2.6vw,2.8rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-[#111]">
+                  {formatTypography("Более 100")}
+                  <br />
+                  {formatTypography("проектов")}
+                </div>
+                <span className="font-mono text-xs text-black/45 pt-1.5">[ 02 ]</span>
+              </div>
+              <div className="mt-6 flex flex-grow flex-col">
+                <p className="text-sm leading-relaxed text-black/55 font-medium max-w-[34ch]">
+                  {formatTypography(
+                    "точно понимаем специфику как\u00a0маленького бизнеса, так\u00a0и\u00a0больших структур\u00a0— и\u00a0знаем, как\u00a0решать задачи любого масштаба"
+                  )}
+                </p>
+              </div>
+              <div className="mt-auto w-full overflow-hidden">
+                <LogoMarquee />
+              </div>
+            </div>
+
+            {/* Card 3: Клиенты нас рекомендуют */}
+            <div className="flex h-auto min-h-[clamp(17rem,70vw,24rem)] flex-col justify-between border border-black/10 bg-white p-[clamp(1.5rem,3vw,2.5rem)] text-[#111]">
+              <div className="flex justify-between items-start">
+                <div className="font-headline text-[clamp(1.75rem,2.6vw,2.8rem)] font-semibold leading-[0.95] tracking-[-0.04em] text-[#111]">
+                  {formatTypography("Клиенты нас")}
+                  <br />
+                  {formatTypography("рекомендуют")}
+                </div>
+                <span className="font-mono text-xs text-black/45 pt-1.5">[ 03 ]</span>
+              </div>
+              <div className="flex-grow mt-6">
+                <p className="text-sm leading-relaxed text-black/55 font-medium max-w-[34ch]">
+                  {formatTypography(
+                    "к\u00a0нам идут по\u00a0советам тех, кто\u00a0уже к\u00a0нам обращался\u00a0— это\u00a0главный показатель того, что\u00a0нам доверяют"
+                  )}
+                </p>
+              </div>
+              <div className="mt-8 flex items-center justify-between">
+                <div className="flex -space-x-2.5 items-center">
+                  {["clot-vlad", "clot-say", "clot-roman", "clot-nel", "clot-den"].map((name, idx) => (
+                    <div
+                      key={idx}
+                      className="w-8 h-8 rounded-full border border-white bg-[#eee] overflow-hidden shrink-0"
+                    >
+                      <img
+                        src={`/team/${name}.webp`}
+                        alt=""
+                        className="w-full h-full object-cover pointer-events-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <span className="font-headline text-[clamp(1.1rem,1.5vw,1.4rem)] font-semibold text-black/45 pt-1">
+                  +∞
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section className="px-[var(--page-margin)] pb-[clamp(4rem,9vw,9rem)] pt-[clamp(4rem,9vw,9rem)] md:pt-[calc(var(--hero-card-height)/2+clamp(4rem,9vw,9rem))]">
           <h2 className="mb-12 max-w-[22ch] font-headline text-[clamp(2.5rem,5vw,5.5rem)] font-semibold leading-[1] tracking-[-0.04em]">
@@ -806,101 +892,6 @@ export default function SiteDevelopmentClient() {
           </div>
         </section>
 
-        <section className="bg-[#f6f6fa] text-[#434343] lg:h-[100svh] lg:overflow-hidden lg:py-[5svh]">
-          <div className="grid grid-cols-1 lg:h-full lg:grid-cols-[calc((100%+var(--page-margin)+0.5rem)/3)_minmax(0,1fr)]">
-            <div className="flex border-b border-[#434343]/15 px-[var(--page-margin)] py-[clamp(4rem,9vw,9rem)] lg:border-b-0 lg:border-r">
-              <h2 className="max-w-[12ch] self-start font-headline text-[clamp(2.5rem,5vw,5.5rem)] font-semibold leading-[1] lg:sticky lg:top-28">
-                {formatTypography("Разработка сайтов, которая")}
-                <br />
-                <span className="text-[#FD4B32]">
-                  {formatTypography("решает задачи бизнеса")}
-                </span>
-              </h2>
-            </div>
-
-            <div className="grid w-full grid-cols-1 sm:grid-cols-2 lg:h-full lg:grid-rows-2 lg:[&>div]:min-h-0 pl-[var(--page-margin)] lg:pl-0 pr-[var(--page-margin)]">
-              {siteTypes.map((item, index) => (
-                <ServiceCard
-                  key={item.title}
-                  title={formatTypography(item.title)}
-                  description={formatTypography(item.text)}
-                  shape={item.shape}
-                  meta={formatTypography(item.time)}
-                  insetOutline
-                  outlineGridIndex={index}
-                  onClick={scrollToContacts}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <motion.section
-          ref={timelineSectionRef}
-          className="bg-[#f6f6fa] px-[var(--page-margin)] py-[clamp(4rem,7vw,7rem)]"
-        >
-          <motion.h2
-            className="mb-[clamp(4rem,9vw,8rem)] font-headline text-[clamp(2rem,3.3vw,3.5rem)] font-semibold leading-[1] will-change-transform"
-            style={{ y: timelineTitleY, opacity: timelineTitleOpacity }}
-          >
-            {["Задача будет", formatTypography("выполнена в срок")].map(
-              (line) => (
-                <span
-                  key={line}
-                  className="block overflow-hidden pb-[0.08em] -mb-[0.08em]"
-                >
-                  <span className="block">{line}</span>
-                </span>
-              ),
-            )}
-          </motion.h2>
-          <motion.div
-            className="-mx-[var(--page-margin)] overflow-x-auto px-[var(--page-margin)] pb-4 [scrollbar-width:thin] will-change-transform"
-            style={{ y: timelineChartY }}
-          >
-            <div className="relative grid h-[23rem] min-w-[70rem] grid-cols-6 grid-rows-[2.5rem_repeat(7,2.5rem)]">
-              {weeks.map((week, index) => (
-                <TimelineWeek
-                  key={week}
-                  week={week}
-                  index={index}
-                  progress={smoothTimelineProgress}
-                  reduceMotion={Boolean(shouldReduceMotion)}
-                />
-              ))}
-              {timeline.map((item, index) => (
-                <TimelineBar
-                  key={item.task}
-                  item={item}
-                  index={index}
-                  progress={smoothTimelineProgress}
-                  reduceMotion={Boolean(shouldReduceMotion)}
-                />
-              ))}
-              <motion.div
-                className="pointer-events-none absolute inset-x-0 top-10 bottom-0 grid grid-cols-6"
-                aria-hidden="true"
-                style={{ opacity: timelineGridOpacity }}
-              >
-                {weeks.map((week) => (
-                  <span
-                    key={week}
-                    className="border-l border-black/10 last:border-r"
-                  />
-                ))}
-              </motion.div>
-            </div>
-          </motion.div>
-          <motion.p
-            className="mt-6 max-w-[34rem] text-[clamp(1rem,1.35vw,1.35rem)] leading-[1.35] text-black/60 will-change-transform"
-            style={{ y: timelineCaptionY, opacity: timelineCaptionOpacity }}
-          >
-            {formatTypography(
-              "Презентуем каждый этап лично, чтобы собрать обратную связь, учесть всю информацию и решить все вопросы",
-            )}
-          </motion.p>
-        </motion.section>
-
         <section
           ref={stagesSectionRef}
           className="bg-[#f6f6fa] px-[var(--page-margin)] py-[clamp(4rem,9vw,9rem)] text-black overflow-hidden"
@@ -908,9 +899,11 @@ export default function SiteDevelopmentClient() {
           <h2 className="no-invert mb-16 max-w-[20ch] font-headline text-[clamp(2rem,4vw,4.5rem)] font-semibold leading-[1] text-[#111]">
             {formatTypography("Как The Peak разрабатывает сайты")}
           </h2>
-          <div className="-mx-[var(--page-margin)] overflow-x-auto sm:overflow-x-hidden px-[var(--page-margin)] pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div
+            className="-mx-[var(--page-margin)] overflow-x-hidden px-[var(--page-margin)] pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
             <motion.div
-              className="flex flex-col w-[calc((100vw-2*var(--page-margin))*4)] sm:w-[calc((100vw-2*var(--page-margin))*2)] lg:w-[calc((100vw-2*var(--page-margin))*4/3)] [--stages-translate-x:0%] sm:[--stages-translate-x:calc(var(--stages-progress)*-50%)] lg:[--stages-translate-x:calc(var(--stages-progress)*-25%)]"
+              className="flex flex-col w-[calc((100vw-2*var(--page-margin))*4)] sm:w-[calc((100vw-2*var(--page-margin))*2)] lg:w-[calc((100vw-2*var(--page-margin))*4/3)] [--stages-translate-x:calc(var(--stages-progress)*-75%)] sm:[--stages-translate-x:calc(var(--stages-progress)*-50%)] lg:[--stages-translate-x:calc(var(--stages-progress)*-25%)]"
               style={{
                 "--stages-progress": stagesProgress,
                 transform: "translateX(var(--stages-translate-x))",
@@ -992,6 +985,109 @@ export default function SiteDevelopmentClient() {
             </motion.div>
           </div>
         </section>
+
+        <section className="bg-[#f6f6fa] text-[#434343] lg:h-[100svh] lg:overflow-hidden lg:py-[5svh]">
+          <div className="grid grid-cols-1 lg:h-full lg:grid-cols-[calc((100%+var(--page-margin)+0.5rem)/3)_minmax(0,1fr)]">
+            <div className="flex border-[#434343]/15 px-[var(--page-margin)] py-[clamp(4rem,9vw,9rem)] lg:border-r">
+              <h2 className="max-w-[12ch] self-start font-headline text-[clamp(2.5rem,5vw,5.5rem)] font-semibold leading-[1] lg:sticky lg:top-28">
+                {formatTypography("Разработка сайтов, которая")}
+                <br />
+                <span className="text-[#FD4B32]">
+                  {formatTypography("решает задачи бизнеса")}
+                </span>
+              </h2>
+            </div>
+
+            <div className="grid w-full grid-cols-1 sm:grid-cols-2 lg:h-full lg:grid-rows-2 lg:[&>div]:min-h-0 pl-[var(--page-margin)] lg:pl-0 pr-[var(--page-margin)]">
+              {siteTypes.map((item, index) => (
+                <ServiceCard
+                  key={item.title}
+                  title={formatTypography(item.title)}
+                  description={formatTypography(item.text)}
+                  shape={item.shape}
+                  meta={formatTypography(item.time)}
+                  insetOutline
+                  outlineGridIndex={index}
+                  onClick={scrollToContacts}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <motion.section
+          ref={timelineSectionRef}
+          className="bg-[#f6f6fa] px-[var(--page-margin)] py-[clamp(4rem,7vw,7rem)]"
+        >
+          <motion.h2
+            className="mb-[clamp(4rem,9vw,8rem)] font-headline text-[clamp(2rem,3.3vw,3.5rem)] font-semibold leading-[1] will-change-transform"
+            style={{ y: timelineTitleY, opacity: timelineTitleOpacity }}
+          >
+            {["Задача будет", formatTypography("выполнена в срок")].map(
+              (line) => (
+                <span
+                  key={line}
+                  className="block overflow-hidden pb-[0.08em] -mb-[0.08em]"
+                >
+                  <span className="block">{line}</span>
+                </span>
+              ),
+            )}
+          </motion.h2>
+          <motion.div
+            className="-mx-[var(--page-margin)] overflow-x-hidden px-[var(--page-margin)] pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden will-change-transform"
+            style={{ y: timelineChartY }}
+          >
+            <motion.div
+              className="relative grid h-[23rem] min-w-[70rem] grid-cols-6 grid-rows-[2.5rem_repeat(7,2.5rem)] [--timeline-translate-x:calc(var(--timeline-progress)*-1*(70rem-100vw+2*var(--page-margin)))] xl:[--timeline-translate-x:0px]"
+              style={{
+                "--timeline-progress": smoothTimelineProgress,
+                transform: "translateX(var(--timeline-translate-x))",
+              } as MotionStyle}
+            >
+              {weeks.map((week, index) => (
+                <TimelineWeek
+                  key={week}
+                  week={week}
+                  index={index}
+                  progress={smoothTimelineProgress}
+                  reduceMotion={Boolean(shouldReduceMotion)}
+                />
+              ))}
+              {timeline.map((item, index) => (
+                <TimelineBar
+                  key={item.task}
+                  item={item}
+                  index={index}
+                  progress={smoothTimelineProgress}
+                  reduceMotion={Boolean(shouldReduceMotion)}
+                />
+              ))}
+              <motion.div
+                className="pointer-events-none absolute inset-x-0 top-10 bottom-0 grid grid-cols-6"
+                aria-hidden="true"
+                style={{ opacity: timelineGridOpacity }}
+              >
+                {weeks.map((week) => (
+                  <span
+                    key={week}
+                    className="border-l border-black/10 last:border-r"
+                  />
+                ))}
+              </motion.div>
+            </motion.div>
+          </motion.div>
+          <motion.p
+            className="mt-6 max-w-[34rem] text-[clamp(1rem,1.35vw,1.35rem)] leading-[1.35] text-black/60 will-change-transform"
+            style={{ y: timelineCaptionY, opacity: timelineCaptionOpacity }}
+          >
+            {formatTypography(
+              "Презентуем каждый этап лично, чтобы собрать обратную связь, учесть всю информацию и решить все вопросы",
+            )}
+          </motion.p>
+        </motion.section>
+
+
 
         <section
           className="bg-[#0B0B0C] text-[#F2F2F2] pb-[11.67vh] select-none relative overflow-visible"

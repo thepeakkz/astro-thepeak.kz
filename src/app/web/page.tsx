@@ -163,8 +163,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 
   // Dark-themed card styling: bg-[#0a0a0a] with white text and border-white/10
   const cardClasses = isCTA
-    ? "group relative flex flex-col justify-between pt-[clamp(1.25rem,2.5vw,3rem)] pr-[clamp(1.25rem,2.5vw,3rem)] pb-[clamp(1.25rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] bg-[#FD4B32] text-white border-r border-b border-white/10 min-h-[clamp(12rem,22vw,25rem)] cursor-pointer overflow-hidden"
-    : "group relative flex flex-col justify-between pt-[clamp(1.25rem,2.5vw,3rem)] pr-[clamp(1.25rem,2.5vw,3rem)] pb-[clamp(1.25rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] bg-[#0a0a0a] text-white border-r border-b border-white/10 min-h-[clamp(12rem,22vw,25rem)] overflow-hidden cursor-pointer";
+    ? "group relative flex flex-col justify-between p-[20px] bg-[#FD4B32] text-white border-r border-b border-white/10 min-h-[clamp(12rem,22vw,25rem)] cursor-pointer overflow-hidden"
+    : "group relative flex flex-col justify-between p-[20px] bg-[#0a0a0a] text-white border-r border-b border-white/10 min-h-[clamp(12rem,22vw,25rem)] overflow-hidden cursor-pointer";
 
   const overlayBg = isCTA ? "bg-[#111] text-white" : "bg-[#FD4B32] text-white";
 
@@ -188,7 +188,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
               />
             </div>
           )}
-          <h3 className="no-invert font-headline font-semibold text-[clamp(1.2rem,1.78vw,1.6rem)] mb-6 tracking-wide leading-[0.9] text-white">
+          <h3 className="no-invert font-headline font-semibold text-[clamp(1.2rem,1.78vw,1.6rem)] mb-24 md:mb-6 tracking-wide leading-[0.9] text-white">
             {title}
           </h3>
         </div>
@@ -211,7 +211,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
         style={{
           clipPath: BOTTOM_RIGHT_CLIP,
         }}
-        className={`absolute inset-0 hidden md:flex flex-col pt-[clamp(1.5rem,2.5vw,3rem)] pr-[clamp(1.5rem,2.5vw,3rem)] pb-[clamp(1.5rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] z-10 pointer-events-none ${overlayBg}`}
+        className={`absolute inset-0 hidden md:flex flex-col p-[20px] z-10 pointer-events-none ${overlayBg}`}
       >
         <div className="flex flex-col h-full w-full justify-between">
           <div>

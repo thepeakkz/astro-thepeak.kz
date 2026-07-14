@@ -164,8 +164,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
     ? `before:pointer-events-none before:absolute before:inset-0 before:z-20 before:border-r before:border-b before:border-brand-gray/15 ${insetTopClasses} ${insetLeftClasses}`
     : "border-r border-b border-brand-gray/15";
   const cardClasses = isCTA
-    ? `group relative flex flex-col justify-between pt-[clamp(1.25rem,2.5vw,3rem)] pr-[clamp(1.25rem,2.5vw,3rem)] pb-[clamp(1.25rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] bg-brand-red text-white min-h-[clamp(12rem,22vw,25rem)] cursor-pointer overflow-hidden ${borderClasses}`
-    : `group relative flex flex-col justify-between pt-[clamp(1.25rem,2.5vw,3rem)] pr-[clamp(1.25rem,2.5vw,3rem)] pb-[clamp(1.25rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] bg-white text-brand-gray min-h-[clamp(12rem,22vw,25rem)] overflow-hidden cursor-pointer ${borderClasses}`;
+    ? `group relative flex flex-col justify-between p-[20px] bg-brand-red text-white min-h-[clamp(12rem,22vw,25rem)] cursor-pointer overflow-hidden ${borderClasses}`
+    : `group relative flex flex-col justify-between p-[20px] bg-white text-brand-gray min-h-[clamp(12rem,22vw,25rem)] overflow-hidden cursor-pointer ${borderClasses}`;
 
   const overlayBg = isCTA ? "bg-brand-gray text-white" : "bg-brand-red text-white";
 
@@ -193,7 +193,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
               />
             </div>
           )}
-          <h3 className={`no-invert font-headline font-semibold text-[clamp(1.2rem,1.78vw,1.6rem)] mb-6 md:mb-[clamp(0.75rem,1.5vw,1.5rem)] tracking-wide ${isCTA ? "text-white" : "text-brand-gray"} leading-[0.9]`}>
+          <h3 className={`no-invert font-headline font-semibold text-[clamp(1.2rem,1.78vw,1.6rem)] mb-24 md:mb-[clamp(0.75rem,1.5vw,1.5rem)] tracking-wide ${isCTA ? "text-white" : "text-brand-gray"} leading-[0.9]`}>
             {title}
           </h3>
         </div>
@@ -210,7 +210,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
         style={{
           clipPath: BOTTOM_RIGHT_CLIP,
         }}
-        className={`absolute inset-0 hidden md:flex flex-col pt-[clamp(1.5rem,2.5vw,3rem)] pr-[clamp(1.5rem,2.5vw,3rem)] pb-[clamp(1.5rem,2.5vw,3rem)] pl-[clamp(0.5rem,0.83vw,1rem)] z-10 pointer-events-none ${overlayBg}`}
+        className={`absolute inset-0 hidden md:flex flex-col p-[20px] z-10 pointer-events-none ${overlayBg}`}
       >
         <div className="flex flex-col h-full w-full">
           <div className="relative">
