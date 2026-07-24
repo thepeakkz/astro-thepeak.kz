@@ -21,8 +21,6 @@ import { formatTypography } from "@/utils/typography";
 import CasesProduxGrid from "@/components/CasesProduxGrid";
 import { allCasesData } from "@/data/cases";
 import Link from "next/link";
-import PhoneInput from "@/components/ui/PhoneInput";
-import PrivacyConsentCheckbox from "@/components/PrivacyConsentCheckbox";
 import { preloadedCache, sessionInitialLoadDone } from "@/hooks/usePagePreloader";
 
 const principles = [
@@ -234,86 +232,6 @@ const stages = [
     status: "Этап 04 — Поддержка",
     title: "Аналитика, поддержка и продвижение",
     text: "Проведём технические настройки, запустим тестирование и анализ конверсии. Подключим SEO, контекстную рекламу, e-mail-маркетинг и продвижение в социальных сетях.",
-  },
-];
-
-type BriefStep = {
-  id: string;
-  question: string;
-  description: string;
-  multiple?: boolean;
-  options: readonly string[];
-};
-
-const briefSteps: readonly BriefStep[] = [
-  {
-    id: "type",
-    question: "Какой формат сайта вам нужен?",
-    description:
-      "Выберите один вариант. Если пока не уверены — подскажем после обсуждения задачи.",
-    options: [
-      "Лендинг",
-      "Многостраничный сайт",
-      "Интернет-магазин",
-      "Пока не знаю",
-    ],
-  },
-  {
-    id: "goal",
-    question: "Какую задачу должен решить сайт?",
-    description:
-      "От цели зависит структура, состав команды и подход к разработке",
-    options: [
-      "Привлекать клиентов",
-      "Продавать товары или услуги",
-      "Рассказывать о компании",
-      "Повышать узнаваемость бренда",
-    ],
-  },
-  {
-    id: "design",
-    question: "Какой подход к дизайну вам ближе?",
-    description:
-      "Это поможет определить глубину визуальной проработки проекта",
-    options: [
-      "Нужен уникальный дизайн",
-      "Главное — сделать стильно",
-      "Можно использовать готовые решения",
-      "Пока не решил(а)",
-    ],
-  },
-  {
-    id: "features",
-    question: "Какие функции понадобятся?",
-    description: "Можно выбрать несколько вариантов или пропустить этот шаг",
-    multiple: true,
-    options: [
-      "Форма обратной связи",
-      "Каталог товаров или услуг",
-      "Онлайн-оплата",
-      "Личный кабинет",
-      "Блог или новости",
-      "Поиск по сайту",
-      "Интеграции с сервисами",
-      "Мультиязычность",
-    ],
-  },
-  {
-    id: "deadline",
-    question: "Когда планируете запустить сайт?",
-    description: "Срок влияет на состав команды и порядок этапов",
-    options: [
-      "Срочно — 1–2 недели",
-      "В течение месяца",
-      "2–3 месяца",
-      "Пока изучаю варианты",
-    ],
-  },
-  {
-    id: "contact",
-    question: "Оставьте ваши контакты",
-    description: "Мы свяжемся с вами в течение 15 минут, чтобы обсудить детали и подготовить предложение",
-    options: [],
   },
 ];
 
@@ -531,65 +449,7 @@ export default function SiteDevelopmentClient() {
 
   const finalTickColor = useTransform(smoothStagesProgress, [0.74, 0.82], ["#111111", "#FD4B32"]);
 
-  const [briefStep, setBriefStep] = useState(0);
-  const [briefAnswers, setBriefAnswers] = useState<Record<string, string[]>>(
-    {},
-  );
-  const [briefComplete, setBriefComplete] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-
-  const [briefName, setBriefName] = useState("");
-  const [briefPhone, setBriefPhone] = useState("");
-  const [briefPrivacyConsent, setBriefPrivacyConsent] = useState(true);
-  const [briefStatus, setBriefStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [briefContactMethod, setBriefContactMethod] = useState("WhatsApp");
-
-
-  const handleBriefSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!briefName.trim() || !briefPhone.trim() || !briefPrivacyConsent) {
-      setBriefStatus("error");
-      return;
-    }
-
-    setBriefStatus("loading");
-
-    try {
-      const briefDataStr = briefSteps
-        .filter((step) => step.id !== "contact")
-        .map((step) => {
-          const answer = briefAnswers[step.id] ?? [];
-          return `${step.question}\nОтвет: ${answer.join(", ") || "Не указан"}`;
-        })
-        .join("\n\n");
-
-      const commentText = `Бриф "Какой сайт вам нужен?":\n\n${briefDataStr}\n\n[Способ связи: ${briefContactMethod}]`;
-
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: briefName.trim(),
-          phone: briefPhone.trim(),
-          comment: commentText,
-          source: "Короткий бриф (Разработка сайтов)",
-        }),
-      });
-
-      if (response.ok) {
-        setBriefStatus("success");
-        setBriefComplete(true);
-      } else {
-        setBriefStatus("error");
-      }
-    } catch (err) {
-      console.error(err);
-      setBriefStatus("error");
-    }
-  };
-
-  const currentBriefStep = briefSteps[briefStep];
-  const currentBriefAnswers = briefAnswers[currentBriefStep.id] ?? [];
 
   useEffect(() => {
     const video = heroVideoRef.current;
@@ -626,36 +486,6 @@ export default function SiteDevelopmentClient() {
       video.play().catch(() => {});
     }
   }, [videoSrc]);
-
-  const toggleBriefAnswer = (option: string) => {
-    setBriefAnswers((current) => {
-      const selected = current[currentBriefStep.id] ?? [];
-      const next = currentBriefStep.multiple
-        ? selected.includes(option)
-          ? selected.filter((item) => item !== option)
-          : [...selected, option]
-        : [option];
-
-      return { ...current, [currentBriefStep.id]: next };
-    });
-
-    if (!currentBriefStep.multiple) {
-      if (briefStep === briefSteps.length - 1) {
-        setBriefComplete(true);
-      } else {
-        setBriefStep((step) => step + 1);
-      }
-    }
-  };
-
-  const advanceBrief = () => {
-    if (briefStep === briefSteps.length - 1) {
-      setBriefComplete(true);
-      return;
-    }
-
-    setBriefStep((step) => step + 1);
-  };
 
   return (
     <>

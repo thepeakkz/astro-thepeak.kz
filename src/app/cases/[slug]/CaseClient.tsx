@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import CaseVideoGallery from "@/components/CaseVideoGallery";
 import { formatTypography } from "@/utils/typography";
@@ -106,7 +105,7 @@ function CaseMetricsSection({ metrics }: { metrics: readonly CaseMetric[] }) {
                 style={{ ...GRAIN_STYLE, opacity: 0.06 }}
             />
             <div className="relative z-10 grid grid-cols-1 gap-px overflow-hidden border border-white/10 sm:grid-cols-2 lg:grid-cols-4">
-                {metrics.map((metric, index) => (
+                {metrics.map((metric) => (
                     <div
                         key={`${metric.value}-${metric.label}`}
                         className="min-h-36 bg-white/[0.03] p-5 md:p-6"
@@ -119,58 +118,6 @@ function CaseMetricsSection({ metrics }: { metrics: readonly CaseMetric[] }) {
                         </p>
                     </div>
                 ))}
-            </div>
-        </section>
-    );
-}
-
-function CaseTwoColumnContent({ blocks }: { blocks: readonly CaseContentBlock[] }) {
-    const columns = [
-        blocks.slice(0, Math.ceil(blocks.length / 2)),
-        blocks.slice(Math.ceil(blocks.length / 2)),
-    ];
-
-    return (
-        <section className="relative border-b border-white/10 px-[var(--page-margin)] py-16 md:py-24">
-            <div
-                className="pointer-events-none absolute inset-0 z-0"
-                style={{ ...GRAIN_STYLE, opacity: 0.05 }}
-            />
-            <div className="relative z-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
-                <div className="lg:col-span-12">
-                    <span className="no-invert font-sans text-[10px] uppercase tracking-[0.3em] text-white/25">
-                        {formatTypography("Описание")}
-                    </span>
-                    <div className="mt-4 h-px w-10 bg-white/15" />
-                </div>
-                <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:col-span-12 lg:gap-16">
-                    {columns.map((column, columnIndex) => (
-                        <div key={columnIndex} className="space-y-10">
-                            {column.map((block, index) => (
-                                <div key={`${block.chapter}-${columnIndex}-${index}`} className="space-y-5">
-                                    <span className="no-invert block font-sans text-[10px] uppercase tracking-[0.24em] text-white/30">
-                                        {block.chapter || String(columnIndex + index + 1).padStart(2, "0")}
-                                    </span>
-                                    <p className="no-invert font-sans text-base leading-[1.65] text-white/75 sm:text-lg">
-                                        {formatTypography(block.text)}
-                                    </p>
-                                    {block.items && block.items.length > 0 && (
-                                        <ul className="space-y-3">
-                                            {block.items.map((item) => (
-                                                <li
-                                                    key={item}
-                                                    className="no-invert font-sans text-sm leading-relaxed text-white/55 sm:text-base"
-                                                >
-                                                    {formatTypography(item)}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    ))}
-                </div>
             </div>
         </section>
     );

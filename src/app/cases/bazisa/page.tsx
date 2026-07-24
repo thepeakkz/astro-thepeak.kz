@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import { preloadedCache } from "@/hooks/usePagePreloader";
 import HeroWave from "@/components/ui/dynamic-wave-canvas-background";

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import HeroWave from "@/components/ui/dynamic-wave-canvas-background";
 import CaseVideoGallery from "@/components/CaseVideoGallery";
