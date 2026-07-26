@@ -9,9 +9,9 @@ export default function HeroDuplicate() {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const hasVideoEndedRef = React.useRef(false);
   const [isVideoPlaying, setIsVideoPlaying] = React.useState(false);
-  const logoIds = [2, 12, 20, 21, 24, 38, 39, 40, 41, 44];
-  // Two copies for seamless loop (translateX -50% = exactly one set)
-  const marqueeItems = [...logoIds, ...logoIds];
+  const logoIds = [2, 11, 12, 20, 21, 24, 38, 39, 40, 41, 44];
+  // 4 copies to guarantee a seamless, infinite loop on all screen sizes
+  const marqueeItems = [...logoIds, ...logoIds, ...logoIds, ...logoIds];
 
   const playHeroVideo = React.useCallback(() => {
     const video = videoRef.current;
@@ -208,7 +208,7 @@ export default function HeroDuplicate() {
                 <div
                   className="flex items-center w-max"
                   style={{
-                    animation: 'marquee-scroll-horizontal 30s linear infinite',
+                    animation: 'marquee-scroll-horizontal 14s linear infinite',
                   }}
                 >
                   {marqueeItems.map((id, index) => (

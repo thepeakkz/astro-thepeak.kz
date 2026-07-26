@@ -12,8 +12,14 @@ describe("formatTypography", () => {
       .toBe("Контент для\u00a0бренда через\u00a0видео");
   });
 
+  it("binds capitalized multi-letter prepositions and pronouns", () => {
+    expect(formatTypography("Для бренда и его клиентов"))
+      .toBe("Для\u00a0бренда и\u00a0его\u00a0клиентов");
+  });
+
   it("preserves empty input and existing non-breaking spaces", () => {
     expect(formatTypography("")).toBe("");
     expect(formatTypography("мы\u00a0работаем")).toBe("мы\u00a0работаем");
   });
 });
+

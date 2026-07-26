@@ -7,20 +7,23 @@ interface TeamMember {
   name: string;
   role: string;
   description: string;
+  city: string;
   image: string;
 }
 
 const teamMembers: TeamMember[] = [
   {
     name: "Софья Коломеец",
-    role: "Основатель, креативный лидер",
+    role: "Основатель, маркетолог, креативный лидер",
     description: "Находит точки роста там, где другие их не видят",
+    city: "Алматы",
     image: "/team/sofa.webp",
   },
   {
     name: "Сергей Белодедов",
-    role: "Арт-директор",
+    role: "Сооснователь, арт-директор",
     description: "Делает так, чтобы бренд выглядел дороже своих конкурентов",
+    city: "Алматы",
     image: "/team/sergey.webp",
   },
   {
@@ -28,13 +31,22 @@ const teamMembers: TeamMember[] = [
     role: "Performance-специалист",
     description:
       "Находит рабочие связки, тестирует гипотезы и превращает рекламу в заявки",
+    city: "Алматы",
     image: "/team/sofina.webp",
   },
   {
     name: "Яков Пилипюк",
     role: "Сооснователь, дизайнер",
     description: "Создаёт визуал, который выделяет бренды среди конкурентов",
+    city: "Алматы",
     image: "/team/yakov.webp",
+  },
+  {
+    name: "Сергей Гаренко",
+    role: "Маркетолог",
+    description: "",
+    city: "Астана",
+    image: "/team/sergey-garenko.webp",
   },
 ];
 
@@ -44,29 +56,23 @@ export default function Team() {
       className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] border-b border-brand-gray/10 bg-brand-light-gray/20 scroll-mt-[clamp(2rem,2.8vw,3.5rem)]"
       id="team"
     >
-      {/* 2-Column Swiss Grid Layout */}
+      {/* Swiss Grid Vertical Stack Layout */}
       <div className="swiss-grid items-stretch rounded-none w-full">
-        {/* Left Column: Philosophical/Intro Text - matches service card width (33.33% on lg, 25% on xl) */}
-        <div className="col-span-12 lg:col-span-4 xl:col-span-3 text-left pb-[clamp(2.5rem,5vw,4.5rem)] lg:pb-[clamp(3.5rem,7vw,7rem)] pt-0 lg:pr-[var(--grid-gap)] border-solid border-brand-gray/25 border-b lg:border-b-0 lg:border-r self-stretch flex flex-col">
-          <div className="max-w-[95%] flex flex-col justify-between flex-grow gap-8 pt-[3rem] md:pt-[var(--page-margin)]">
-            <h2 className="no-invert font-headline font-semibold text-brand-gray text-[clamp(1.4rem,2.56vw,1.6rem)] leading-[1.0] select-none">
-              {"Каждое"} <br />
-              {"направление ThePeak"} <br />
-              {"возглавляет специалист"} <br />
-              {"с\u00a0практическим опытом"} <br />
-              {"в\u00a0своей области"}
-            </h2>
-            <p className="no-invert description-text text-brand-gray/80">
-              {
-                "Вы работаете не\u00a0просто с\u00a0безликими подрядчиками, а\u00a0с\u00a0людьми, которые принимают ключевые решения, глубоко погружаются в\u00a0ваш бизнес и\u00a0несут личную ответственность за\u00a0конечный результат."
-              }
-            </p>
-          </div>
+        {/* Top Header Block: Heading + Description */}
+        <div className="col-span-12 pt-[3rem] md:pt-[var(--page-margin)] pb-8 border-b border-brand-gray/15 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <h2 className="no-invert font-headline font-semibold text-brand-gray text-[clamp(1.6rem,3vw,2.5rem)] leading-[1.05] max-w-2xl select-none">
+            {formatTypography("Каждое направление ThePeak возглавляет специалист с практическим опытом в своей области")}
+          </h2>
+          <p className="no-invert description-text text-brand-gray/80 max-w-xl">
+            {formatTypography(
+              "Вы работаете не просто с безликими подрядчиками, а с людьми, которые принимают ключевые решения, глубоко погружаются в ваш бизнес и несут личную ответственность за конечный результат."
+            )}
+          </p>
         </div>
 
-        {/* Right Column: Grid of Team Members - spans remaining columns (66.67% on lg, 75% on xl) */}
-        <div className="col-span-12 lg:col-span-8 xl:col-span-9 pb-[clamp(2.5rem,5vw,4.5rem)] lg:pb-[clamp(3.5rem,7vw,7rem)] pt-0 lg:pl-[clamp(1.5rem,3vw,3rem)] w-full">
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-3 w-full pt-[3rem] md:pt-[var(--page-margin)]">
+        {/* Bottom Cards Block: Grid of 5 Team Members */}
+        <div className="col-span-12 py-[clamp(2rem,4vw,3.5rem)] w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
             {teamMembers.map((member, index) => (
               <div
                 key={index}
@@ -79,23 +85,28 @@ export default function Team() {
                     alt={member.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  {/* Overlay gradient for text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                 </div>
 
                 {/* A single blend layer is more reliable than nested blend modes in Safari. */}
-                <div className="team-card-difference no-invert pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-3 text-white">
-                  <div className="no-invert font-sans text-[clamp(0.75rem,0.7vw,0.75rem)] font-bold uppercase tracking-wider leading-tight">
-                    {formatTypography(member.role)}
+                <div className="team-card-difference no-invert pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-3.5 sm:p-4 text-white">
+                  <div className="no-invert flex items-start justify-between gap-2 w-full">
+                    <span className="no-invert font-sans text-[clamp(0.72rem,0.68vw,0.8rem)] font-bold uppercase tracking-wider leading-tight">
+                      {formatTypography(member.role)}
+                    </span>
+                    <span className="no-invert font-sans text-[clamp(0.72rem,0.68vw,0.8rem)] font-bold uppercase tracking-wider leading-tight text-white shrink-0 text-right">
+                      {formatTypography(member.city)}
+                    </span>
                   </div>
 
                   <div className="no-invert flex w-full flex-col items-start gap-2">
-                    <h3 className="no-invert font-headline font-semibold text-[clamp(1rem,1.34vw,1.2rem)] tracking-wide leading-[1.1] w-full">
+                    <h3 className="no-invert font-headline font-semibold text-[clamp(1.15rem,1.5vw,1.45rem)] tracking-wide leading-[1.1] w-full">
                       {formatTypography(member.name)}
                     </h3>
-                    <p className="no-invert font-sans !text-[0.8rem] md:!text-[clamp(0.8rem,0.85vw,0.85rem)] leading-[1.2] font-medium text-white w-full">
-                      {formatTypography(member.description)}
-                    </p>
+                    {member.description ? (
+                      <p className="no-invert font-sans !text-[0.875rem] md:!text-[clamp(0.9rem,0.92vw,1rem)] leading-[1.25] font-medium text-white w-full">
+                        {formatTypography(member.description)}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               </div>

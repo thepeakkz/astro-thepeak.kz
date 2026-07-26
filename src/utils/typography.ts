@@ -5,9 +5,9 @@
 export function formatTypography(text: string): string {
   if (!text) return "";
   
-  // Regex matches Russian words of 1-2 letters, plus common prepositions/conjunctions/particles of 3-5 letters
+  // Regex matches Russian words of 1-2 letters, plus common prepositions/conjunctions/particles/pronouns of 3-5 letters
   // preceded by start of line, space, or quotes, and followed by a regular space.
-  const regex = /(^|\s|«|")([а-яА-ЯёЁ]{1,2}|для|или|как|где|там|под|над|без|при|про|через|так|что|кто|чем|тем|все|всех|под|обо|обо|изо|всеми)([ \t]+)/g;
+  const regex = /(^|\s|«|")([а-яА-ЯёЁ]{1,2}|для|или|как|где|там|под|над|без|при|про|через|так|что|кто|чем|тем|все|всё|всех|его|еще|ещё|уже|обо|изо|всеми)([ \t]+)/gi;
   
   let formattedText = text;
   let previousText: string;
@@ -21,3 +21,4 @@ export function formatTypography(text: string): string {
 
   return formattedText;
 }
+
