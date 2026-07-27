@@ -23,7 +23,7 @@ const renderCaseLogo = (name: string) => {
   );
 };
 
-function LazyCaseVideo({ alt, poster, src }: { alt: string; poster?: string; src: string }) {
+function LazyCaseVideo({ alt, poster, src, objectPosition }: { alt: string; poster?: string; src: string; objectPosition?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -89,6 +89,7 @@ function LazyCaseVideo({ alt, poster, src }: { alt: string; poster?: string; src
               "absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ease-out",
               isPlaying && "opacity-0",
             )}
+            style={objectPosition ? { objectPosition } : undefined}
             loading="lazy"
             decoding="async"
           />
@@ -105,6 +106,7 @@ function LazyCaseVideo({ alt, poster, src }: { alt: string; poster?: string; src
             "h-full w-full object-cover transition-opacity duration-[1200ms] ease-out",
             poster && !isPlaying ? "opacity-0" : "opacity-100",
           )}
+          style={objectPosition ? { objectPosition } : undefined}
           onPlaying={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
         />
@@ -140,12 +142,13 @@ export default function CasesBentoGrid({
               tiltFactor={4}
               background={
                 isVideo && mediaSrc ? (
-                  <LazyCaseVideo alt={item.name} poster={item.poster} src={optimizeCloudinaryVideoUrl(mediaSrc)} />
+                  <LazyCaseVideo alt={item.name} poster={item.poster} src={optimizeCloudinaryVideoUrl(mediaSrc)} objectPosition={item.objectPosition} />
                 ) : item.image ? (
                   <img
                     src={item.image}
                     alt={item.name}
                     className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-102"
+                    style={item.objectPosition ? { objectPosition: item.objectPosition } : undefined}
                     loading={imageLoading}
                     fetchPriority={index < 3 ? "low" : "auto"}
                     decoding="async"

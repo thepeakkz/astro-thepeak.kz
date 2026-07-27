@@ -613,7 +613,6 @@ export const targetCases = {
         hero_desc: "Премиальный лендинг для закрытой программы менторства: строгая монументальность, глубокий черный цвет и благородное золото.",
         showreelUrl: "https://res.cloudinary.com/f75p1yiv/video/upload/v1782998838/yapil/case/RV/RV.mp4",
         mockupImages: [
-            "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/0.webp",
             "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/1.webp",
             "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/2.webp",
             "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/3.webp",

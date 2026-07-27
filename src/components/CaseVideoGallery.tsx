@@ -30,11 +30,15 @@ type FullscreenVideoElement = HTMLVideoElement & {
 };
 
 function getMediaAspectRatio(item: CaseGalleryItem) {
+    if (item.type === "video") {
+        return "9 / 16";
+    }
+
     if (item.width && item.height) {
         return `${item.width} / ${item.height}`;
     }
 
-    return item.type === "video" ? "9 / 16" : "1 / 1";
+    return "1 / 1";
 }
 
 function formatTime(seconds: number) {
@@ -98,6 +102,33 @@ export default function CaseVideoGallery({ slug }: CaseVideoGalleryProps) {
         setActiveVideoSrc(null);
         setCursor({ visible: false, x: 0, y: 0 });
         setVideoStates({});
+    }, [mediaItems]);
+
+    useEffect(() => {
+        const handleFullscreenEnd = (event: Event) => {
+            const video = event.target as HTMLVideoElement;
+            if (video) {
+                video.controls = false;
+                video.removeAttribute("controls");
+            }
+        };
+
+        const currentVideos = Object.values(videoRefs.current);
+        currentVideos.forEach((video) => {
+            if (video) {
+                video.addEventListener("webkitendfullscreen", handleFullscreenEnd);
+                video.addEventListener("fullscreenchange", handleFullscreenEnd);
+            }
+        });
+
+        return () => {
+            currentVideos.forEach((video) => {
+                if (video) {
+                    video.removeEventListener("webkitendfullscreen", handleFullscreenEnd);
+                    video.removeEventListener("fullscreenchange", handleFullscreenEnd);
+                }
+            });
+        };
     }, [mediaItems]);
 
     const updateVideoState = (src: string, state: Partial<VideoState>) => {
@@ -194,6 +225,11 @@ export default function CaseVideoGallery({ slug }: CaseVideoGalleryProps) {
 
         if (!fullscreenTarget) {
             return;
+        }
+
+        if (video) {
+            video.controls = false;
+            video.removeAttribute("controls");
         }
 
         if (fullscreenTarget.requestFullscreen) {

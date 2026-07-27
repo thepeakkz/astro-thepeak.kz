@@ -2,6 +2,15 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Ensure videos in fullscreen NEVER stretch and always preserve their intrinsic aspect ratio */
+video:fullscreen,
+video:-webkit-full-screen,
+video:-moz-full-screen,
+video:-ms-fullscreen {
+  object-fit: contain !important;
+  background-color: #000000 !important;
+}
+
 @font-face {
   font-family: 'AtAero';
   src: url('./fonts/AtAero-Regular.0uw80pfpdnq_a.otf') format('opentype');

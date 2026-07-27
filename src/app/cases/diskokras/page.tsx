@@ -211,14 +211,14 @@ export default function DiskokrasCasePage() {
         <HeroWave />
         {/* ── HERO ─────────────────────────────────────────── */}
         <section className="relative min-h-screen flex flex-col justify-end overflow-hidden border-b border-white/10">
-          <div
-            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-35 hidden md:block"
-            style={{ backgroundImage: "url('/cases/diskokras/diskokras.webp')" }}
-          />
-
-          <div
-            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-35 block md:hidden"
-            style={{ backgroundImage: "url('/cases/diskokras/diskokras_m.webp')" }}
+          <video
+            src="/cases/diskokras/DNQp7cUI2Fs.mp4"
+            poster="/cases/diskokras/DNQp7cUI2Fs.webp"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 z-0 h-full w-full object-cover opacity-35"
           />
 
           <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#060606] via-[#060606]/40 to-[#060606]/85" />

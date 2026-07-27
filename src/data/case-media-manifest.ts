@@ -303,6 +303,14 @@ export const caseMediaManifest: Record<string, CaseMediaManifestItem[]> = {
     "diskokras": [
         {
             "type": "video",
+            "name": "DNQp7cUI2Fs",
+            "src": "/cases/diskokras/DNQp7cUI2Fs.mp4",
+            "posterSrc": "/cases/diskokras/DNQp7cUI2Fs.webp",
+            "width": 1080,
+            "height": 1920
+        },
+        {
+            "type": "video",
             "name": "Video_by_bit_kocharu_DTz2TOajWS-_osjl3f",
             "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373327/cases/diskokras/Video_by_bit_kocharu_DTz2TOajWS-_osjl3f.mp4",
             "width": 1080,
@@ -438,56 +446,28 @@ export const caseMediaManifest: Record<string, CaseMediaManifestItem[]> = {
             "name": "12ин_tumsbl",
             "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373317/cases/invictus-academy/12%D0%B8%D0%BD_tumsbl.mp4",
             "width": 1080,
-            "height": 1080
+            "height": 1920
         },
         {
             "type": "video",
             "name": "блоогер_fskqcz",
             "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373318/cases/invictus-academy/%D0%B1%D0%BB%D0%BE%D0%BE%D0%B3%D0%B5%D1%80_fskqcz.mp4",
             "width": 1080,
-            "height": 1080
-        },
-        {
-            "type": "video",
-            "name": "ГенезисТью_klibx1",
-            "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373315/cases/invictus-academy/%D0%93%D0%B5%D0%BD%D0%B5%D0%B7%D0%B8%D1%81%D0%A2%D1%8C%D1%8E_klibx1.mp4",
-            "width": 1920,
-            "height": 1080
-        },
-        {
-            "type": "video",
-            "name": "дом_oe1owq",
-            "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373322/cases/invictus-academy/%D0%B4%D0%BE%D0%BC_oe1owq.mp4",
-            "width": 1080,
-            "height": 1080
-        },
-        {
-            "type": "video",
-            "name": "Рак5_yzauxn",
-            "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373319/cases/invictus-academy/%D0%A0%D0%B0%D0%BA5_yzauxn.mp4",
-            "width": 1920,
-            "height": 1080
+            "height": 1920
         },
         {
             "type": "video",
             "name": "тренер_rlo35a",
             "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373318/cases/invictus-academy/%D1%82%D1%80%D0%B5%D0%BD%D0%B5%D1%80_rlo35a.mp4",
             "width": 1080,
-            "height": 1080
+            "height": 1920
         },
         {
             "type": "video",
             "name": "цвфыв_zlor10",
             "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373323/cases/invictus-academy/%D1%86%D0%B2%D1%84%D1%8B%D0%B2_zlor10.mp4",
             "width": 1080,
-            "height": 1080
-        },
-        {
-            "type": "video",
-            "name": "шоуТудей_ydlixm",
-            "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373354/cases/invictus-academy/%D1%88%D0%BE%D1%83%D0%A2%D1%83%D0%B4%D0%B5%D0%B8%CC%86_ydlixm.mp4",
-            "width": 1920,
-            "height": 1080
+            "height": 1920
         }
     ],
     "lukoil": [
@@ -715,6 +695,13 @@ export const caseMediaManifest: Record<string, CaseMediaManifestItem[]> = {
             "type": "video",
             "name": "Video_by_ris.nazarbaeva_DZKpy22t8wX_sak7vw",
             "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373344/cases/ris/Video_by_ris.nazarbaeva_DZKpy22t8wX_sak7vw.mp4",
+            "width": 1080,
+            "height": 1920
+        },
+        {
+            "type": "video",
+            "name": "шоуТудей_ydlixm",
+            "src": "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782373354/cases/invictus-academy/%D1%88%D0%BE%D1%83%D0%A2%D1%83%D0%B4%D0%B5%D0%B8%CC%86_ydlixm.mp4",
             "width": 1080,
             "height": 1920
         }
@@ -1008,13 +995,6 @@ export const caseMediaManifest: Record<string, CaseMediaManifestItem[]> = {
             "name": "Шоурил",
             "src": "https://res.cloudinary.com/f75p1yiv/video/upload/v1782998838/yapil/case/RV/RV.mp4",
             "width": 1920,
-            "height": 1080
-        },
-        {
-            "type": "image",
-            "name": "Макет 0",
-            "src": "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/0.webp",
-            "width": 1080,
             "height": 1080
         },
         {

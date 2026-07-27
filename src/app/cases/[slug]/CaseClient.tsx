@@ -37,7 +37,7 @@ const CASE_HERO_MEDIA: Record<string, { src: string; type: "image" | "video" }> 
     blink: { src: "/cases/blink.webp", type: "image" },
     bossxo: { src: "/cases/bossxo.webp", type: "image" },
     cadillac: { src: "/cases/cadillac.webp", type: "image" },
-    diskokras: { src: "/cases/diskokras/diskokras.webp", type: "image" },
+    diskokras: { src: "/cases/diskokras/DNQp7cUI2Fs.mp4", type: "video" },
     "double-coffee": { src: "/cases/bossxo.webp", type: "image" },
     gippo: { src: "/cases/gippo.webp", type: "image" },
     // Invictus hero placeholder: set src when the final cover image is ready.
@@ -52,16 +52,18 @@ const CASE_HERO_MEDIA: Record<string, { src: string; type: "image" | "video" }> 
     sensata: { src: "/cases/sensata.webp", type: "image" },
     uaz: { src: "/cases/uaz.webp", type: "image" },
     kenfsad: { src: "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782641222/kf1_h9sr9l.mp4", type: "video" },
-    mg: { src: "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782641225/mg1_qmtkuy.mp4", type: "video" },
-    "mg-kazakhstan": { src: "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782641225/mg1_qmtkuy.mp4", type: "video" },
+    mg: { src: "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782641221/mg2_ttzsip.mp4", type: "video" },
+    "mg-kazakhstan": { src: "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782641221/mg2_ttzsip.mp4", type: "video" },
     omo: { src: "https://res.cloudinary.com/dxvynbrut/video/upload/q_auto:best/v1782641223/OMO_%D1%85_Almaty_marathon_1_oqdkmb.mp4", type: "video" },
     velmar: { src: "/cases/Velmar.webp", type: "image" },
     compass: { src: "/cases/compass/cover.webp", type: "image" },
     "shanding-logistics": { src: "https://res.cloudinary.com/dxvynbrut/image/upload/v1783590405/cases/shanding-logistics/cover.webp", type: "image" },
     bebble: { src: "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998842/yapil/case/bebble.webp", type: "image" },
     boya: { src: "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998699/yapil/case/Boya.webp", type: "image" },
-    rv: { src: "https://res.cloudinary.com/f75p1yiv/video/upload/v1782998845/yapil/case/%D0%A0%D1%8B%D0%BA%D1%83%D0%BD%D0%BE%D0%B2%20%D0%B8%20%D0%9A%D1%83%D0%B4%D1%80%D1%8F%D1%88%D0%BE%D0%B2.webm", type: "video" },
+    rv: { src: "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998834/yapil/case/RV/1.webp", type: "image" },
     igorkochergin: { src: "https://res.cloudinary.com/f75p1yiv/image/upload/v1782998845/yapil/case/%D0%98%D0%B3%D0%BE%D1%80%D1%8C%20%D0%9A%D0%BE%D1%87%D0%B5%D1%80%D0%B3%D0%B8%D0%BD.webp", type: "image" },
+    "faw-kazakhstan": { src: "/cases/faw-kazakhstan/cover.webp", type: "image" },
+    "uniflex-fitness": { src: "/cases/uniflex-fitness/cover.webp", type: "image" },
 };
 
 interface ContactInfoDarkProps {
@@ -493,7 +495,9 @@ export default function CaseClient({ data, slug }: { data: CaseData; slug: strin
                 )}
 
                 {/* ── REELS GRID GALLERY ────────────────────────────── */}
-                <CaseVideoGallery slug={slug} />
+                {(!data.mockupImages || data.mockupImages.length === 0) && (
+                    <CaseVideoGallery slug={slug} />
+                )}
 
                 {/* ── CONTACT FORM SECTION ─────────────────────────── */}
                 <section className="relative border-b border-white/10 px-[var(--page-margin)] py-20 md:py-28" id="contacts">

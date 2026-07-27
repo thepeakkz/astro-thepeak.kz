@@ -232,12 +232,12 @@ async function getCloudinaryVideos(slug: string, localPosters: CaseMediaItem[]):
                 const poster = findPosterForVideoName(name, localPosters) || findPosterForVideoName(src, localPosters);
 
                 return {
-                    height: poster?.height ?? resource.height,
+                    height: 1920,
                     src,
                     name,
                     posterSrc: poster?.src,
                     type: "video" as const,
-                    width: poster?.width ?? resource.width,
+                    width: 1080,
                 };
             })
             .sort((a, b) => a.name.localeCompare(b.name, "ru"));
@@ -346,9 +346,9 @@ function getManifestMedia(
             return {
                 ...item,
                 src,
-                height: poster?.height ?? item.height,
+                height: item.type === "video" ? (item.height || 1920) : (poster?.height ?? item.height),
                 posterSrc: poster?.src,
-                width: poster?.width ?? item.width,
+                width: item.type === "video" ? (item.width || 1080) : (poster?.width ?? item.width),
             };
         })
         .sort((a, b) => a.name.localeCompare(b.name, "ru"));
@@ -375,17 +375,13 @@ function excludeDuplicateLocalVideos(localVideos: CaseMediaItem[], knownVideos: 
 
 function attachLocalPostersToVideos(videos: CaseMediaItem[], localPosters: CaseMediaItem[]) {
     return videos.map((video) => {
-        if (video.posterSrc) {
-            return video;
-        }
-
         const poster = findPosterForVideoName(video.name, localPosters) || findPosterForVideoName(video.src, localPosters);
 
         return {
             ...video,
-            height: poster?.height ?? video.height,
-            posterSrc: poster?.src,
-            width: poster?.width ?? video.width,
+            height: video.height || 1920,
+            posterSrc: video.posterSrc || poster?.src,
+            width: video.width || 1080,
         };
     });
 }
@@ -412,12 +408,22 @@ export async function GET(request: NextRequest) {
     let media: CaseMediaItem[] = [];
 
     if (cloudinaryVideos && cloudinaryVideos.length > 0) {
-        const localOnlyVideos = excludeDuplicateLocalVideos(localVideos, cloudinaryVideos);
+        const manifestVideoItems = (caseMediaManifest[slug] || []).filter((item) => item.type === "video");
+        const filteredCloudinaryVideos = manifestVideoItems.length > 0
+            ? cloudinaryVideos.filter((cVid) =>
+                manifestVideoItems.some((mVid) => isSameVideoAsset(cVid, mVid))
+            )
+            : cloudinaryVideos;
+
+        const manifestVideoObjects = manifestMedia.filter((item) => item.type === "video");
+        const extraManifestVideos = excludeDuplicateLocalVideos(manifestVideoObjects, filteredCloudinaryVideos);
+
+        const localOnlyVideos = excludeDuplicateLocalVideos(localVideos, [...filteredCloudinaryVideos, ...extraManifestVideos]);
         const images = excludeVideoPostersFromImages(
             [...manifestMedia.filter((item) => item.type === "image"), ...localImages],
-            [...cloudinaryVideos, ...localOnlyVideos],
+            [...filteredCloudinaryVideos, ...extraManifestVideos, ...localOnlyVideos],
         );
-        media = [...cloudinaryVideos, ...localOnlyVideos, ...images];
+        media = [...filteredCloudinaryVideos, ...extraManifestVideos, ...localOnlyVideos, ...images];
     } else if (manifestMedia.length > 0) {
         const localOnlyVideos = excludeDuplicateLocalVideos(
             localVideos,

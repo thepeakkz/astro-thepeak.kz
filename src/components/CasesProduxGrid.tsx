@@ -9,7 +9,14 @@ import { cn } from "@/lib/utils";
 import { optimizeCloudinaryVideoUrl } from "@/utils/media";
 
 // Map index in a chunk of 5 to Produx-style grid columns
-const getGridClass = (index: number) => {
+const getGridClass = (index: number, project?: CaseItem) => {
+  if (
+    project &&
+    ((project.services.length === 1 && project.services[0] === "Таргет") ||
+      project.type?.trim().toLowerCase() === "таргет")
+  ) {
+    return "col-span-12 lg:col-span-4 h-fit";
+  }
   switch (index) {
     case 0:
       return "col-span-12 lg:col-span-7";
@@ -27,7 +34,7 @@ const getGridClass = (index: number) => {
 };
 
 // Lazy loaded video helper
-function LazyCaseVideo({ alt, poster, src }: { alt: string; poster?: string; src: string }) {
+function LazyCaseVideo({ alt, poster, src, objectPosition }: { alt: string; poster?: string; src: string; objectPosition?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -83,6 +90,7 @@ function LazyCaseVideo({ alt, poster, src }: { alt: string; poster?: string; src
             "absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ease-out",
             isPlaying && "opacity-0"
           )}
+          style={objectPosition ? { objectPosition } : undefined}
           loading="lazy"
           decoding="async"
         />
@@ -99,6 +107,7 @@ function LazyCaseVideo({ alt, poster, src }: { alt: string; poster?: string; src
           "h-full w-full object-cover transition-opacity duration-[1200ms] ease-out",
           poster && !isPlaying ? "opacity-0" : "opacity-100"
         )}
+        style={objectPosition ? { objectPosition } : undefined}
         onPlaying={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />
@@ -166,13 +175,14 @@ function ProjectCard({
             className="absolute inset-0 w-full h-[110%] -top-[5%] will-change-transform"
           >
             {isVideo && mediaSrc ? (
-              <LazyCaseVideo alt={project.name} poster={project.poster} src={optimizeCloudinaryVideoUrl(mediaSrc)} />
+              <LazyCaseVideo alt={project.name} poster={project.poster} src={optimizeCloudinaryVideoUrl(mediaSrc)} objectPosition={project.objectPosition} />
             ) : project.image ? (
               <img
                 src={project.image}
                 alt={project.name}
                 draggable={false}
                 className="w-full h-full object-cover display-block"
+                style={project.objectPosition ? { objectPosition: project.objectPosition } : undefined}
               />
             ) : (
               <div className="w-full h-full bg-black" />
@@ -364,7 +374,7 @@ export default function CasesProduxGrid({ cases: sourceCases, limit, className }
                   <ProjectCard
                     key={item.href}
                     project={item}
-                    gridClass={getGridClass(idx)}
+                    gridClass={getGridClass(idx, item)}
                     hoveredProjectId={hoveredProjectId}
                     setHoveredProjectId={setHoveredProjectId}
                     hasHoverSupport={hasHoverSupport}
@@ -380,7 +390,7 @@ export default function CasesProduxGrid({ cases: sourceCases, limit, className }
                   <ProjectCard
                     key={item.href}
                     project={item}
-                    gridClass={getGridClass(2)}
+                    gridClass={getGridClass(2, item)}
                     hoveredProjectId={hoveredProjectId}
                     setHoveredProjectId={setHoveredProjectId}
                     hasHoverSupport={hasHoverSupport}
@@ -396,7 +406,7 @@ export default function CasesProduxGrid({ cases: sourceCases, limit, className }
                   <ProjectCard
                     key={item.href}
                     project={item}
-                    gridClass={getGridClass(3 + idx)}
+                    gridClass={getGridClass(3 + idx, item)}
                     hoveredProjectId={hoveredProjectId}
                     setHoveredProjectId={setHoveredProjectId}
                     hasHoverSupport={hasHoverSupport}
