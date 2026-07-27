@@ -9,14 +9,7 @@ import { cn } from "@/lib/utils";
 import { optimizeCloudinaryVideoUrl } from "@/utils/media";
 
 // Map index in a chunk of 5 to Produx-style grid columns
-const getGridClass = (index: number, project?: CaseItem) => {
-  if (
-    project &&
-    ((project.services.length === 1 && project.services[0] === "Таргет") ||
-      project.type?.trim().toLowerCase() === "таргет")
-  ) {
-    return "col-span-12 lg:col-span-4 h-fit";
-  }
+const getGridClass = (index: number) => {
   switch (index) {
     case 0:
       return "col-span-12 lg:col-span-7";
@@ -374,7 +367,7 @@ export default function CasesProduxGrid({ cases: sourceCases, limit, className }
                   <ProjectCard
                     key={item.href}
                     project={item}
-                    gridClass={getGridClass(idx, item)}
+                    gridClass={getGridClass(idx)}
                     hoveredProjectId={hoveredProjectId}
                     setHoveredProjectId={setHoveredProjectId}
                     hasHoverSupport={hasHoverSupport}
@@ -390,7 +383,7 @@ export default function CasesProduxGrid({ cases: sourceCases, limit, className }
                   <ProjectCard
                     key={item.href}
                     project={item}
-                    gridClass={getGridClass(2, item)}
+                    gridClass={getGridClass(2)}
                     hoveredProjectId={hoveredProjectId}
                     setHoveredProjectId={setHoveredProjectId}
                     hasHoverSupport={hasHoverSupport}
@@ -406,7 +399,7 @@ export default function CasesProduxGrid({ cases: sourceCases, limit, className }
                   <ProjectCard
                     key={item.href}
                     project={item}
-                    gridClass={getGridClass(3 + idx, item)}
+                    gridClass={getGridClass(3 + idx)}
                     hoveredProjectId={hoveredProjectId}
                     setHoveredProjectId={setHoveredProjectId}
                     hasHoverSupport={hasHoverSupport}
