@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const testPort = process.env.PLAYWRIGHT_TEST_PORT?.match(/^\d+$/)?.[0] ?? "3000";
+const testBaseURL = `http://localhost:${testPort}`;
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
@@ -8,7 +11,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: testBaseURL,
     trace: "on-first-retry",
   },
   projects: [
@@ -16,9 +19,9 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["iPhone 13"] } },
   ],
   webServer: {
-    command: "npm run dev -- --hostname localhost --port 3000",
+    command: `npm run dev -- --hostname localhost --port ${testPort}`,
     env: { PLAYWRIGHT_TEST: "1" },
-    url: "http://localhost:3000",
+    url: testBaseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

@@ -106,15 +106,19 @@ export default function LeadPopup() {
     };
 
     scheduleTimedPopup(TIMED_POPUP_DELAY_MS);
+    document.documentElement.dataset.leadPopupTimerReady = "true";
 
     if (supportsExitIntent) {
       armTimer = window.setTimeout(() => {
         document.addEventListener("mouseout", handleMouseOut);
+        document.documentElement.dataset.leadPopupExitIntentReady = "true";
       }, EXIT_INTENT_ARM_DELAY_MS);
     }
 
     return () => {
       clearTriggers();
+      delete document.documentElement.dataset.leadPopupTimerReady;
+      delete document.documentElement.dataset.leadPopupExitIntentReady;
     };
   }, []);
 
