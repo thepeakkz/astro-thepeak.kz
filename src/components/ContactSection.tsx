@@ -56,10 +56,10 @@ export function ContactCard({
       <div className="flex flex-col justify-between lg:col-span-2 h-full">
         <div className="relative h-full flex flex-col justify-between px-5 py-8 md:p-12 gap-8">
           <div className="space-y-6">
-            <h2 className="font-headline font-semibold text-brand-gray tracking-wide text-[clamp(1.4rem,1.44vw,1.92rem)] leading-[0.9]">
+            <h2 className="font-headline font-semibold text-brand-gray tracking-tight text-[clamp(2rem,3vw,3.25rem)] !leading-[1]">
               {formatTypography(title)}
             </h2>
-            <p className="description-text text-brand-gray/80 max-w-xl">
+            <p className="description-text max-w-2xl text-brand-gray/80 !text-[clamp(1.125rem,1.45vw,1.375rem)] !leading-[1.25]">
               {formatTypography(description)}
             </p>
           </div>

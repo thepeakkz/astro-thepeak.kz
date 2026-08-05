@@ -8,7 +8,8 @@ import { formatTypography } from "@/utils/typography";
 import CasesProduxGrid from "@/components/CasesProduxGrid";
 
 // Filter and order cases specifically requested for the homepage:
-// Лукойл, Компасс, Гиппо, Пума, Шандинг, Сенсата, Базис, Дискокрас, Онмакабин
+// Лукойл, Шандинг, Гиппо, Пума, Компасс, Сенсата, Базис, Онмакабин,
+// Дискокрас, Кадиллак, Велмар, Ракун
 const homeCasesOrder = [
   "/cases/lukoil",
   "/cases/shanding-logistics",
@@ -20,6 +21,8 @@ const homeCasesOrder = [
   "/cases/onmacabim",
   "/cases/diskokras",
   "/cases/cadillac",
+  "/cases/velmar",
+  "/cases/racoon",
 ];
 
 const homeCases = homeCasesOrder
@@ -43,16 +46,22 @@ export default function CasesMasonrySection() {
             transition={{ duration: 0.8, ease: [0.83, 0, 0.17, 1] }}
             className="font-headline text-[clamp(1.4rem,2.45vw,2.24rem)] font-semibold leading-[1.1] text-[#F2F2F2] text-left"
           >
-            {formatTypography("За\u00a0каждым кейсом стоят стратегия, сильная команда и\u00a0конкретные показатели.")}
+            <span className="block lg:whitespace-nowrap">
+              {formatTypography("За каждым кейсом стоят стратегия,")}
+            </span>
+            {" "}
+            <span className="block lg:whitespace-nowrap">
+              {formatTypography("сильная команда и конкретные показатели")}
+            </span>
           </motion.h2>
           <motion.p
             initial={{ y: "50%", opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.215, 0.61, 0.355, 1] }}
-            className="font-sans font-medium text-white/50 text-[clamp(0.95rem,1.05vw,1.1rem)] leading-relaxed max-w-xl text-left"
+            className="font-sans font-medium text-white/50 text-[clamp(0.95rem,1.05vw,1.1rem)] leading-relaxed max-w-none text-left lg:whitespace-nowrap"
           >
-            {formatTypography("Мы\u00a0работаем с\u00a0бизнесом, который хочет расти, а\u00a0не\u00a0просто присутствовать в\u00a0digital.")}
+            {formatTypography("Мы работаем с бизнесом, который хочет расти, а не просто присутствовать в digital")}
           </motion.p>
         </div>
 

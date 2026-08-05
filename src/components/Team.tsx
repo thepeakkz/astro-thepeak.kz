@@ -35,18 +35,11 @@ const teamMembers: TeamMember[] = [
     image: "/team/sofina.webp",
   },
   {
-    name: "Яков Пилипюк",
-    role: "Сооснователь, дизайнер",
-    description: "Создаёт визуал, который выделяет бренды среди конкурентов",
-    city: "Алматы",
-    image: "/team/yakov.webp",
-  },
-  {
-    name: "Сергей Гаренко",
-    role: "Маркетолог",
+    name: "Иван Плужник",
+    role: "Арт-директор",
     description: "",
     city: "Астана",
-    image: "/team/sergey-garenko.webp",
+    image: "https://res.cloudinary.com/dxvynbrut/image/upload/v1785915162/team/ivan-pluzhnik.webp",
   },
 ];
 
@@ -56,23 +49,28 @@ export default function Team() {
       className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] border-b border-brand-gray/10 bg-brand-light-gray/20 scroll-mt-[clamp(2rem,2.8vw,3.5rem)]"
       id="team"
     >
-      {/* Swiss Grid Vertical Stack Layout */}
+      {/* Two-column Swiss grid: intro on the left, team cards on the right. */}
       <div className="swiss-grid items-stretch rounded-none w-full">
-        {/* Top Header Block: Heading + Description */}
-        <div className="col-span-12 pt-[3rem] md:pt-[var(--page-margin)] pb-8 border-b border-brand-gray/15 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <h2 className="no-invert font-headline font-semibold text-brand-gray text-[clamp(1.6rem,3vw,2.5rem)] leading-[1.05] max-w-2xl select-none">
-            {formatTypography("Каждое направление ThePeak возглавляет специалист с практическим опытом в своей области")}
-          </h2>
-          <p className="no-invert description-text text-brand-gray/80 max-w-xl">
-            {formatTypography(
-              "Вы работаете не просто с безликими подрядчиками, а с людьми, которые принимают ключевые решения, глубоко погружаются в ваш бизнес и несут личную ответственность за конечный результат."
-            )}
-          </p>
+        <div className="col-span-12 lg:col-span-4 xl:col-span-3 self-stretch border-b border-brand-gray/25 pb-[clamp(2.5rem,5vw,4.5rem)] pt-0 text-left lg:border-b-0 lg:border-r lg:pb-[clamp(3.5rem,7vw,7rem)] lg:pr-[var(--grid-gap)]">
+          <div className="flex h-full max-w-[95%] flex-col justify-between gap-8 pt-[3rem] md:pt-[var(--page-margin)]">
+            <h2 className="no-invert select-none font-headline text-[clamp(1.4rem,2.56vw,1.6rem)] font-semibold leading-[1] text-brand-gray">
+              <span className="block">Каждое направление</span>
+              <span className="block">
+                {formatTypography(
+                  "ThePeak возглавляет специалист с практическим опытом в своей области"
+                )}
+              </span>
+            </h2>
+            <p className="no-invert description-text text-brand-gray/80">
+              {formatTypography(
+                "Вы работаете не просто с безликими подрядчиками, а с людьми, которые принимают ключевые решения, глубоко погружаются в ваш бизнес и несут личную ответственность за конечный результат."
+              )}
+            </p>
+          </div>
         </div>
 
-        {/* Bottom Cards Block: Grid of 5 Team Members */}
-        <div className="col-span-12 py-[clamp(2rem,4vw,3.5rem)] w-full">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
+        <div className="col-span-12 w-full pb-[clamp(2.5rem,5vw,4.5rem)] pt-0 lg:col-span-8 lg:pb-[clamp(3.5rem,7vw,7rem)] lg:pl-[clamp(1.5rem,3vw,3rem)] xl:col-span-9">
+          <div className="grid w-full grid-cols-2 gap-3 pt-[3rem] md:pt-[var(--page-margin)] lg:grid-cols-4">
             {teamMembers.map((member, index) => (
               <div
                 key={index}

@@ -11,6 +11,7 @@ import GlobalPreloader from "@/components/GlobalPreloader";
 import JsonLd from "@/components/JsonLd";
 import FormConversionTracker from "@/components/FormConversionTracker";
 import UtmTracker from "@/components/UtmTracker";
+import LeadPopup from "@/components/LeadPopup";
 import { getOrganizationJsonLd, getWebsiteJsonLd, pageSeo, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const interDisplay = localFont({
@@ -134,6 +135,7 @@ export default function RootLayout({
         <PageTransition>
           {children}
         </PageTransition>
+        <LeadPopup />
         <GridGuide />
       </body>
     </html>

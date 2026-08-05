@@ -3,6 +3,10 @@
 import { useEffect } from "react";
 import Lenis from "lenis";
 
+const scrollDuration = 1.2;
+const scrollEasing = (t: number) =>
+  Math.min(1, 1.001 - Math.pow(2, -10 * t));
+
 declare global {
   interface Window {
     peakLenis?: Lenis;
@@ -11,19 +15,14 @@ declare global {
 
 export default function SmoothScroll() {
   useEffect(() => {
-    const prefersNativeScroll =
-      window.matchMedia("(pointer: coarse)").matches ||
-      window.matchMedia("(max-width: 767px)").matches ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (prefersNativeScroll) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return;
     }
 
-    // Initialize Lenis
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      autoRaf: true,
+      duration: scrollDuration,
+      easing: scrollEasing,
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
@@ -38,24 +37,69 @@ export default function SmoothScroll() {
     const resizeObserver = new ResizeObserver(() => {
       lenis.resize();
     });
+
+    const handleAnchorClick = (event: MouseEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      const eventTarget = event.target;
+      if (!(eventTarget instanceof Element)) {
+        return;
+      }
+
+      const anchor = eventTarget.closest<HTMLAnchorElement>("a[href]");
+      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) {
+        return;
+      }
+
+      const url = new URL(anchor.href, window.location.href);
+      const currentUrl = new URL(window.location.href);
+      const isSamePage =
+        url.origin === currentUrl.origin &&
+        url.pathname === currentUrl.pathname &&
+        url.search === currentUrl.search;
+
+      if (!isSamePage || !url.hash) {
+        return;
+      }
+
+      const destination = document.getElementById(
+        decodeURIComponent(url.hash.slice(1)),
+      );
+      if (!destination) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (currentUrl.hash !== url.hash) {
+        window.history.pushState(null, "", url.hash);
+      }
+
+      window.requestAnimationFrame(() => {
+        lenis.scrollTo(destination, {
+          duration: scrollDuration,
+          easing: scrollEasing,
+        });
+      });
+    };
     
     if (document.body) {
       resizeObserver.observe(document.body);
     }
 
-    let rafId = 0;
+    document.addEventListener("click", handleAnchorClick, { capture: true });
 
-    // Handle scroll events or integration with other libraries if needed
-    function raf(time: number) {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    }
-
-    rafId = requestAnimationFrame(raf);
-
-    // Clean up on component unmount
     return () => {
-      cancelAnimationFrame(rafId);
+      document.removeEventListener("click", handleAnchorClick, { capture: true });
 
       if (window.peakLenis === lenis) {
         delete window.peakLenis;

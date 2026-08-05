@@ -10,7 +10,6 @@ import Team from "@/components/Team";
 import ContactSection from "@/components/ContactSection";
 import StatsBlock from "@/components/StatsBlock";
 import HeroScrollAnimation from "@/components/ui/hero-scroll-animation";
-import TimedLeadPopup from "@/components/TimedLeadPopup";
 
 export default function HomeClient() {
   return (
@@ -28,7 +27,6 @@ export default function HomeClient() {
       />
       <Team />
       <ContactSection />
-      <TimedLeadPopup />
     </>
   );
 }

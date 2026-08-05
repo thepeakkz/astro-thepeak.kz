@@ -355,16 +355,16 @@ const headingsData: HeadingItem[] = [
     section: "Контакты (ContactSection)",
     tag: "h2",
     text: "Начать проект",
-    classes: "font-headline font-semibold text-brand-gray tracking-wide text-[clamp(1.4rem,1.44vw,1.92rem)] leading-[0.9]",
+    classes: "font-headline font-semibold text-brand-gray tracking-tight text-[clamp(2rem,3vw,3.25rem)] !leading-[1]",
     noInvert: false,
     description: "Заголовок в сквозном блоке контактов (ContactSection).",
     properties: [
       { name: "font-family", value: "var(--font-inter-display), sans-serif" },
       { name: "font-weight", value: "600 (semibold)" },
       { name: "color", value: "#434343 (text-brand-gray)" },
-      { name: "letter-spacing", value: "0.025em (tracking-wide)" },
-      { name: "font-size", value: "clamp(1.4rem, 1.44vw, 1.92rem)" },
-      { name: "line-height", value: "0.9" }
+      { name: "letter-spacing", value: "-0.025em (tracking-tight)" },
+      { name: "font-size", value: "clamp(2rem, 3vw, 3.25rem)" },
+      { name: "line-height", value: "1" }
     ]
   }
 ];
