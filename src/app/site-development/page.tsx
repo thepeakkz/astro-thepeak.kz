@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { createSeoMetadata } from "@/lib/seo";
 import SiteDevelopmentClient from "./SiteDevelopmentClient";
+import NativePageGate from "@/components/cms/NativePageGate";
 
 const title = "Разработка сайтов под ключ — The Peak";
 const description =
@@ -19,5 +20,9 @@ export const metadata: Metadata = createSeoMetadata({
 });
 
 export default function SiteDevelopmentPage() {
-  return <SiteDevelopmentClient />;
+  return (
+    <NativePageGate routePath="/site-development">
+      <SiteDevelopmentClient />
+    </NativePageGate>
+  );
 }

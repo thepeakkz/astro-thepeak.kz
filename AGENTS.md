@@ -1,7 +1,11 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
 <!-- END:nextjs-agent-rules -->
 
 # Russian Typography Guidelines (Non-breaking Spaces)
@@ -31,4 +35,15 @@ When displaying client logos on service/details pages:
 2. Display them in their original aspect ratios with an identical height (using `h-[height] w-auto object-contain`).
 3. If requested, implement a seamless infinite marquee/ticker (moving `-50%` using `marquee-scroll-horizontal` animation).
 4. Do not wrap them in rounded circles/cards unless specifically requested.
+
+# Image Optimization & Tinify API Rules
+
+All images intended for the website must follow these mandatory rules:
+
+1. **WebP Conversion**: All images and photos must be converted to **WebP** format (`.webp`).
+2. **Tinify Compression & Free Quota Awareness**:
+   - Images are compressed via Tinify API (`TINIFY_API_KEY` from `.env.local`) before final storage in Cloudflare R2 or usage on the website.
+   - **Quota Limit**: Account is on the Free Tier (500 compressions/month). Avoid unnecessary bulk re-compressions of existing assets.
+   - **Graceful Fallback**: If Tinify API fails or reaches quota limit, fall back safely without breaking the user upload flow.
+3. **CMS Integration**: Upload pipelines in `/admin` or API routes should optimize newly uploaded assets while strictly observing the free quota.
 

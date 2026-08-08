@@ -236,10 +236,7 @@ export default function LeadPopup() {
           ) : (
             <div className="space-y-6">
               <div className="pr-10">
-                <span className="font-sans text-[10px] font-extrabold uppercase tracking-widest text-brand-red">
-                  {formatTypography(trigger === "exit-intent" ? "Не спешите уходить" : "Обсудим ваш проект")}
-                </span>
-                <h2 id="exit-intent-popup-title" className="mt-2 font-headline text-2xl font-bold leading-tight tracking-wide text-white md:text-3xl">
+                <h2 id="exit-intent-popup-title" className="font-headline text-2xl font-bold leading-tight tracking-wide text-white md:text-3xl">
                   {formatTypography("Получите бесплатную консультацию")}
                 </h2>
                 <p className="mt-3 font-sans text-sm leading-relaxed text-white/60">

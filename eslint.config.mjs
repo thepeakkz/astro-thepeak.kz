@@ -10,7 +10,7 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/ban-ts-comment": "error",
       "@typescript-eslint/no-explicit-any": "error",
       // The site deliberately uses native img elements for tracking pixels,
-      // animated duplicate marquees, WebGL fallbacks, and runtime Cloudinary media.
+      // animated duplicate marquees, WebGL fallbacks, and runtime remote media.
       "@next/next/no-img-element": "off",
       "react-hooks/immutability": "off",
       "react-hooks/purity": "off",

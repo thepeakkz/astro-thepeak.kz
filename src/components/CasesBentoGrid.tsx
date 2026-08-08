@@ -6,7 +6,6 @@ import { allCasesData } from "@/data/cases";
 import type { CaseItem } from "@/data/cases";
 import { cn } from "@/lib/utils";
 import { formatTypography } from "@/utils/typography";
-import { optimizeCloudinaryVideoUrl } from "@/utils/media";
 import { useEffect, useRef, useState } from "react";
 
 interface CasesBentoGridProps {
@@ -142,7 +141,7 @@ export default function CasesBentoGrid({
               tiltFactor={4}
               background={
                 isVideo && mediaSrc ? (
-                  <LazyCaseVideo alt={item.name} poster={item.poster} src={optimizeCloudinaryVideoUrl(mediaSrc)} objectPosition={item.objectPosition} />
+                  <LazyCaseVideo alt={item.name} poster={item.poster} src={mediaSrc} objectPosition={item.objectPosition} />
                 ) : item.image ? (
                   <img
                     src={item.image}

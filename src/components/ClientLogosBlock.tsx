@@ -72,11 +72,17 @@ export default function ClientLogosBlock() {
                 className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-full flex items-center justify-center border-r border-brand-gray/15"
               >
                 <img
-                  src={`/logo/clot-${item.id}.${item.ext}`}
+                  src={`https://media.thepeak.kz/logos/clot-${item.id}.${item.ext}`}
                   alt={`Client Logo ${item.id}`}
                   className="h-[44px] sm:h-[56px] md:h-[56px] w-auto max-w-[80%] object-contain pointer-events-none"
                   width={125}
                   height={56}
+                  onError={(event) => {
+                    const fallback = `/logo/clot-${item.id}.${item.ext}`;
+                    if (event.currentTarget.src !== fallback) {
+                      event.currentTarget.src = fallback;
+                    }
+                  }}
                 />
               </div>
             ))}
@@ -106,11 +112,17 @@ export default function ClientLogosBlock() {
                 className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-full flex items-center justify-center border-r border-brand-gray/15"
               >
                 <img
-                  src={`/logo/clot-${item.id}.${item.ext}`}
+                  src={`https://media.thepeak.kz/logos/clot-${item.id}.${item.ext}`}
                   alt={`Client Logo ${item.id}`}
                   className="h-[44px] sm:h-[56px] md:h-[56px] w-auto max-w-[80%] object-contain pointer-events-none"
                   width={125}
                   height={56}
+                  onError={(event) => {
+                    const fallback = `/logo/clot-${item.id}.${item.ext}`;
+                    if (event.currentTarget.src !== fallback) {
+                      event.currentTarget.src = fallback;
+                    }
+                  }}
                 />
               </div>
             ))}
@@ -139,11 +151,17 @@ export default function ClientLogosBlock() {
                 className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-full flex items-center justify-center border-r border-brand-gray/15"
               >
                 <img
-                  src={`/logo/clot-${item.id}.${item.ext}`}
+                  src={`https://media.thepeak.kz/logos/clot-${item.id}.${item.ext}`}
                   alt={`Client Logo ${item.id}`}
                   className="h-[44px] sm:h-[56px] md:h-[56px] w-auto max-w-[80%] object-contain pointer-events-none"
                   width={125}
                   height={56}
+                  onError={(event) => {
+                    const fallback = `/logo/clot-${item.id}.${item.ext}`;
+                    if (event.currentTarget.src !== fallback) {
+                      event.currentTarget.src = fallback;
+                    }
+                  }}
                 />
               </div>
             ))}
@@ -173,11 +191,17 @@ export default function ClientLogosBlock() {
                 className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-full flex items-center justify-center border-r border-brand-gray/15"
               >
                 <img
-                  src={`/logo/clot-${item.id}.${item.ext}`}
+                  src={`https://media.thepeak.kz/logos/clot-${item.id}.${item.ext}`}
                   alt={`Client Logo ${item.id}`}
                   className="h-[44px] sm:h-[56px] md:h-[56px] w-auto max-w-[80%] object-contain pointer-events-none"
                   width={125}
                   height={56}
+                  onError={(event) => {
+                    const fallback = `/logo/clot-${item.id}.${item.ext}`;
+                    if (event.currentTarget.src !== fallback) {
+                      event.currentTarget.src = fallback;
+                    }
+                  }}
                 />
               </div>
             ))}

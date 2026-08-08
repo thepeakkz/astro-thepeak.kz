@@ -7,7 +7,6 @@ import { formatTypography } from "@/utils/typography";
 import { Volume2, VolumeX } from "lucide-react";
 import LazyPdfReader from "@/components/LazyPdfReader";
 import { cn } from "@/lib/utils";
-import { optimizeCloudinaryVideoUrl } from "@/utils/media";
 import { CONTACTS } from "@/config/contacts";
 import {
     IconPlus,
@@ -23,6 +22,7 @@ import PhoneInput from "@/components/ui/PhoneInput";
 import PrivacyConsentCheckbox from "@/components/PrivacyConsentCheckbox";
 import HeroWave from "@/components/ui/dynamic-wave-canvas-background";
 import CaseDescriptionColumns from "@/components/CaseDescriptionColumns";
+import type { CaseGalleryItem } from "@/lib/case-gallery";
 
 const GRAIN_STYLE: React.CSSProperties = {
     backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
@@ -72,18 +72,18 @@ interface ContactInfoDarkProps {
     className?: string;
 }
 
-interface CaseContentBlock {
+export interface CaseContentBlock {
     chapter?: string;
     items?: readonly string[];
     text: string;
 }
 
-interface CaseMetric {
+export interface CaseMetric {
     label: string;
     value: string;
 }
 
-interface CaseData {
+export interface CaseData {
     title?: string;
     name?: string;
     year?: string;
@@ -97,6 +97,7 @@ interface CaseData {
     showreelUrl?: string;
     mockupImages?: readonly string[];
     heroMedia?: { src: string; type: "image" | "video" };
+    galleryMedia?: readonly CaseGalleryItem[];
 }
 
 function CaseMetricsSection({ metrics }: { metrics: readonly CaseMetric[] }) {
@@ -206,9 +207,9 @@ export default function CaseClient({ data, slug }: { data: CaseData; slug: strin
     const caseTitle = data.title || data.name || slug;
     const isWebsiteCase = data.service?.toLowerCase().includes("сайт") || data.service?.toLowerCase().includes("лендинг");
     const showMetrics = data.metrics && data.metrics.length > 0 && !isWebsiteCase;
-    const rawHeroMedia = CASE_HERO_MEDIA[slug] || data.heroMedia;
+    const rawHeroMedia = data.heroMedia || CASE_HERO_MEDIA[slug];
     const heroMedia = rawHeroMedia
-        ? { ...rawHeroMedia, src: optimizeCloudinaryVideoUrl(rawHeroMedia.src) }
+        ? { ...rawHeroMedia, src: rawHeroMedia.src }
         : null;
     const showreelVideoRef = useRef<HTMLVideoElement | null>(null);
     const [isShowreelMuted, setIsShowreelMuted] = useState(true);
@@ -410,7 +411,7 @@ export default function CaseClient({ data, slug }: { data: CaseData; slug: strin
                             >
                                 <video
                                     ref={showreelVideoRef}
-                                    src={showreelVisible ? optimizeCloudinaryVideoUrl(data.showreelUrl) : undefined}
+                                    src={showreelVisible ? data.showreelUrl : undefined}
                                     autoPlay
                                     muted={isShowreelMuted}
                                     loop
@@ -495,8 +496,8 @@ export default function CaseClient({ data, slug }: { data: CaseData; slug: strin
                 )}
 
                 {/* ── REELS GRID GALLERY ────────────────────────────── */}
-                {(!data.mockupImages || data.mockupImages.length === 0) && (
-                    <CaseVideoGallery slug={slug} />
+                {(data.galleryMedia !== undefined || !data.mockupImages || data.mockupImages.length === 0) && (
+                    <CaseVideoGallery slug={slug} items={data.galleryMedia} />
                 )}
 
                 {/* ── CONTACT FORM SECTION ─────────────────────────── */}

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
-import { createCaseMetadata, getCasePageJsonLd } from "@/lib/seo";
+import { createCaseMetadata, createSeoMetadata, getCasePageJsonLd } from "@/lib/seo";
 import { targetCases } from "@/data/target-cases";
-import CaseClient from "./CaseClient";
+import ManagedCasePage from "@/components/cms/ManagedCasePage";
+import { getPublishedPageByPath } from "@/lib/cms/data";
 
 type TargetCaseSlug = keyof typeof targetCases;
 
@@ -22,11 +22,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
     const { slug } = await params;
 
-    if (!isTargetCaseSlug(slug)) {
-        return {};
-    }
+    if (isTargetCaseSlug(slug)) return createCaseMetadata(slug);
 
-    return createCaseMetadata(slug);
+    const routePath = `/cases/${slug}`;
+    const cmsPage = await getPublishedPageByPath(routePath);
+    if (!cmsPage) return {};
+
+    return createSeoMetadata({
+        title: cmsPage.page.seo_title || `${cmsPage.page.title} — кейс ThePeak`,
+        description: cmsPage.page.seo_description || `Кейс ThePeak: ${cmsPage.page.title}. Задача, решение и результаты проекта.`,
+        path: routePath,
+    });
 }
 
 export default async function TargetCasePage({
@@ -36,14 +42,10 @@ export default async function TargetCasePage({
 }) {
     const { slug } = await params;
 
-    if (!isTargetCaseSlug(slug)) {
-        notFound();
-    }
-
     return (
         <>
-            <JsonLd data={getCasePageJsonLd(slug)} />
-            <CaseClient data={targetCases[slug]} slug={slug} />
+            {isTargetCaseSlug(slug) ? <JsonLd data={getCasePageJsonLd(slug)} /> : null}
+            <ManagedCasePage slug={slug} />
         </>
     );
 }

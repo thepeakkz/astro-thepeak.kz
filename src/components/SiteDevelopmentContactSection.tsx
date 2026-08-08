@@ -154,9 +154,6 @@ export default function SiteDevelopmentContactSection() {
         <div className="self-start bg-black p-[clamp(1.5rem,3vw,2.75rem)] text-white lg:min-h-[41rem]">
           {status === "success" ? (
             <div className="flex min-h-[35rem] flex-col justify-between">
-              <p className="no-invert font-mono text-xs uppercase tracking-[0.16em] text-white/45">
-                Заявка отправлена
-              </p>
               <div>
                 <h3 className="no-invert max-w-[13ch] font-headline text-[clamp(2rem,3vw,3.5rem)] font-medium tracking-[-0.045em] !leading-[0.98]">
                   {formatTypography("Спасибо. Скоро обсудим ваш проект")}

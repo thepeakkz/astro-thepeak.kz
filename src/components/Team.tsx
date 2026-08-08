@@ -43,7 +43,13 @@ const teamMembers: TeamMember[] = [
   },
 ];
 
-export default function Team() {
+export default function Team({
+  heading = "Каждое направление\nThePeak возглавляет специалист с практическим опытом в своей области",
+  description = "Вы работаете не просто с безликими подрядчиками, а с людьми, которые принимают ключевые решения, глубоко погружаются в ваш бизнес и несут личную ответственность за конечный результат.",
+}: {
+  heading?: string;
+  description?: string;
+}) {
   return (
     <section
       className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] border-b border-brand-gray/10 bg-brand-light-gray/20 scroll-mt-[clamp(2rem,2.8vw,3.5rem)]"
@@ -54,17 +60,12 @@ export default function Team() {
         <div className="col-span-12 lg:col-span-4 xl:col-span-3 self-stretch border-b border-brand-gray/25 pb-[clamp(2.5rem,5vw,4.5rem)] pt-0 text-left lg:border-b-0 lg:border-r lg:pb-[clamp(3.5rem,7vw,7rem)] lg:pr-[var(--grid-gap)]">
           <div className="flex h-full max-w-[95%] flex-col justify-between gap-8 pt-[3rem] md:pt-[var(--page-margin)]">
             <h2 className="no-invert select-none font-headline text-[clamp(1.4rem,2.56vw,1.6rem)] font-semibold leading-[1] text-brand-gray">
-              <span className="block">Каждое направление</span>
-              <span className="block">
-                {formatTypography(
-                  "ThePeak возглавляет специалист с практическим опытом в своей области"
-                )}
-              </span>
+              {heading.split("\n").map((line) => (
+                <span key={line} className="block">{formatTypography(line)}</span>
+              ))}
             </h2>
             <p className="no-invert description-text text-brand-gray/80">
-              {formatTypography(
-                "Вы работаете не просто с безликими подрядчиками, а с людьми, которые принимают ключевые решения, глубоко погружаются в ваш бизнес и несут личную ответственность за конечный результат."
-              )}
+              {formatTypography(description)}
             </p>
           </div>
         </div>

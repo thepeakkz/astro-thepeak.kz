@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import JsonLd from "@/components/JsonLd";
 import { createSeoMetadata, getBreadcrumbJsonLd, pageSeo } from "@/lib/seo";
 import { formatTypography } from "@/utils/typography";
+import NativePageGate from "@/components/cms/NativePageGate";
 
 export const metadata: Metadata = createSeoMetadata(pageSeo.privacy);
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <NativePageGate routePath="/privacy">
+      <div className="min-h-screen bg-white">
       <JsonLd
         data={getBreadcrumbJsonLd([
           { name: "Главная", path: "/" },
@@ -308,7 +310,8 @@ export default function PrivacyPage() {
           </div>
         </div>
       </main>
-    </div>
+      </div>
+    </NativePageGate>
   );
 }
 

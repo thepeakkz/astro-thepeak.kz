@@ -12,6 +12,8 @@ export interface CaseItem {
   services: string[];
   industry: string;
   objectPosition?: string;
+  adminEditUrl?: string;
+  pageId?: string;
 }
 
 export const allCasesData: CaseItem[] = [

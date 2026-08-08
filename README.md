@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Project docs
 
-- [Cloudinary case videos](docs/cloudinary-case-videos.md)
+- [Настройка CMS, Supabase и Cloudflare R2](docs/cms-setup.md)
 
 ## Getting Started
 

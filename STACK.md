@@ -28,11 +28,15 @@
 
 ## Контент и медиа
 
-- Кейсы и метаданные хранятся в TypeScript-файлах внутри `src/data`.
+- Редактируемые страницы и блоки хранятся в **Supabase Postgres** с включённым RLS.
+- Защищённая панель `/admin` использует **Supabase Auth** и роль `app_metadata.role = admin`.
+- Старые кейсы и метаданные пока хранятся в TypeScript-файлах внутри `src/data`.
 - Локальные изображения и видео находятся в `public`.
-- **Cloudinary** используется для видео кейсов; серверный Route Handler получает список ресурсов через Cloudinary API.
+- Новые изображения и видео хранятся в **Cloudflare R2** и раздаются через публичный custom domain.
+- **AWS S3 SDK** создаёт короткоживущие подписанные URL для прямой загрузки файлов в R2.
 - **React Player** и нативное HTML-видео доступны для воспроизведения медиа.
 - **react-masonry-css** используется для masonry-раскладок.
+- **dnd-kit** используется для сортировки блоков в редакторе.
 - **Notion API Client** установлен, но прямое использование в текущем `src` не обнаружено.
 
 ## Серверная часть и интеграции
@@ -40,7 +44,8 @@
 Backend реализован Route Handlers внутри `src/app/api`:
 
 - `POST /api/contact` отправляет заявку в **Telegram Bot API** и создаёт карточку в **Trello API**.
-- `GET /api/case-videos` объединяет медиа из **Cloudinary**, локальных файлов и статического manifest-файла.
+- `POST /api/admin/media/sign` выдаёт авторизованному администратору подписанный URL для загрузки в R2.
+- `GET /api/case-videos` объединяет медиа из **Cloudflare R2**, локальных файлов и временного статического manifest-файла.
 - Для работы с файловой системой маршрут медиа использует Node.js runtime.
 
 ## SEO и аналитика
@@ -62,9 +67,14 @@ Backend реализован Route Handlers внутри `src/app/api`:
 Секреты должны храниться в `.env.local` локально и в настройках окружения Vercel. Они не должны попадать в Git.
 
 ```dotenv
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+
+CLOUDFLARE_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=
+R2_PUBLIC_URL=
 
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
@@ -72,6 +82,8 @@ TELEGRAM_CHAT_ID=
 TRELLO_API_KEY=
 TRELLO_TOKEN=
 TRELLO_LIST_ID=
+
+TINIFY_API_KEY=
 ```
 
 ## Структура проекта

@@ -2,17 +2,11 @@
 
 import { Maximize2, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-
-interface CaseGalleryItem {
-    height?: number;
-    src: string;
-    name?: string;
-    posterSrc?: string;
-    type: "image" | "video";
-    width?: number;
-}
+import type { CaseGalleryItem } from "@/lib/case-gallery";
+import { getFallbackMediaUrl } from "@/lib/media-fallback";
 
 interface CaseVideoGalleryProps {
+    items?: readonly CaseGalleryItem[];
     slug: string;
 }
 
@@ -54,9 +48,9 @@ function formatTime(seconds: number) {
     return `${minutes}:${remainingSeconds}`;
 }
 
-export default function CaseVideoGallery({ slug }: CaseVideoGalleryProps) {
-    const [mediaItems, setMediaItems] = useState<CaseGalleryItem[]>([]);
-    const [isLoaded, setIsLoaded] = useState(false);
+export default function CaseVideoGallery({ items, slug }: CaseVideoGalleryProps) {
+    const [mediaItems, setMediaItems] = useState<CaseGalleryItem[]>(items ? [...items] : []);
+    const [isLoaded, setIsLoaded] = useState(items !== undefined);
     const [activeVideoSrc, setActiveVideoSrc] = useState<string | null>(null);
     const [cursor, setCursor] = useState({ visible: false, x: 0, y: 0 });
     const [videoStates, setVideoStates] = useState<Record<string, VideoState>>({});
@@ -65,6 +59,12 @@ export default function CaseVideoGallery({ slug }: CaseVideoGalleryProps) {
     const sectionRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
+        if (items !== undefined) {
+            setMediaItems([...items]);
+            setIsLoaded(true);
+            return;
+        }
+
         const controller = new AbortController();
 
         async function loadMedia() {
@@ -96,7 +96,7 @@ export default function CaseVideoGallery({ slug }: CaseVideoGalleryProps) {
         loadMedia();
 
         return () => controller.abort();
-    }, [slug]);
+    }, [items, slug]);
 
     useEffect(() => {
         setActiveVideoSrc(null);
@@ -290,6 +290,12 @@ export default function CaseVideoGallery({ slug }: CaseVideoGalleryProps) {
                                 width={item.width}
                                 height={item.height}
                                 style={{ aspectRatio: getMediaAspectRatio(item) }}
+                                onError={(event) => {
+                                    const fallback = item.fallbackSrc || getFallbackMediaUrl(item.src);
+                                    if (fallback && event.currentTarget.src !== fallback) {
+                                        event.currentTarget.src = fallback;
+                                    }
+                                }}
                             />
                         ) : (
                             <div
@@ -336,6 +342,13 @@ export default function CaseVideoGallery({ slug }: CaseVideoGalleryProps) {
                                     height={item.height}
                                     aria-label={item.name || `Видео кейса ${index + 1}`}
                                     onContextMenu={(event) => event.preventDefault()}
+                                    onError={(event) => {
+                                        const fallback = item.fallbackSrc || getFallbackMediaUrl(item.src);
+                                        if (fallback && event.currentTarget.src !== fallback) {
+                                            event.currentTarget.src = fallback;
+                                            event.currentTarget.load();
+                                        }
+                                    }}
                                     onClick={(event) => {
                                         event.stopPropagation();
                                         handleVideoCardClick(item.src);

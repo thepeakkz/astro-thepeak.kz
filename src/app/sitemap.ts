@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 import { allCasesData } from "@/data/cases";
 import { absoluteUrl } from "@/lib/seo";
+import { getPublishedPagesForSitemap } from "@/lib/cms/data";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -32,5 +33,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.75,
   }));
 
-  return [...staticRoutes, ...caseRoutes];
+  const cmsPages = await getPublishedPagesForSitemap();
+  const cmsRoutes: MetadataRoute.Sitemap = cmsPages.map((page) => ({
+    url: absoluteUrl(page.route_path),
+    lastModified: new Date(page.updated_at),
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...caseRoutes, ...cmsRoutes];
 }

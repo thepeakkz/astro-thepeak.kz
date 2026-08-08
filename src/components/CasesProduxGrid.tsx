@@ -6,7 +6,6 @@ import Link from "next/link";
 import type { CaseItem } from "@/data/cases";
 import { formatTypography } from "@/utils/typography";
 import { cn } from "@/lib/utils";
-import { optimizeCloudinaryVideoUrl } from "@/utils/media";
 
 // Lazy loaded video helper
 function LazyCaseVideo({ alt, poster, src, objectPosition }: { alt: string; poster?: string; src: string; objectPosition?: string }) {
@@ -150,7 +149,7 @@ function ProjectCard({
             className="absolute inset-0 w-full h-[110%] -top-[5%] will-change-transform"
           >
             {isVideo && mediaSrc ? (
-              <LazyCaseVideo alt={project.name} poster={project.poster} src={optimizeCloudinaryVideoUrl(mediaSrc)} objectPosition={project.objectPosition} />
+              <LazyCaseVideo alt={project.name} poster={project.poster} src={mediaSrc} objectPosition={project.objectPosition} />
             ) : project.image ? (
               <img
                 src={project.image}

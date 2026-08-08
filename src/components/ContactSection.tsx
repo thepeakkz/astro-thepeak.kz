@@ -165,7 +165,13 @@ function ContactInfo({
   );
 }
 
-export default function ContactSection() {
+export default function ContactSection({
+  title = "Связаться с нами",
+  description = "Если у вас есть вопросы по нашим услугам или вы хотите обсудить проект, пожалуйста, заполните форму. Мы ответим вам в течение 1 рабочего дня.",
+}: {
+  title?: string;
+  description?: string;
+}) {
   const [formData, setFormData] = useState({
     name: "",
     contact: "",
@@ -258,6 +264,8 @@ export default function ContactSection() {
       id="contacts"
     >
       <ContactCard 
+        title={title}
+        description={description}
         contactInfo={contactData}
         formSectionClassName="bg-[#060606] border-t md:border-t-0 md:border-l border-white/10"
       >

@@ -400,8 +400,7 @@ export default function ServicesAnimate() {
 
             <div className="space-y-6">
               <div>
-                <span className="font-sans text-[10px] uppercase tracking-widest font-extrabold text-[#FD4B32]">Услуга</span>
-                <h3 className="font-headline font-bold text-white text-xl md:text-2xl mt-1 tracking-wide leading-tight">
+                <h3 className="font-headline font-bold text-white text-xl md:text-2xl tracking-wide leading-tight">
                   {selectedService.title}
                 </h3>
                 <p className="font-sans text-xs text-white/60 mt-2 leading-relaxed">

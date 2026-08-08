@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import JsonLd from "@/components/JsonLd";
 import SofyaClient from "./sofya-client";
+import NativePageGate from "@/components/cms/NativePageGate";
 import { absoluteUrl, createSeoMetadata, getBreadcrumbJsonLd, pageSeo } from "@/lib/seo";
 
 export const metadata: Metadata = createSeoMetadata(pageSeo.sofya);
@@ -25,7 +26,7 @@ export default function SofyaPage() {
   };
 
   return (
-    <>
+    <NativePageGate routePath="/team/sofya">
       <JsonLd
         data={[
           getBreadcrumbJsonLd([
@@ -36,6 +37,6 @@ export default function SofyaPage() {
         ]}
       />
       <SofyaClient />
-    </>
+    </NativePageGate>
   );
 }

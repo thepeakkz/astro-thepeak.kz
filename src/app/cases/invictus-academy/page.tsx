@@ -1,12 +1,5 @@
-import CaseClient from "../[slug]/CaseClient";
-
-const invictusAcademyCaseData = {
-    title: "Invictus Academy",
-    year: "2025",
-    service: "Продакшн",
-    industry: "Фитнес",
-};
+import ManagedCasePage from "@/components/cms/ManagedCasePage";
 
 export default function InvictusAcademyCasePage() {
-    return <CaseClient data={invictusAcademyCaseData} slug="invictus-academy" />;
+  return <ManagedCasePage slug="invictus-academy" />;
 }

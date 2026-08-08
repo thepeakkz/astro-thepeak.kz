@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button01 } from "@/components/ui/nextjsshop-button";
-import { allCasesData } from "@/data/cases";
+import { allCasesData, type CaseItem } from "@/data/cases";
 import { formatTypography } from "@/utils/typography";
 import CasesProduxGrid from "@/components/CasesProduxGrid";
 
@@ -29,8 +29,9 @@ const homeCases = homeCasesOrder
   .map((href) => allCasesData.find((caseItem) => caseItem.href === href))
   .filter((caseItem): caseItem is typeof allCasesData[number] => !!caseItem);
 
+export default function CasesMasonrySection({ customCases }: { customCases?: CaseItem[] }) {
+  const displayCases = customCases && customCases.length > 0 ? customCases : homeCases;
 
-export default function CasesMasonrySection() {
   return (
     <section
       className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] overflow-hidden pt-[16.6vh] max-lg:pt-[11.7vh] max-sm:pt-[6.86vh] pb-[11.67vh] bg-[#0B0B0C] text-[#F2F2F2] select-none scroll-mt-[clamp(2rem,2.8vw,3.5rem)] relative"
@@ -76,7 +77,7 @@ export default function CasesMasonrySection() {
       </div>
 
       {/* Projects Grid Rows (All aligned to standard swiss-grid) */}
-      <CasesProduxGrid cases={homeCases} limit={12} />
+      <CasesProduxGrid cases={displayCases} limit={displayCases.length} />
 
       {/* Bottom Button "Все кейсы" */}
       <div className="w-full mt-[8vh] flex justify-center">

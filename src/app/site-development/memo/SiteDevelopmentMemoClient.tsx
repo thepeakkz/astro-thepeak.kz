@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import Navigation from "@/components/Navigation";
 
 interface CSSProperty {
@@ -416,9 +417,9 @@ export default function SiteDevelopmentMemoClient() {
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-black/60 font-medium">
               Интерактивный справочник по заголовкам, типографике и стилям, используемым на странице{" "}
-              <a href="/site-development" className="text-[#FD4B32] underline underline-offset-4 font-semibold hover:text-[#e03a22] transition-colors">
+              <Link href="/site-development" className="text-[#FD4B32] underline underline-offset-4 font-semibold hover:text-[#e03a22] transition-colors">
                 Разработка сайтов (/site-development)
-              </a>.
+              </Link>.
             </p>
           </div>
         </header>

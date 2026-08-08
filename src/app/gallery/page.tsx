@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import JsonLd from "@/components/JsonLd";
 import InfiniteGallery from "@/components/ui/3d-gallery-photography";
+import NativePageGate from "@/components/cms/NativePageGate";
 import { absoluteUrl, createSeoMetadata, getBreadcrumbJsonLd, pageSeo } from "@/lib/seo";
 
 export const metadata: Metadata = createSeoMetadata(pageSeo.gallery);
@@ -42,7 +43,8 @@ export default function GalleryPage() {
   ]
 
   return (
-    <div className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] min-h-screen relative bg-black">
+    <NativePageGate routePath="/gallery">
+      <div className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] min-h-screen relative bg-black">
       <JsonLd
         data={[
           getBreadcrumbJsonLd([
@@ -81,6 +83,7 @@ export default function GalleryPage() {
         <p>Use mouse wheel, arrow keys, or touch to navigate</p>
         <p className=" opacity-60">Auto-play resumes after 3 seconds of inactivity</p>
       </div>
-    </div>
+      </div>
+    </NativePageGate>
   )
 }

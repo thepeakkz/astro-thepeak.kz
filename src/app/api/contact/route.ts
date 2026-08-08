@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { formatTelegramLead } from "@/lib/lead-notification";
 import { parseUtmAttribution, UTM_COOKIE_NAME } from "@/lib/utm";
-
-// Helper function to escape HTML special characters for Telegram HTML mode
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+import { createClient } from "@/lib/supabase/server";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 
 function parseComment(comment: unknown) {
   const rawComment = typeof comment === "string" ? comment.trim() : "";
@@ -49,9 +43,6 @@ export async function POST(request: NextRequest) {
 
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
-    const trelloKey = process.env.TRELLO_API_KEY;
-    const trelloToken = process.env.TRELLO_TOKEN;
-    const trelloListId = process.env.TRELLO_LIST_ID;
 
     if (!token || !chatId) {
       console.error("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID in environment variables");
@@ -60,35 +51,11 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    if (!trelloKey || !trelloToken || !trelloListId) {
-      console.error("Missing TRELLO_API_KEY, TRELLO_TOKEN or TRELLO_LIST_ID in environment variables");
-      return NextResponse.json(
-        { error: "Ошибка конфигурации сервера (переменные Trello не настроены)" },
-        { status: 500 }
-      );
-    }
 
     const { contactMethod, project } = parseComment(comment);
     const utmAttribution = parseUtmAttribution(request.cookies.get(UTM_COOKIE_NAME)?.value);
     const sourceText = source && typeof source === "string" ? source.trim() : "Не указан";
-    const formatTouchpoint = (
-      label: string,
-      touchpoint: NonNullable<typeof utmAttribution>["firstTouch"],
-      escapeValues = true
-    ) => {
-      const safe = (value: string) => escapeValues ? escapeHtml(value) : value;
-      return [
-      `${label}: ${safe(touchpoint.source)}`,
-      ...Object.entries(touchpoint.params).map(
-        ([key, value]) => `${safe(key)}: ${safe(value)}`
-      ),
-      ...Object.entries(touchpoint.clickIds).map(
-        ([key, value]) => `${safe(key)}: ${safe(value)}`
-      ),
-      `Посадочная: ${safe(touchpoint.landingPage)}`,
-      `Время: ${safe(touchpoint.capturedAt)}`,
-    ];
-    };
+
     const text = formatTelegramLead({
       name: name.trim(),
       phone: phone.trim(),
@@ -113,46 +80,32 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    // 2. Prepare Trello request promise
-    const trelloUrl = new URL("https://api.trello.com/1/cards");
-    trelloUrl.searchParams.append("key", trelloKey);
-    trelloUrl.searchParams.append("token", trelloToken);
-    trelloUrl.searchParams.append("idList", trelloListId);
+    // 2. Prepare Supabase insert promise
+    const supabasePromise = (async () => {
+      if (!hasSupabaseEnv()) return;
+      try {
+        const supabase = await createClient();
+        const { error } = await supabase.from("leads").insert({
+          name: name.trim(),
+          phone: phone.trim(),
+          source: sourceText,
+          comment: project,
+          contact_method: formatContactMethod(contactMethod),
+          status: "new",
+          attribution: utmAttribution ?? {},
+        });
+        if (error) {
+          console.error("Supabase Lead Insert Error:", error);
+        }
+      } catch (err) {
+        console.error("Failed to insert lead into Supabase:", err);
+      }
+    })();
 
-    const trelloDesc = [
-      `Имя: ${name.trim()}`,
-      `Телефон: ${phone.trim()}`,
-      `Способ связи: ${formatContactMethod(contactMethod)}`,
-      `Комментарий: ${project}`,
-      `Источник: ${sourceText}`,
-      ...(utmAttribution
-        ? [
-            "",
-            ...formatTouchpoint("Первый источник", utmAttribution.firstTouch, false),
-            "",
-            ...formatTouchpoint("Последний источник", utmAttribution.lastTouch, false),
-            `Устройство: ${utmAttribution.deviceType}`,
-            `Путь: ${utmAttribution.userPath.join(" → ")}`,
-          ]
-        : [])
-    ].join("\n");
-
-    const trelloPromise = fetch(trelloUrl.toString(), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: `Заявка от ${name.trim()}`,
-        desc: trelloDesc,
-        pos: "top",
-      }),
-    });
-
-    // 3. Execute both requests concurrently, but await completion to keep serverless function active
-    const [telegramResponse, trelloResponse] = await Promise.all([
+    // 3. Execute requests concurrently
+    const [telegramResponse] = await Promise.all([
       telegramPromise,
-      trelloPromise
+      supabasePromise,
     ]);
 
     if (!telegramResponse.ok) {
@@ -160,14 +113,6 @@ export async function POST(request: NextRequest) {
       console.error("Telegram API Error Response:", errorData);
       return NextResponse.json(
         { error: "Не удалось отправить сообщение в Telegram" },
-        { status: 500 }
-      );
-    }
-    if (!trelloResponse.ok) {
-      const errorData = await trelloResponse.text();
-      console.error("Trello API Error Response:", errorData);
-      return NextResponse.json(
-        { error: "Не удалось создать карточку в Trello" },
         { status: 500 }
       );
     }

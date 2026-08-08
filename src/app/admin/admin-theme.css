@@ -1,0 +1,1615 @@
+/*
+ * THE PEAK CMS — редизайн под дизайн-систему сайта
+ *
+ * Принципы:
+ *   - Токены --peak-* берутся из дизайна сайта (thepeak.kz)
+ *   - border-radius: 0 везде — принципиальное решение дизайн-системы
+ *   - Рабочий инструмент, не продающая страница: плотно, компактно
+ *   - Scoped в .peak-admin чтобы не влиять на публичный сайт
+ *   - Шрифт Inter Display приходит через --font-inter-display из root layout
+ */
+
+/* ─────────────────────────────────────────────
+   ТОКЕНЫ
+   ───────────────────────────────────────────── */
+
+.peak-admin {
+  /* Цвета сайта (сняты с getComputedStyle thepeak.kz) */
+  --peak-bg:          #F2F2F2;
+  --peak-surface:     #FFFFFF;
+  --peak-ink:         #1A1A1A;
+  --peak-body:        #434343;
+  --peak-muted:       #8E8E93;
+  --peak-line:        rgba(26, 26, 26, 0.10);
+  --peak-line-strong: rgba(26, 26, 26, 0.18);
+  --peak-coral:       #FD4B32;
+  --peak-coral-soft:  rgba(253, 75, 50, 0.08);
+  --peak-coral-hover: #EA3F27;
+  --peak-green:       #2E9E4F;
+  --peak-green-soft:  rgba(46, 158, 79, 0.10);
+  --peak-danger:      #B42318;
+  --peak-danger-soft: #FFF0ED;
+  --peak-warning:     #8A4B08;
+  --peak-warning-soft:#FFF7DF;
+
+  /* Семантические алиасы для совместимости со старым кодом */
+  --peak-color-accent:       var(--peak-coral);
+  --peak-color-accent-hover: var(--peak-coral-hover);
+  --peak-color-ink:          var(--peak-ink);
+  --peak-color-heading:      var(--peak-ink);
+  --peak-color-text:         var(--peak-body);
+  --peak-color-muted:        var(--peak-muted);
+  --peak-color-surface:      var(--peak-surface);
+  --peak-color-soft:         var(--peak-bg);
+  --peak-color-dark:         #1A1A1A;
+  --peak-color-media:        #020617;
+  --peak-color-on-dark:      #FFFFFF;
+
+  /* Типографика */
+  --peak-font-sans:        var(--font-inter-display, "Inter Display"), Inter, Arial, sans-serif;
+  --peak-weight-regular:   400;
+  --peak-weight-medium:    500;
+  --peak-weight-semibold:  600;
+  --peak-weight-bold:      700;
+  --peak-tracking-display: -0.04em;
+  --peak-tracking-tight:   -0.02em;
+
+  /* Радиусы — везде 0 */
+  --peak-radius:         0;
+  --peak-radius-small:   0;
+  --peak-radius-media:   0;
+
+  /* Топбар */
+  --peak-topbar-height: 3rem;
+
+  /* Тени */
+  --peak-shadow-sm:  0 1px 3px rgba(26, 26, 26, 0.06);
+  --peak-shadow-md:  0 4px 16px rgba(26, 26, 26, 0.08);
+  --peak-shadow-lg:  0 8px 32px rgba(26, 26, 26, 0.12);
+
+  /* Layout */
+  --peak-page-margin:   clamp(1rem, 2vw, 2rem);
+  --peak-content-width: 96rem;
+
+  /* Размер символа focus-ring */
+  --peak-focus-ring: 2px solid var(--peak-coral);
+
+  /* Устаревшие переменные для обратной совместимости */
+  --peak-admin-border:        var(--peak-line);
+  --peak-admin-border-strong: var(--peak-line-strong);
+  --peak-admin-soft-accent:   var(--peak-coral-soft);
+  --peak-admin-success:       var(--peak-green);
+  --peak-admin-success-soft:  var(--peak-green-soft);
+  --peak-admin-danger:        var(--peak-danger);
+  --peak-admin-danger-soft:   var(--peak-danger-soft);
+  --peak-admin-warning:       var(--peak-warning);
+  --peak-admin-warning-soft:  var(--peak-warning-soft);
+  --peak-admin-shadow:        var(--peak-shadow-md);
+  --peak-admin-radius:        0;
+  --peak-admin-radius-small:  0;
+}
+
+/* ─────────────────────────────────────────────
+   СБРОС И БАЗА
+   ───────────────────────────────────────────── */
+
+.peak-admin,
+.peak-admin *,
+.peak-admin *::before,
+.peak-admin *::after {
+  box-sizing: border-box;
+  border-radius: 0 !important; /* принципиальное решение дизайн-системы */
+}
+
+.peak-admin {
+  min-height: 100svh;
+  background: var(--peak-bg);
+  color: var(--peak-body);
+  font-family: var(--peak-font-sans);
+  font-weight: var(--peak-weight-medium);
+}
+
+.peak-admin a,
+.peak-admin button,
+.peak-admin input,
+.peak-admin select,
+.peak-admin textarea {
+  font: inherit;
+}
+
+.peak-admin button,
+.peak-admin a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus-ring сохранён при border-radius: 0 — используем outline */
+.peak-admin :focus-visible {
+  outline: var(--peak-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────────
+   ТОПБАР
+   ───────────────────────────────────────────── */
+
+.peak-admin__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  height: var(--peak-topbar-height);
+  padding-inline: var(--peak-page-margin);
+  background: var(--peak-surface);
+  border-bottom: 1px solid var(--peak-line);
+  gap: 0;
+}
+
+.peak-admin__topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: var(--peak-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--peak-ink);
+  flex-shrink: 0;
+  margin-right: 2rem;
+}
+
+.peak-admin__topbar-logo-peak {
+  color: var(--peak-coral);
+}
+
+.peak-admin__topbar-nav {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  gap: 0;
+  flex: 1;
+}
+
+.peak-admin__topbar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 100%;
+  padding-inline: 0.875rem;
+  font-size: 0.75rem;
+  font-weight: var(--peak-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--peak-muted);
+  border-bottom: 2px solid transparent;
+  transition: color 150ms ease, border-color 150ms ease;
+  white-space: nowrap;
+}
+
+.peak-admin__topbar-link:hover {
+  color: var(--peak-ink);
+}
+
+.peak-admin__topbar-link--active {
+  color: var(--peak-ink);
+  border-bottom-color: var(--peak-coral);
+}
+
+.peak-admin__topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Кнопка «Выйти» — тёмная плашка без радиуса */
+.peak-admin__topbar-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--peak-ink);
+  color: var(--peak-bg);
+  font-size: 0.6875rem;
+  font-weight: var(--peak-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.peak-admin__topbar-exit:hover {
+  background: #2d2d2d;
+}
+
+/* ─────────────────────────────────────────────
+   ОСНОВНОЙ КОНТЕНТ
+   ───────────────────────────────────────────── */
+
+.peak-admin__main {
+  width: 100%;
+  max-width: var(--peak-content-width);
+  margin-inline: auto;
+  padding: 0 var(--peak-page-margin) clamp(3rem, 6vw, 5rem);
+}
+
+/* ─────────────────────────────────────────────
+   ЗАГОЛОВОК СТРАНИЦЫ (компактный)
+   ───────────────────────────────────────────── */
+
+.peak-admin__page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--peak-line);
+  margin-bottom: 1.5rem;
+}
+
+.peak-admin__page-title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: var(--peak-weight-bold);
+  line-height: 1;
+  letter-spacing: var(--peak-tracking-tight);
+  color: var(--peak-ink);
+}
+
+.peak-admin__page-meta {
+  font-size: 0.75rem;
+  color: var(--peak-muted);
+  margin-top: 0.25rem;
+}
+
+.peak-admin__page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Устаревший мастхед — перекрыт новым page-header */
+.peak-admin__masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--peak-line);
+  margin-bottom: 1.5rem;
+}
+
+.peak-admin__masthead--editor {
+  min-height: 3.5rem;
+  align-items: center;
+}
+
+/* Скрываем старые eyebrow и крупные заголовки */
+.peak-admin__eyebrow {
+  display: none;
+}
+
+.peak-admin__title {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: var(--peak-weight-bold);
+  line-height: 1;
+  letter-spacing: var(--peak-tracking-tight);
+  color: var(--peak-ink);
+}
+
+.peak-admin__title--compact {
+  font-size: 1.375rem;
+}
+
+.peak-admin__summary {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--peak-muted);
+}
+
+/* ─────────────────────────────────────────────
+   STAT-BAR (горизонтальная полоса со статистикой)
+   ───────────────────────────────────────────── */
+
+.peak-admin__stat-bar {
+  display: flex;
+  border: 1px solid var(--peak-line);
+  border-top: none;
+  background: var(--peak-surface);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.peak-admin__stat-cell {
+  flex: 1;
+  padding: 1rem 1.25rem;
+  border-right: 1px solid var(--peak-line);
+  min-width: 0;
+}
+
+.peak-admin__stat-cell:last-child {
+  border-right: none;
+}
+
+.peak-admin__stat-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: var(--peak-tracking-tight);
+  color: var(--peak-ink);
+  font-feature-settings: "tnum";
+}
+
+.peak-admin__stat-label {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--peak-muted);
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────
+   HAIRLINE-ТАБЛИЦА (сетка страниц/кейсов)
+   ───────────────────────────────────────────── */
+
+.peak-admin__hairline {
+  border-top: 1px solid var(--peak-line);
+  border-left: 1px solid var(--peak-line);
+  background: var(--peak-surface);
+}
+
+.peak-admin__hairline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.625rem 0.875rem;
+  border-right: 1px solid var(--peak-line);
+  border-bottom: 1px solid var(--peak-line);
+  transition: background 120ms ease;
+  cursor: pointer;
+}
+
+.peak-admin__hairline-row:hover {
+  background: var(--peak-coral-soft);
+}
+
+.peak-admin__hairline-status {
+  font-size: 0.625rem;
+  font-weight: var(--peak-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--peak-green);
+  margin-bottom: 0.125rem;
+}
+
+.peak-admin__hairline-status--draft {
+  color: var(--peak-muted);
+}
+
+.peak-admin__hairline-title {
+  font-size: 0.875rem;
+  font-weight: var(--peak-weight-semibold);
+  color: var(--peak-ink);
+  letter-spacing: var(--peak-tracking-tight);
+  margin: 0;
+  transition: color 120ms ease;
+}
+
+.peak-admin__hairline-row:hover .peak-admin__hairline-title {
+  color: var(--peak-coral);
+}
+
+.peak-admin__hairline-route {
+  margin: 0;
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-size: 0.6875rem;
+  color: var(--peak-muted);
+}
+
+.peak-admin__hairline-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────
+   КНОПКИ
+   ───────────────────────────────────────────── */
+
+.peak-admin__button {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid transparent;
+  padding: 0.4375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: var(--peak-weight-semibold);
+  line-height: 1.1;
+  letter-spacing: var(--peak-tracking-tight);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.peak-admin__button:hover {
+  transform: none;
+}
+
+.peak-admin__button:active {
+  transform: none;
+}
+
+.peak-admin__button--primary {
+  background: var(--peak-coral);
+  color: #fff;
+  border-color: var(--peak-coral);
+}
+
+.peak-admin__button--primary:hover {
+  background: var(--peak-coral-hover);
+  border-color: var(--peak-coral-hover);
+}
+
+.peak-admin__button--dark {
+  background: var(--peak-ink);
+  color: #fff;
+  border-color: var(--peak-ink);
+}
+
+.peak-admin__button--dark:hover {
+  background: #2d2d2d;
+  border-color: #2d2d2d;
+}
+
+.peak-admin__button--outline {
+  border-color: var(--peak-line-strong);
+  background: var(--peak-surface);
+  color: var(--peak-ink);
+}
+
+.peak-admin__button--outline:hover {
+  background: var(--peak-bg);
+  border-color: var(--peak-line-strong);
+}
+
+.peak-admin__button--ghost-dark {
+  border-color: var(--peak-line-strong);
+  background: transparent;
+  color: var(--peak-ink);
+}
+
+.peak-admin__button--ghost-dark:hover {
+  background: var(--peak-bg);
+}
+
+.peak-admin__button:disabled,
+.peak-admin__icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+  transform: none;
+}
+
+.peak-admin__icon-button {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--peak-line);
+  background: var(--peak-surface);
+  color: var(--peak-muted);
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.peak-admin__icon-button:hover {
+  border-color: var(--peak-line-strong);
+  background: var(--peak-bg);
+  color: var(--peak-ink);
+}
+
+.peak-admin__icon-button--danger:hover {
+  border-color: rgba(180, 35, 24, 0.3);
+  background: var(--peak-danger-soft);
+  color: var(--peak-danger);
+}
+
+/* ─────────────────────────────────────────────
+   НАВИГАЦИЯ «НАЗАД»
+   ───────────────────────────────────────────── */
+
+.peak-admin__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.75rem 0;
+  font-size: 0.8125rem;
+  color: var(--peak-muted);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.peak-admin__back:hover {
+  color: var(--peak-ink);
+}
+
+/* ─────────────────────────────────────────────
+   УВЕДОМЛЕНИЯ
+   ───────────────────────────────────────────── */
+
+.peak-admin__notice {
+  margin-top: 0.75rem;
+  border: 1px solid transparent;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.peak-admin__notice--success {
+  border-color: rgba(46, 158, 79, 0.2);
+  background: var(--peak-green-soft);
+  color: var(--peak-green);
+}
+
+.peak-admin__notice--error {
+  border-color: rgba(180, 35, 24, 0.2);
+  background: var(--peak-danger-soft);
+  color: var(--peak-danger);
+}
+
+.peak-admin__notice--warning {
+  border-color: rgba(138, 75, 8, 0.2);
+  background: var(--peak-warning-soft);
+  color: var(--peak-warning);
+}
+
+/* ─────────────────────────────────────────────
+   FEATURED / ССЫЛКА-КАРТОЧКА КЕЙСОВ
+   (упрощённая версия, без coral-bg)
+   ───────────────────────────────────────────── */
+
+.peak-admin__featured {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.5rem;
+  background: var(--peak-surface);
+  border: 1px solid var(--peak-line);
+  border-left: 3px solid var(--peak-coral);
+  text-decoration: none;
+  color: var(--peak-ink);
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.peak-admin__featured:hover {
+  background: var(--peak-bg);
+  transform: none;
+}
+
+.peak-admin__featured-icon,
+.peak-admin__folder-icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  background: var(--peak-coral-soft);
+  color: var(--peak-coral);
+}
+
+.peak-admin__featured-title {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: var(--peak-weight-semibold);
+  color: var(--peak-ink);
+  letter-spacing: var(--peak-tracking-tight);
+}
+
+.peak-admin__featured-meta {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: var(--peak-muted);
+}
+
+.peak-admin__featured-arrow {
+  margin-left: auto;
+  color: var(--peak-muted);
+}
+
+/* ─────────────────────────────────────────────
+   ЗАГОЛОВКИ СЕКЦИЙ
+   ───────────────────────────────────────────── */
+
+.peak-admin__section-title {
+  margin: 1.25rem 0 0;
+  font-size: 0.6875rem;
+  font-weight: var(--peak-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--peak-muted);
+}
+
+.peak-admin__section-description {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--peak-muted);
+  line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────────
+   ПАНЕЛЬ (старый .peak-admin__panel → теперь hairline)
+   ───────────────────────────────────────────── */
+
+.peak-admin__panel {
+  border: 1px solid var(--peak-line);
+  background: var(--peak-surface);
+  box-shadow: none;
+}
+
+.peak-admin__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.625rem 0.875rem;
+  transition: background 120ms ease;
+  cursor: pointer;
+}
+
+.peak-admin__row + .peak-admin__row {
+  border-top: 1px solid var(--peak-line);
+}
+
+.peak-admin__row:hover {
+  background: var(--peak-coral-soft);
+}
+
+.peak-admin__row-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: var(--peak-weight-semibold);
+  color: var(--peak-ink);
+  letter-spacing: var(--peak-tracking-tight);
+  transition: color 120ms ease;
+}
+
+.peak-admin__row:hover .peak-admin__row-title {
+  color: var(--peak-coral);
+}
+
+.peak-admin__route {
+  margin: 0.125rem 0 0;
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-size: 0.6875rem;
+  color: var(--peak-muted);
+}
+
+/* ─────────────────────────────────────────────
+   СТАТУС-ЛЕЙБЛЫ (текстовые, без пилюли)
+   ───────────────────────────────────────────── */
+
+.peak-admin__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: var(--peak-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0;
+  background: none;
+}
+
+.peak-admin__status--published {
+  color: var(--peak-green);
+}
+
+.peak-admin__status--draft {
+  color: var(--peak-muted);
+}
+
+/* ─────────────────────────────────────────────
+   ПУСТЫЕ СОСТОЯНИЯ
+   ───────────────────────────────────────────── */
+
+.peak-admin__empty {
+  display: grid;
+  min-height: 10rem;
+  place-items: center;
+  padding: 1.5rem;
+  color: var(--peak-muted);
+  text-align: center;
+}
+
+.peak-admin__empty-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-inline: auto;
+  place-items: center;
+  background: var(--peak-bg);
+  color: var(--peak-muted);
+}
+
+.peak-admin__empty-title {
+  margin: 0.875rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: var(--peak-weight-semibold);
+  color: var(--peak-ink);
+}
+
+.peak-admin__empty-copy {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+}
+
+/* ─────────────────────────────────────────────
+   ПОИСК
+   ───────────────────────────────────────────── */
+
+.peak-admin__search {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+}
+
+.peak-admin__search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  z-index: 1;
+  color: var(--peak-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+/* ─────────────────────────────────────────────
+   ПОЛЯ ФОРМЫ
+   ───────────────────────────────────────────── */
+
+.peak-admin__field {
+  display: block;
+}
+
+.peak-admin__label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: var(--peak-weight-semibold);
+  color: var(--peak-ink);
+}
+
+.peak-admin__required {
+  color: var(--peak-coral);
+}
+
+.peak-admin__input,
+.peak-admin__select,
+.peak-admin__textarea,
+.peak-admin__url-field,
+.peak-admin__locked-field {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid var(--peak-line-strong);
+  background: var(--peak-surface);
+  color: var(--peak-ink);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.peak-admin__input,
+.peak-admin__select,
+.peak-admin__textarea {
+  padding: 0.5rem 0.75rem;
+}
+
+.peak-admin__input::placeholder,
+.peak-admin__textarea::placeholder {
+  color: var(--peak-muted);
+}
+
+.peak-admin__input:focus,
+.peak-admin__select:focus,
+.peak-admin__textarea:focus,
+.peak-admin__url-field:focus-within {
+  border-color: var(--peak-coral);
+  box-shadow: 0 0 0 3px rgba(253, 75, 50, 0.12);
+}
+
+.peak-admin__input:disabled,
+.peak-admin__select:disabled,
+.peak-admin__textarea:disabled {
+  cursor: not-allowed;
+  background: var(--peak-bg);
+  color: var(--peak-muted);
+}
+
+.peak-admin__textarea {
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.peak-admin__search .peak-admin__input {
+  padding-left: 2.5rem;
+}
+
+.peak-admin__url-field {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.peak-admin__url-prefix {
+  flex: 0 0 auto;
+  padding-left: 0.75rem;
+  color: var(--peak-muted);
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-size: 0.75rem;
+}
+
+.peak-admin__inline-input {
+  min-width: 0;
+  min-height: 2.5rem;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 0.5rem 0.75rem 0.5rem 0.25rem;
+  color: var(--peak-ink);
+  outline: none;
+}
+
+.peak-admin__locked-field {
+  display: flex;
+  align-items: center;
+  padding-inline: 0.75rem;
+  background: var(--peak-bg);
+  color: var(--peak-muted);
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-size: 0.75rem;
+}
+
+/* ─────────────────────────────────────────────
+   МОДАЛЬНОЕ ОКНО
+   ───────────────────────────────────────────── */
+
+.peak-admin__modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(26, 26, 26, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.peak-admin__modal {
+  width: 100%;
+  max-width: 32rem;
+  max-height: calc(100svh - 2rem);
+  overflow-y: auto;
+  border: 1px solid var(--peak-line);
+  background: var(--peak-surface);
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  box-shadow: var(--peak-shadow-lg);
+}
+
+.peak-admin__modal-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: var(--peak-weight-bold);
+  color: var(--peak-ink);
+  letter-spacing: var(--peak-tracking-tight);
+  line-height: 1;
+}
+
+.peak-admin__modal-copy {
+  margin: 0.5rem 0 0;
+  color: var(--peak-muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+/* ─────────────────────────────────────────────
+   РЕДАКТОР БЛОКОВ
+   ───────────────────────────────────────────── */
+
+.peak-admin__editor-grid {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.peak-admin__editor-grid::before {
+  content: none; /* убираем тёмный фон редактора */
+}
+
+.peak-admin__block-list {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.peak-admin__block {
+  border: 1px solid var(--peak-line);
+  background: var(--peak-surface);
+  box-shadow: none;
+  transition: border-color 150ms ease, opacity 150ms ease;
+}
+
+.peak-admin__block--dragging {
+  z-index: 20;
+  border-color: var(--peak-coral);
+  box-shadow: var(--peak-shadow-md);
+}
+
+.peak-admin__block--hidden {
+  opacity: 0.48;
+}
+
+.peak-admin__block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 3.5rem;
+  padding: 0.5rem 0.625rem;
+  border-bottom: 1px solid transparent;
+  transition: border-color 150ms ease;
+}
+
+.peak-admin__block--dragging .peak-admin__block-header {
+  border-bottom-color: var(--peak-line);
+}
+
+.peak-admin__block-main {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.peak-admin__block-title {
+  font-size: 0.875rem;
+  color: var(--peak-ink);
+  font-weight: var(--peak-weight-semibold);
+  letter-spacing: var(--peak-tracking-tight);
+}
+
+.peak-admin__block-description {
+  display: block;
+  margin-top: 0.125rem;
+  overflow: hidden;
+  color: var(--peak-muted);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.peak-admin__block-body {
+  display: grid;
+  gap: 1rem;
+  border-top: 1px solid var(--peak-line);
+  padding: clamp(0.875rem, 2vw, 1rem);
+  background: var(--peak-bg);
+}
+
+.peak-admin__drag-handle {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: var(--peak-muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.peak-admin__drag-handle:hover {
+  color: var(--peak-ink);
+}
+
+.peak-admin__drag-handle:active {
+  cursor: grabbing;
+}
+
+/* ─────────────────────────────────────────────
+   МЕДИА-ПОЛЯ
+   ───────────────────────────────────────────── */
+
+.peak-admin__media-tag {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 0.25rem 0.4375rem;
+  background: var(--peak-coral-soft);
+  color: var(--peak-coral);
+  font-size: 0.5625rem;
+  font-weight: var(--peak-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.peak-admin__media-field {
+  border: 1px solid rgba(253, 75, 50, 0.18);
+  padding: clamp(0.875rem, 2vw, 1rem);
+  background: var(--peak-coral-soft);
+}
+
+.peak-admin__media-field-icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  place-items: center;
+  background: var(--peak-coral);
+  color: #fff;
+}
+
+/* ─────────────────────────────────────────────
+   МЕДИА КЕЙСА
+   ───────────────────────────────────────────── */
+
+.peak-admin__case-media {
+  margin-top: 1.25rem;
+  border: 1px solid var(--peak-line);
+  padding: clamp(0.875rem, 2.5vw, 1.25rem);
+  background: var(--peak-surface);
+}
+
+.peak-admin__case-media-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.peak-admin__case-media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+  margin-top: 1rem;
+}
+
+.peak-admin__case-media-item {
+  min-width: 0;
+  border: 1px solid var(--peak-line);
+  padding: 0.625rem;
+  background: var(--peak-bg);
+}
+
+.peak-admin__case-media-item-header {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.peak-admin__case-media-add {
+  margin-top: 1rem;
+  border-top: 1px solid var(--peak-line);
+  padding-top: 1rem;
+}
+
+/* ─────────────────────────────────────────────
+   PROTECTED BLOCK
+   ───────────────────────────────────────────── */
+
+.peak-admin__protected {
+  border: 1px solid var(--peak-line);
+  padding: 0.875rem;
+  background: var(--peak-surface);
+  color: var(--peak-body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────────
+   ДОБАВИТЬ БЛОК
+   ───────────────────────────────────────────── */
+
+.peak-admin__add {
+  position: relative;
+  margin-top: 0.625rem;
+}
+
+.peak-admin__add-trigger {
+  width: 100%;
+  border: 1px dashed var(--peak-line-strong);
+  background: var(--peak-surface);
+  color: var(--peak-ink);
+  cursor: pointer;
+}
+
+.peak-admin__add-trigger:hover {
+  border-color: var(--peak-coral);
+  background: var(--peak-coral-soft);
+  color: var(--peak-coral);
+}
+
+.peak-admin__add-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  left: 0;
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid var(--peak-line);
+  padding: 0.375rem;
+  background: var(--peak-surface);
+  box-shadow: var(--peak-shadow-md);
+}
+
+.peak-admin__template {
+  min-height: 3.5rem;
+  border: 1px solid var(--peak-line);
+  padding: 0.625rem 0.75rem;
+  background: var(--peak-surface);
+  color: var(--peak-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.peak-admin__template:hover {
+  border-color: rgba(253, 75, 50, 0.3);
+  background: var(--peak-coral-soft);
+}
+
+/* ─────────────────────────────────────────────
+   НАСТРОЙКИ
+   ───────────────────────────────────────────── */
+
+.peak-admin__settings {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.peak-admin__settings-card {
+  border: 1px solid var(--peak-line);
+  padding: 0.875rem;
+  background: var(--peak-surface);
+}
+
+.peak-admin__settings-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: var(--peak-weight-semibold);
+  color: var(--peak-ink);
+  letter-spacing: var(--peak-tracking-tight);
+}
+
+.peak-admin__settings-card summary {
+  min-height: 2.5rem;
+  font-size: 0.875rem;
+  font-weight: var(--peak-weight-semibold);
+  color: var(--peak-ink);
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────────
+   ЗАГРУЗЧИК МЕДИА
+   ───────────────────────────────────────────── */
+
+.peak-admin__uploader {
+  border: 1px dashed var(--peak-line-strong);
+  padding: 0.5rem;
+  background: var(--peak-surface);
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.peak-admin__uploader--dragging {
+  border-color: var(--peak-coral);
+  background: var(--peak-coral-soft);
+}
+
+.peak-admin__media-preview {
+  position: relative;
+  overflow: hidden;
+  background: var(--peak-ink);
+}
+
+.peak-admin__media-preview img,
+.peak-admin__media-preview video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+
+.peak-admin__drop-zone {
+  display: grid;
+  width: 100%;
+  min-height: 8rem;
+  place-items: center;
+  border: none;
+  padding: 1rem;
+  background: var(--peak-bg);
+  color: var(--peak-ink);
+  text-align: center;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.peak-admin__drop-zone:hover {
+  background: #e8e8e8;
+}
+
+/* ─────────────────────────────────────────────
+   СТРАНИЦА ВХОДА
+   ───────────────────────────────────────────── */
+
+.peak-admin__login {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding: var(--peak-page-margin);
+  background: var(--peak-bg);
+}
+
+.peak-admin__login-card {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  overflow: hidden;
+  border: 1px solid var(--peak-line);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  background: var(--peak-surface);
+  box-shadow: var(--peak-shadow-lg);
+}
+
+/* Акцентная полоска сверху логин-карточки */
+.peak-admin__login-card::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: var(--peak-coral);
+  content: "";
+}
+
+.peak-admin__login-mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  background: var(--peak-coral);
+  color: #fff;
+}
+
+.peak-admin__login-title {
+  margin: 1.5rem 0 0;
+  font-size: 2rem;
+  font-weight: var(--peak-weight-bold);
+  color: var(--peak-ink);
+  letter-spacing: var(--peak-tracking-tight);
+  line-height: 1;
+}
+
+.peak-admin__login-copy {
+  margin: 0.625rem 0 0;
+  color: var(--peak-muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+/* ─────────────────────────────────────────────
+   CROSSHAIR-МЕТКИ (сигнатурная деталь сайта)
+   Используется точечно — не более 2–3 мест на экран.
+   Применять к .peak-admin__crosshair-container
+   ───────────────────────────────────────────── */
+
+.peak-admin__crosshair {
+  position: relative;
+}
+
+.peak-admin__crosshair::before,
+.peak-admin__crosshair::after {
+  content: "+";
+  position: absolute;
+  top: -0.5rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--peak-coral);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.peak-admin__crosshair::before {
+  left: -0.25rem;
+}
+
+.peak-admin__crosshair::after {
+  right: -0.25rem;
+}
+
+/* ─────────────────────────────────────────────
+   АНАЛИТИКА — обнуление Tailwind-закруглений
+   ───────────────────────────────────────────── */
+
+/* Все кнопки переключателя периода */
+.peak-admin__period-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--peak-line);
+  background: var(--peak-surface);
+  overflow: hidden;
+}
+
+.peak-admin__period-btn {
+  padding: 0.4375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: var(--peak-weight-semibold);
+  color: var(--peak-muted);
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--peak-line);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.peak-admin__period-btn:last-child {
+  border-right: none;
+}
+
+.peak-admin__period-btn--active {
+  background: var(--peak-coral);
+  color: #fff;
+}
+
+.peak-admin__period-btn:not(.peak-admin__period-btn--active):hover {
+  background: var(--peak-bg);
+  color: var(--peak-ink);
+}
+
+/* Карточки аналитики */
+.peak-admin__analytics-card {
+  border: 1px solid var(--peak-line);
+  background: var(--peak-surface);
+  padding: 1.25rem;
+}
+
+.peak-admin__analytics-section {
+  margin-bottom: 1.5rem;
+}
+
+.peak-admin__analytics-label {
+  font-size: 0.625rem;
+  font-weight: var(--peak-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--peak-muted);
+  margin-bottom: 0.625rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* Прогресс-бар — прямоугольный */
+.peak-admin__progress-track {
+  width: 100%;
+  height: 0.375rem;
+  background: var(--peak-bg);
+  overflow: hidden;
+}
+
+.peak-admin__progress-fill {
+  height: 100%;
+  background: var(--peak-coral);
+  transition: width 300ms ease;
+}
+
+.peak-admin__progress-fill--green {
+  background: var(--peak-green);
+}
+
+.peak-admin__progress-fill--ink {
+  background: var(--peak-ink);
+}
+
+/* Бейджи-статусы аналитики */
+.peak-admin__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: var(--peak-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.peak-admin__badge--success {
+  background: var(--peak-green-soft);
+  color: var(--peak-green);
+}
+
+.peak-admin__badge--danger {
+  background: var(--peak-danger-soft);
+  color: var(--peak-danger);
+}
+
+.peak-admin__badge--neutral {
+  background: var(--peak-bg);
+  color: var(--peak-muted);
+}
+
+/* ─────────────────────────────────────────────
+   КНОПКИ КОРЗИНЫ (TrashDashboardClient)
+   ───────────────────────────────────────────── */
+
+.peak-admin__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: var(--peak-weight-semibold);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.peak-admin__btn--secondary {
+  border-color: var(--peak-line-strong);
+  background: var(--peak-surface);
+  color: var(--peak-ink);
+}
+
+.peak-admin__btn--secondary:hover {
+  background: var(--peak-bg);
+}
+
+.peak-admin__btn--danger {
+  background: var(--peak-danger);
+  color: #fff;
+}
+
+.peak-admin__btn--danger:hover {
+  background: #9b1e14;
+}
+
+/* ─────────────────────────────────────────────
+   АДАПТИВ
+   ───────────────────────────────────────────── */
+
+@media (min-width: 64rem) {
+  .peak-admin__editor-grid {
+    grid-template-columns: minmax(0, 1fr) 18rem;
+  }
+
+  .peak-admin__settings {
+    position: sticky;
+    top: calc(var(--peak-topbar-height) + 1rem);
+    align-self: start;
+  }
+
+  .peak-admin__add-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 47.999rem) {
+  .peak-admin__masthead,
+  .peak-admin__page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-height: auto;
+  }
+
+  .peak-admin__page-header-actions,
+  .peak-admin__masthead > div:last-child {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .peak-admin__page-header-actions > *,
+  .peak-admin__masthead > div:last-child > * {
+    width: 100%;
+  }
+
+  .peak-admin__stat-bar {
+    flex-wrap: wrap;
+  }
+
+  .peak-admin__stat-cell {
+    flex: 1 1 50%;
+  }
+
+  .peak-admin__stat-cell:nth-child(2) {
+    border-right: none;
+  }
+
+  .peak-admin__stat-cell:nth-child(1),
+  .peak-admin__stat-cell:nth-child(2) {
+    border-bottom: 1px solid var(--peak-line);
+  }
+
+  .peak-admin__row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+
+  .peak-admin__hairline-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .peak-admin__hairline-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+
+  .peak-admin__hairline-actions > * {
+    width: 100%;
+  }
+
+  .peak-admin__row-actions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .peak-admin__row-actions > * {
+    width: 100%;
+  }
+
+  .peak-admin__case-media-heading {
+    flex-direction: column;
+  }
+
+  .peak-admin__case-media-heading > .peak-admin__button {
+    width: 100%;
+  }
+
+  .peak-admin__case-media-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .peak-admin__topbar-nav {
+    display: none; /* на мобильном скрываем нав */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .peak-admin *,
+  .peak-admin *::before,
+  .peak-admin *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}

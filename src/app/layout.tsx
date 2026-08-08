@@ -1,17 +1,9 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
-import GridGuide from "@/components/GridGuide";
-import SmoothScroll from "@/components/SmoothScroll";
-import PageTransition from "@/components/PageTransition";
-import HeroVideoPreload from "@/components/HeroVideoPreload";
-import GlobalPreloader from "@/components/GlobalPreloader";
 import JsonLd from "@/components/JsonLd";
-import FormConversionTracker from "@/components/FormConversionTracker";
-import UtmTracker from "@/components/UtmTracker";
-import LeadPopup from "@/components/LeadPopup";
+import AppChrome from "@/components/AppChrome";
 import { getOrganizationJsonLd, getWebsiteJsonLd, pageSeo, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const interDisplay = localFont({
@@ -63,12 +55,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" className={`${interDisplay.variable} h-full antialiased`} data-scroll-behavior="smooth">
-      <head>
+      <head />
+      <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-hidden">
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-HCKHMPWG4L"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
         />
-        <Script id="google-analytics" strategy="beforeInteractive">
+        <Script id="google-analytics" strategy="afterInteractive">
           {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
@@ -77,7 +70,7 @@ export default function RootLayout({
               gtag('config', 'G-HCKHMPWG4L');
           `}
         </Script>
-        <Script id="google-engagement-event" strategy="beforeInteractive">
+        <Script id="google-engagement-event" strategy="afterInteractive">
           {`
               // Helper function to delay opening a URL until a gtag event is sent.
               // Call it in response to an action that should navigate to a URL.
@@ -99,14 +92,7 @@ export default function RootLayout({
               }
           `}
         </Script>
-      </head>
-      <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-hidden">
-        <GlobalPreloader />
         <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
-        <FormConversionTracker />
-        <Suspense fallback={null}>
-          <UtmTracker />
-        </Suspense>
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
@@ -121,6 +107,7 @@ export default function RootLayout({
             fbq('track', 'PageView');
           `}
         </Script>
+
         <noscript>
           <img
             height="1"
@@ -130,13 +117,7 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
-        <HeroVideoPreload />
-        <SmoothScroll />
-        <PageTransition>
-          {children}
-        </PageTransition>
-        <LeadPopup />
-        <GridGuide />
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );

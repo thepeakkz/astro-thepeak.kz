@@ -5,13 +5,27 @@ import { Button01 } from "@/components/ui/nextjsshop-button";
 import StatsBlock from "./StatsBlock";
 import { formatTypography } from "@/utils/typography";
 
-export default function HeroDuplicate() {
+export type HomeHeroContent = {
+  title?: string;
+  mobileTitle?: string;
+  description?: string;
+  buttonLabel?: string;
+  buttonUrl?: string;
+  desktopVideoUrl?: string;
+  mobileVideoUrl?: string;
+  posterUrl?: string;
+};
+
+export default function HeroDuplicate({ content = {} }: { content?: HomeHeroContent }) {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const hasVideoEndedRef = React.useRef(false);
   const [isVideoPlaying, setIsVideoPlaying] = React.useState(false);
   const logoIds = [2, 11, 12, 20, 21, 24, 38, 39, 40, 41, 44];
   // 4 copies to guarantee a seamless, infinite loop on all screen sizes
   const marqueeItems = [...logoIds, ...logoIds, ...logoIds, ...logoIds];
+  const desktopTitle = content.title || "Маркетинг, который работает\nот идеи до результата";
+  const mobileTitle = content.mobileTitle || "Маркетинг,\nкоторый работает\nот идеи до готового\nрезультата";
+  const description = content.description || "Приходите к нам с задачей «сделать не как у всех».\nМы создаём маркетинг, который становится референсом для других.";
 
   const playHeroVideo = React.useCallback(() => {
     const video = videoRef.current;
@@ -107,20 +121,40 @@ export default function HeroDuplicate() {
           muted
           playsInline
           preload="metadata"
-          poster="/bg-mobile-poster.jpg"
+          poster={content.posterUrl || "https://media.thepeak.kz/hero/bg-mobile-poster.jpg"}
+          onError={(event) => {
+            if (event.currentTarget.poster !== "/bg-mobile-poster.jpg") {
+              event.currentTarget.poster = "/bg-mobile-poster.jpg";
+            }
+          }}
           disablePictureInPicture
           className={`w-full h-full object-cover transition-opacity duration-300 ${isVideoPlaying ? "opacity-100" : "opacity-0"}`}
           aria-hidden="true"
           tabIndex={-1}
         >
           <source
+            src={content.mobileVideoUrl || "https://media.thepeak.kz/hero/bg-mobile-fast.mp4"}
+            type="video/mp4"
+            media="(max-width: 767px)"
+          />
+          <source
             src="/bg-mobile-fast.mp4"
             type="video/mp4"
             media="(max-width: 767px)"
           />
           <source
+            src={content.desktopVideoUrl || "https://media.thepeak.kz/hero/bg.webm"}
+            type="video/webm"
+            media="(min-width: 768px)"
+          />
+          <source
             src="/bg.webm"
             type="video/webm"
+            media="(min-width: 768px)"
+          />
+          <source
+            src="https://media.thepeak.kz/hero/bg.mp4"
+            type="video/mp4"
             media="(min-width: 768px)"
           />
           <source
@@ -141,22 +175,26 @@ export default function HeroDuplicate() {
     */}
           <h1 className="font-headline font-semibold text-white text-[clamp(2.5rem,4.5vw,5.5rem)] leading-[0.95] tracking-[-0.03em] mb-8 md:mb-12">
             {/* Mobile: 4 lines; Desktop: 2 lines */}
-            <span className="inverttext block md:hidden">{"Маркетинг,"}</span>
-            <span className="inverttext block md:hidden">{"который работает"}</span>
-            <span className="inverttext block md:hidden">{"от идеи до готового"}</span>
-            <span className="inverttext block md:hidden">{"результата"}</span>
-            <span className="inverttext hidden md:block">{"Маркетинг, который работает"}</span>
-            <span className="inverttext hidden md:block">{"от идеи до результата"}</span>
+            {mobileTitle.split("\n").map((line) => (
+              <span key={line} className="inverttext block md:hidden">{formatTypography(line)}</span>
+            ))}
+            {desktopTitle.split("\n").map((line) => (
+              <span key={line} className="inverttext hidden md:block">{formatTypography(line)}</span>
+            ))}
           </h1>
           <p className="description-text text-white/80 mb-8 md:mb-[4.5rem] text-[clamp(0.95rem,1.1vw,1.25rem)]">
-            <span className="inverttext">{formatTypography("Приходите к нам с задачей «сделать не как у всех».")}</span> <br />
-            <span className="inverttext">{formatTypography("Мы создаём маркетинг, который становится референсом для других.")}</span>
+            {description.split("\n").map((line, index) => (
+              <React.Fragment key={`${line}-${index}`}>
+                {index > 0 ? <br /> : null}
+                <span className="inverttext">{formatTypography(line)}</span>
+              </React.Fragment>
+            ))}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
             <Button01
-              href="#contacts"
-              text={formatTypography("оставить заявку")}
+              href={content.buttonUrl || "#contacts"}
+              text={formatTypography(content.buttonLabel || "оставить заявку")}
               /* max-w-[80%] — забирает лишнюю длину на мобилке.
                 md:max-w-none — отменяет это ограничение на компьютерах.
               */
@@ -214,11 +252,17 @@ export default function HeroDuplicate() {
                   {marqueeItems.map((id, index) => (
                     <div key={index} className="flex-shrink-0 h-[56px] sm:h-[58px] flex items-center justify-center mr-10">
                       <img
-                        src={`/logo/clot-${id}.webp`}
+                        src={`https://media.thepeak.kz/logos/clot-${id}.webp`}
                         alt="Partner Logo"
                         className="h-full w-auto object-contain hover:opacity-80 transition-opacity duration-300 pointer-events-none"
                         width={125}
                         height={58}
+                        onError={(event) => {
+                          const fallback = `/logo/clot-${id}.webp`;
+                          if (event.currentTarget.src !== fallback) {
+                            event.currentTarget.src = fallback;
+                          }
+                        }}
                       />
                     </div>
                   ))}
