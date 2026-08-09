@@ -1,0 +1,11 @@
+# Local case-video backups are served from Cloudflare R2.
+public/cases/**/*.mp4
+public/cases/**/*.webm
+public/cases/**/*.mov
+public/cases/**/*.m4v
+
+# Local-only artifacts.
+test-results/
+playwright-report/
+test_out.png
+trash/
