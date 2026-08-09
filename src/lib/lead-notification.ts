@@ -1,4 +1,5 @@
 import type { Touchpoint, UtmAttribution } from "./utm";
+import { whatsappUrl } from "./utils";
 
 function escapeHtml(value: string): string {
   return value
@@ -6,11 +7,6 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-function whatsappUrl(phone: string): string | null {
-  const digits = phone.replace(/\D/g, "");
-  return digits ? `https://wa.me/${digits}` : null;
 }
 
 function formatCapturedAt(value: string): string {

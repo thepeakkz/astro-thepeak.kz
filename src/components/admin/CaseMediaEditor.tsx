@@ -19,8 +19,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  ChevronDown,
-  ChevronUp,
   FileVideo,
   GripVertical,
   ImageIcon,
@@ -31,8 +29,10 @@ import {
   RefreshCw,
   Settings,
   Trash2,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import MediaUploader from "@/components/admin/MediaUploader";
 import {
   parseCaseGallery,
@@ -53,26 +53,18 @@ function assetName(url: string, index: number) {
 interface SortableMediaItemProps {
   id: string;
   index: number;
-  isExpanded: boolean;
   item: CaseGalleryItem;
   onDelete: () => void;
-  onToggleExpand: () => void;
-  onUpdateItem: (url: string, type: "image" | "video") => void;
-  onUpdatePoster: (posterUrl: string) => void;
-  slug: string;
+  onOpenSettings: () => void;
   viewMode: "grid" | "list";
 }
 
 function SortableMediaItem({
   id,
   index,
-  isExpanded,
   item,
   onDelete,
-  onToggleExpand,
-  onUpdateItem,
-  onUpdatePoster,
-  slug,
+  onOpenSettings,
   viewMode,
 }: SortableMediaItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -90,256 +82,73 @@ function SortableMediaItem({
       <article
         ref={setNodeRef}
         style={style}
-        className={`peak-admin__case-media-row flex flex-col bg-white border border-slate-200 transition-shadow ${
-          isDragging ? "shadow-lg opacity-75 ring-2 ring-[#FD4B32]" : "shadow-xs hover:border-slate-300"
-        }`}
+        className={`peak-admin__media-row ${isDragging ? "is-dragging" : ""}`}
       >
-        {/* Компактная строка таблицы (Table/Notion View) */}
-        <div className="flex items-center justify-between gap-3 p-2.5 sm:p-3">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            {/* Drag Handle */}
+        <div className="peak-admin__media-row-main">
+          <div className="peak-admin__media-row-info">
             <button
               type="button"
               {...attributes}
               {...listeners}
-              className="peak-admin__drag-handle cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-slate-700 shrink-0"
+              className="peak-admin__media-drag"
               aria-label={`Перетащить медиа ${index + 1}`}
             >
               <GripVertical className="size-4" />
             </button>
 
-            {/* Компактная миниатюра (crop) */}
-            <div
-              className="relative size-12 sm:w-16 sm:h-11 shrink-0 overflow-hidden bg-slate-950 border border-slate-200 cursor-pointer"
-              onClick={onToggleExpand}
-            >
+            <button type="button" className="peak-admin__media-thumb" onClick={onOpenSettings} aria-label={`Настроить медиа ${index + 1}`}>
               {isVideo ? (
-                <video src={item.src} className="size-full object-cover" preload="metadata" muted />
+                <video src={item.src} preload="metadata" muted />
               ) : (
-                <img src={item.src} alt={name} className="size-full object-cover" />
+                <img src={item.src} alt={name} />
               )}
-              {isVideo && (
-                <span className="absolute bottom-1 right-1 bg-black/70 p-0.5 text-white">
-                  <FileVideo className="size-3" />
-                </span>
-              )}
-            </div>
+              {isVideo && <span><FileVideo className="size-3" /></span>}
+            </button>
 
-            {/* Метаданные по центру */}
-            <div className="min-w-0 flex-1 cursor-pointer" onClick={onToggleExpand}>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-xs text-slate-400 font-bold">#{index + 1}</span>
-                <span className="truncate text-sm font-semibold text-slate-900" title={name}>
-                  {name}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                  {isVideo ? <FileVideo className="size-3 text-slate-400" /> : <ImageIcon className="size-3 text-slate-400" />}
-                  {isVideo ? "Видео" : "Фото"}
-                </span>
-                {isVideo && (
-                  <span
-                    className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.2 border ${
-                      item.posterSrc
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : "bg-amber-50 text-amber-700 border-amber-200"
-                    }`}
-                  >
-                    {item.posterSrc ? "С обложкой WebP" : "Без обложки"}
-                  </span>
-                )}
-              </div>
+            <div className="peak-admin__media-row-copy" onClick={onOpenSettings}>
+              <div><span>#{index + 1}</span><strong title={name}>{name}</strong></div>
+              <p>{isVideo ? <FileVideo className="size-3" /> : <ImageIcon className="size-3" />}{isVideo ? "Видео" : "Фото"}{isVideo && <em className={item.posterSrc ? "is-ready" : ""}>{item.posterSrc ? "WebP готов" : "Нужна обложка"}</em>}</p>
             </div>
           </div>
 
-          {/* Правые элементы управления */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              type="button"
-              onClick={onToggleExpand}
-              className={`peak-admin__button peak-admin__button--outline !py-1.5 !px-2.5 text-xs ${
-                isExpanded ? "!bg-slate-100 !text-slate-900" : ""
-              }`}
-              title="Настроить медиа"
-            >
-              <Settings className="size-3.5" />
-              <span className="hidden sm:inline">Настроить</span>
-              {isExpanded ? <ChevronUp className="size-3.5 ml-0.5" /> : <ChevronDown className="size-3.5 ml-0.5" />}
-            </button>
-            <button
-              type="button"
-              onClick={onDelete}
-              className="peak-admin__icon-button peak-admin__icon-button--danger"
-              aria-label="Удалить файл"
-              title="Удалить"
-            >
-              <Trash2 className="size-4" />
-            </button>
+          <div className="peak-admin__media-row-actions">
+            <button type="button" onClick={onOpenSettings} className="peak-admin__button peak-admin__button--outline"><Settings className="size-3.5" />Настроить</button>
+            <button type="button" onClick={onDelete} className="peak-admin__icon-button peak-admin__icon-button--danger" aria-label="Удалить файл"><Trash2 className="size-4" /></button>
           </div>
         </div>
-
-        {/* Раскрывающийся аккордеон (Accordion) */}
-        {isExpanded && (
-          <div className="border-t border-slate-200 bg-slate-50/80 p-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <span className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Основной медиафайл ({isVideo ? "Видео" : "Фото"})
-                </span>
-                <MediaUploader
-                  caseSlug={slug}
-                  folder="cases"
-                  mediaType={item.type}
-                  value={item.src}
-                  onChange={(url, type) => onUpdateItem(url, type)}
-                />
-              </div>
-
-              {isVideo && (
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      WebP обложка (постер для видео)
-                    </span>
-                    {item.posterSrc && (
-                      <button
-                        type="button"
-                        onClick={() => onUpdatePoster("")}
-                        className="text-[11px] text-red-600 hover:underline"
-                      >
-                        Удалить обложку
-                      </button>
-                    )}
-                  </div>
-                  <MediaUploader
-                    accept="image/webp,image/*"
-                    caseSlug={slug}
-                    folder="cases"
-                    mediaType="image"
-                    value={item.posterSrc || ""}
-                    onChange={(posterUrl) => onUpdatePoster(posterUrl)}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </article>
     );
   }
 
-  /* Режим сетки (WYSIWYG Grid) */
   return (
     <article
       ref={setNodeRef}
       style={style}
-      className={`peak-admin__wysiwyg-card group relative bg-zinc-950 border border-slate-800 overflow-hidden transition-all ${
-        isDragging ? "ring-2 ring-[#FD4B32] opacity-75 shadow-xl" : "hover:border-slate-500"
-      }`}
+      className={`peak-admin__media-card ${isDragging ? "is-dragging" : ""}`}
     >
-      {/* Шапка карточки в сетке */}
-      <div className="absolute top-2 left-2 right-2 z-20 flex items-center justify-between pointer-events-none">
+      <div className="peak-admin__media-card-tools">
         <button
           type="button"
           {...attributes}
           {...listeners}
-          className="peak-admin__drag-handle pointer-events-auto p-1.5 bg-black/70 backdrop-blur text-white hover:bg-black"
+          className="peak-admin__media-card-handle"
           aria-label={`Перетащить медиа ${index + 1}`}
         >
           <GripVertical className="size-4" />
         </button>
-        <div className="flex items-center gap-1 pointer-events-auto">
-          <span className="bg-black/70 backdrop-blur text-white font-mono text-[11px] font-bold px-2 py-0.5">
-            #{index + 1}
-          </span>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="p-1.5 bg-red-600/80 hover:bg-red-600 text-white backdrop-blur"
-            title="Удалить"
-          >
-            <Trash2 className="size-3.5" />
-          </button>
-        </div>
+        <span>#{index + 1}</span>
+        <button type="button" onClick={onDelete} className="peak-admin__media-card-delete" title="Удалить"><Trash2 className="size-3.5" /></button>
       </div>
 
-      {/* Пропорции в точности повторяют фронтенд кейса (9/16 для видео) */}
-      <div
-        className="relative w-full bg-zinc-900 overflow-hidden cursor-pointer"
-        style={{ aspectRatio: isVideo ? "9 / 16" : "1 / 1" }}
-        onClick={onToggleExpand}
-      >
+      <button type="button" className="peak-admin__media-card-preview" style={{ aspectRatio: isVideo ? "9 / 16" : "1 / 1" }} onClick={onOpenSettings}>
         {isVideo ? (
-          <video
-            src={item.src}
-            poster={item.posterSrc}
-            preload="metadata"
-            className="size-full object-cover"
-          />
+          <video src={item.src} poster={item.posterSrc} preload="metadata" />
         ) : (
-          <img src={item.src} alt={name} className="size-full object-cover" />
+          <img src={item.src} alt={name} />
         )}
-
-        {/* Оверлей при наведении */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3 pointer-events-none">
-          <div />
-          <div className="pointer-events-auto flex flex-col gap-2">
-            <span className="text-xs font-semibold text-white truncate drop-shadow-xs">{name}</span>
-            <button
-              type="button"
-              onClick={onToggleExpand}
-              className="peak-admin__button peak-admin__button--dark !py-1 text-xs w-full justify-center"
-            >
-              <Settings className="size-3.5" />
-              {isExpanded ? "Свернуть" : "Настроить"}
-            </button>
-          </div>
-        </div>
-
-        {/* Индикатор видео / обложки */}
-        {isVideo && (
-          <div className="absolute bottom-2 left-2 z-10 pointer-events-none">
-            <span className="inline-flex items-center gap-1 bg-black/70 backdrop-blur text-white text-[10px] font-semibold px-2 py-0.5">
-              <FileVideo className="size-3" />
-              {item.posterSrc ? "WebP обложка" : "Без обложки"}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Аккордеон при клике "Настроить" в сетке */}
-      {isExpanded && (
-        <div className="p-3 bg-white border-t border-slate-200 space-y-3 text-slate-900">
-          <div>
-            <span className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Заменить файл
-            </span>
-            <MediaUploader
-              caseSlug={slug}
-              folder="cases"
-              mediaType={item.type}
-              value={item.src}
-              onChange={(url, type) => onUpdateItem(url, type)}
-            />
-          </div>
-          {isVideo && (
-            <div>
-              <span className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Обложка (WebP постер)
-              </span>
-              <MediaUploader
-                accept="image/webp,image/*"
-                caseSlug={slug}
-                folder="cases"
-                mediaType="image"
-                value={item.posterSrc || ""}
-                onChange={(posterUrl) => onUpdatePoster(posterUrl)}
-              />
-            </div>
-          )}
-        </div>
-      )}
+        <span className="peak-admin__media-card-overlay"><strong>{name}</strong><small><Settings className="size-3.5" /> Настроить</small></span>
+        {isVideo && <em>{item.posterSrc ? "WebP готов" : "Без обложки"}</em>}
+      </button>
     </article>
   );
 }
@@ -360,6 +169,8 @@ export default function CaseMediaEditor({
   const [error, setError] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const reduceMotion = useReducedMotion();
+  const selectedItem = expandedIndex === null ? null : items[expandedIndex];
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -454,19 +265,17 @@ export default function CaseMediaEditor({
               Медиа кейса ({items.length})
             </h2>
             <p className="peak-admin__section-description">
-              Перетаскивайте за иконку слева для изменения порядка. Кликните по строке для настройки файла и WebP обложки.
+              {formatTypography("Перетаскивайте за иконку слева для изменения порядка. Кликните по строке для настройки файла и WebP обложки.")}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <div className="inline-flex items-center border border-slate-200 bg-slate-100 p-1">
+          <div className="peak-admin__view-switcher">
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`peak-admin__icon-button !size-8 ${
-                viewMode === "list" ? "!bg-white !text-slate-900 shadow-xs" : "!text-slate-500"
-              }`}
+              className={viewMode === "list" ? "is-active" : ""}
               title="Вид: Список (Компактный)"
               aria-label="Режим отображения: список"
             >
@@ -475,9 +284,7 @@ export default function CaseMediaEditor({
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`peak-admin__icon-button !size-8 ${
-                viewMode === "grid" ? "!bg-white !text-slate-900 shadow-xs" : "!text-slate-500"
-              }`}
+              className={viewMode === "grid" ? "is-active" : ""}
               title="Вид: WYSIWYG Сетка"
               aria-label="Режим отображения: плитка"
             >
@@ -492,7 +299,7 @@ export default function CaseMediaEditor({
               onClick={() => onChange("")}
             >
               <RefreshCw className="size-3.5" aria-hidden="true" />
-              Загрузить из хранилища
+              {formatTypography("Загрузить из хранилища")}
             </button>
           )}
         </div>
@@ -509,43 +316,35 @@ export default function CaseMediaEditor({
           )}
 
           {items.length > 0 ? (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext id={`case-media-${slug}`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext
                 items={items.map((_, idx) => `media-item-${idx}`)}
                 strategy={viewMode === "grid" ? rectSortingStrategy : verticalListSortingStrategy}
               >
                 {viewMode === "grid" ? (
-                  <div className="grid grid-cols-2 items-start gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                  <div className="peak-admin__media-grid">
                     {items.map((item, index) => (
                       <SortableMediaItem
                         key={`media-item-${index}`}
                         id={`media-item-${index}`}
                         index={index}
-                        isExpanded={expandedIndex === index}
                         item={item}
                         onDelete={() => commit(items.filter((_, idx) => idx !== index))}
-                        onToggleExpand={() => setExpandedIndex(expandedIndex === index ? null : index)}
-                        onUpdateItem={(url, type) => updateItem(index, url, type)}
-                        onUpdatePoster={(posterUrl) => updateItemPoster(index, posterUrl)}
-                        slug={slug}
+                        onOpenSettings={() => setExpandedIndex(index)}
                         viewMode="grid"
                       />
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2">
+                  <div className="peak-admin__media-list">
                     {items.map((item, index) => (
                       <SortableMediaItem
                         key={`media-item-${index}`}
                         id={`media-item-${index}`}
                         index={index}
-                        isExpanded={expandedIndex === index}
                         item={item}
                         onDelete={() => commit(items.filter((_, idx) => idx !== index))}
-                        onToggleExpand={() => setExpandedIndex(expandedIndex === index ? null : index)}
-                        onUpdateItem={(url, type) => updateItem(index, url, type)}
-                        onUpdatePoster={(posterUrl) => updateItemPoster(index, posterUrl)}
-                        slug={slug}
+                        onOpenSettings={() => setExpandedIndex(index)}
                         viewMode="list"
                       />
                     ))}
@@ -557,13 +356,13 @@ export default function CaseMediaEditor({
             <p className="peak-admin__protected">В галерее пока нет файлов.</p>
           )}
 
-          <div className="peak-admin__case-media-add mt-6 border-t border-slate-200 pt-4">
+          <div className="peak-admin__case-media-add">
             <h3 className="peak-admin__settings-title flex items-center gap-2">
-              <ImageUp className="size-4 text-[#FD4B32]" />
-              Добавить медиафайл в галерею
+              <ImageUp className="size-4" style={{ color: "var(--peak-coral)" }} />
+              {formatTypography("Добавить медиафайл в галерею")}
             </h3>
             <p className="peak-admin__section-description mb-3">
-              Выберите фото или видео. После загрузки файл автоматически появится в списке.
+              {formatTypography("Выберите фото или видео. После загрузки файл автоматически появится в списке.")}
             </p>
             <MediaUploader
               caseSlug={slug}
@@ -590,6 +389,35 @@ export default function CaseMediaEditor({
           </div>
         </>
       )}
+
+      <AnimatePresence>
+        {selectedItem && expandedIndex !== null && (
+          <motion.div className="peak-admin__media-drawer-backdrop" role="presentation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.15 }} onMouseDown={(event) => { if (event.currentTarget === event.target) setExpandedIndex(null); }}>
+            <motion.aside
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="media-settings-title"
+              className="peak-admin__media-drawer"
+              initial={reduceMotion ? false : { x: "100%" }}
+              animate={{ x: 0 }}
+              exit={reduceMotion ? { opacity: 0 } : { x: "100%" }}
+              transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="peak-admin__media-drawer-head">
+                <div><p>Медиа #{expandedIndex + 1}</p><h3 id="media-settings-title">{selectedItem.name || assetName(selectedItem.src, expandedIndex)}</h3></div>
+                <button type="button" onClick={() => setExpandedIndex(null)} aria-label="Закрыть настройки"><X className="size-5" /></button>
+              </div>
+              <div className="peak-admin__media-drawer-preview">
+                {selectedItem.type === "video" ? <video src={selectedItem.src} poster={selectedItem.posterSrc} muted controls playsInline /> : <img src={selectedItem.src} alt="" />}
+              </div>
+              <div className="peak-admin__media-drawer-body">
+                <section><h4>Основной файл</h4><p>{formatTypography("Замените файл, сохранив его позицию в галерее.")}</p><MediaUploader caseSlug={slug} folder="cases" mediaType={selectedItem.type} value={selectedItem.src} onChange={(url, type) => updateItem(expandedIndex, url, type)} /></section>
+                {selectedItem.type === "video" && <section><div className="peak-admin__media-drawer-section-head"><div><h4>WebP-обложка</h4><p>{formatTypography("Постер показывается до запуска видео.")}</p></div>{selectedItem.posterSrc && <button type="button" onClick={() => updateItemPoster(expandedIndex, "")}>Удалить</button>}</div><MediaUploader accept="image/webp,image/*" caseSlug={slug} folder="cases" mediaType="image" value={selectedItem.posterSrc || ""} onChange={(posterUrl) => updateItemPoster(expandedIndex, posterUrl)} /></section>}
+              </div>
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

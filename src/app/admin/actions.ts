@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { requireAdmin } from "@/lib/supabase/auth";
 import { parseCaseGallery } from "@/lib/case-gallery";
+import { getLeads } from "@/lib/leads";
+import { LEAD_STATUSES, type LeadStatus } from "@/types/leads";
 
 export type AdminActionResult = {
   error?: string;
@@ -36,6 +38,13 @@ const caseInputSchema = z.object({
     .min(1, "Укажите адрес кейса.")
     .max(120)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Используйте латинские буквы, цифры и дефисы."),
+});
+
+const leadStatusSchema = z.enum(LEAD_STATUSES);
+const leadFiltersSchema = z.object({
+  status: leadStatusSchema.optional(),
+  search: z.string().trim().max(100).optional(),
+  page: z.number().int().positive(),
 });
 
 const blockContentSchema = z
@@ -402,4 +411,70 @@ export async function publishAllDraftsAction(): Promise<AdminActionResult & { pu
   }
 }
 
+export async function getLeadsAction(input: {
+  status?: LeadStatus;
+  search?: string;
+  page: number;
+}) {
+  const parsed = leadFiltersSchema.safeParse(input);
+  if (!parsed.success) return { error: "Некорректные параметры списка заявок." };
+
+  try {
+    await requireAdmin();
+    return await getLeads(parsed.data);
+  } catch {
+    return { error: "Не удалось загрузить заявки. Обновите страницу и попробуйте ещё раз." };
+  }
+}
+
+export async function updateLeadStatusAction(
+  id: string,
+  status: LeadStatus,
+): Promise<AdminActionResult> {
+  if (!z.string().uuid().safeParse(id).success || !leadStatusSchema.safeParse(status).success) {
+    return { error: "Некорректная заявка или статус." };
+  }
+
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("leads")
+      .update({ status })
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
+
+    if (error) return { error: "Не удалось изменить статус заявки." };
+    if (!data) return { error: "Заявка не найдена." };
+
+    revalidatePath("/admin/crm");
+    return { success: "Статус заявки обновлён." };
+  } catch {
+    return { error: "Сессия истекла. Войдите заново." };
+  }
+}
+
+export async function deleteLeadAction(id: string): Promise<AdminActionResult> {
+  if (!z.string().uuid().safeParse(id).success) return { error: "Некорректная заявка." };
+
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("leads")
+      .delete()
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
+
+    if (error) return { error: "Не удалось удалить заявку." };
+    if (!data) return { error: "Заявка не найдена." };
+
+    revalidatePath("/admin/crm");
+    return { success: "Заявка удалена." };
+  } catch {
+    return { error: "Сессия истекла. Войдите заново." };
+  }
+}
 

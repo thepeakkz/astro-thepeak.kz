@@ -2,7 +2,24 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowUp, ExternalLink, LayoutGrid, Plus, RefreshCw, Trash2 } from "lucide-react";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { ArrowDown, ArrowUp, GripVertical, Plus, RefreshCw, Trash2 } from "lucide-react";
 import type { CaseItem } from "@/data/cases";
 import { parseSelectedHrefs, serializeSelectedHrefs } from "@/utils/cms";
 import { formatTypography } from "@/utils/typography";
@@ -26,9 +43,67 @@ function CaseThumbnail({ item }: { item: CaseItem }) {
     return <video src={video} className="size-full object-cover" muted playsInline preload="metadata" />;
   }
   return (
-    <div className="flex size-full items-center justify-center bg-slate-200 text-[10px] font-mono text-slate-400">
-      No img
+    <div className="peak-admin__media-placeholder size-full">
+      Нет медиа
     </div>
+  );
+}
+
+function SortableHomeCaseRow({
+  href,
+  index,
+  item,
+  onMove,
+  onRemove,
+  total,
+}: {
+  href: string;
+  index: number;
+  item: CaseItem;
+  onMove: (direction: -1 | 1) => void;
+  onRemove: () => void;
+  total: number;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: href });
+  const project = (
+    <>
+      <span className="peak-admin__case-table-thumb"><CaseThumbnail item={item} /></span>
+      <span className="peak-admin__case-table-name">{formatTypography(item.name)}</span>
+    </>
+  );
+
+  return (
+    <article
+      ref={setNodeRef}
+      role="row"
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`peak-admin__case-table-row ${isDragging ? "peak-admin__case-table-row--dragging" : ""}`}
+    >
+      <div role="cell" className="peak-admin__case-table-index">
+        <button type="button" className="peak-admin__case-drag-handle" aria-label={`Изменить позицию кейса ${item.name}`} {...attributes} {...listeners}>
+          <GripVertical className="size-4" aria-hidden="true" />
+          <span>{index + 1}</span>
+        </button>
+      </div>
+      {item.adminEditUrl ? (
+        <Link href={item.adminEditUrl} role="cell" className="peak-admin__case-table-project" title="Редактировать кейс">{project}</Link>
+      ) : (
+        <div role="cell" className="peak-admin__case-table-project">{project}</div>
+      )}
+      <div role="cell" className="peak-admin__case-table-category" title={item.type}>{formatTypography(item.type)}</div>
+      <div role="cell" className="peak-admin__case-table-address" title={href}>{href}</div>
+      <div role="cell" className="peak-admin__case-table-actions">
+        <button type="button" className="peak-admin__table-action peak-admin__case-arrow" onClick={() => onMove(-1)} disabled={index === 0} aria-label="Переместить кейс выше">
+          <ArrowUp className="size-4" aria-hidden="true" />
+        </button>
+        <button type="button" className="peak-admin__table-action peak-admin__case-arrow" onClick={() => onMove(1)} disabled={index === total - 1} aria-label="Переместить кейс ниже">
+          <ArrowDown className="size-4" aria-hidden="true" />
+        </button>
+        <button type="button" className="peak-admin__table-action peak-admin__table-action--danger" onClick={onRemove} aria-label="Исключить кейс" title="Исключить из главной">
+          <Trash2 className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+    </article>
   );
 }
 
@@ -64,6 +139,10 @@ export default function HomeCasesEditor({
   const [selectedToAdd, setSelectedToAdd] = useState<string>("");
   const [loading, setLoading] = useState(!initialAvailableCases || initialAvailableCases.length === 0);
   const [error, setError] = useState("");
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     if (initialAvailableCases && initialAvailableCases.length > 0) {
@@ -125,6 +204,15 @@ export default function HomeCasesEditor({
     commit(nextHrefs);
   }
 
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = selectedHrefs.indexOf(String(active.id));
+    const newIndex = selectedHrefs.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    commit(arrayMove(selectedHrefs, oldIndex, newIndex));
+  }
+
   function removeItem(href: string) {
     commit(selectedHrefs.filter((h) => h !== href));
   }
@@ -144,18 +232,11 @@ export default function HomeCasesEditor({
   return (
     <section className="peak-admin__case-media" aria-labelledby="home-cases-title">
       <div className="peak-admin__case-media-heading">
-        <div className="flex items-start gap-3">
-          <span className="peak-admin__media-field-icon">
-            <LayoutGrid className="size-5" aria-hidden="true" />
-          </span>
-          <div>
-            <h2 id="home-cases-title" className="peak-admin__section-title !mt-0">
-              Кейсы на главной странице
-            </h2>
-            <p className="peak-admin__section-description">
-              Управляйте выбором, порядком и составом кейсов на главной странице. Исключайте ненужные и добавляйте новые проекты.
-            </p>
-          </div>
+        <div>
+          <h2 id="home-cases-title" className="peak-admin__section-title !mt-0">Кейсы на главной странице</h2>
+          <p className="peak-admin__section-description">
+            {formatTypography(`${selectedCasesList.length} из ${availableCases.length} кейсов выбраны · Меняйте порядок перетаскиванием`)}
+          </p>
         </div>
         <button
           type="button"
@@ -173,92 +254,39 @@ export default function HomeCasesEditor({
         <>
           {error && <p role="alert" className="peak-admin__notice peak-admin__notice--error">{formatTypography(error)}</p>}
 
-          <div className="mb-4 text-xs font-semibold text-slate-700">
-            Отображается на главной: {selectedCasesList.length} из {availableCases.length} кейсов
-          </div>
-
           {selectedCasesList.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              {selectedCasesList.map(({ href, item }, index) => (
-                <article key={href} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
-                  {item.adminEditUrl ? (
-                    <Link
-                      href={item.adminEditUrl}
-                      className="flex items-center gap-3 min-w-0 flex-1 group"
-                      title="Редактировать кейс"
-                    >
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 font-mono text-xs font-bold text-slate-600">
-                        {index + 1}
-                      </span>
-                      <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-slate-100 border border-slate-200">
-                        <CaseThumbnail item={item} />
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="truncate text-sm font-semibold text-slate-900 group-hover:text-red-600 transition-colors">
-                          {formatTypography(item.name)}
-                        </h4>
-                        <p className="truncate text-xs text-slate-500">
-                          {item.type} · {item.href}
-                        </p>
-                      </div>
-                    </Link>
-                  ) : (
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 font-mono text-xs font-bold text-slate-600">
-                        {index + 1}
-                      </span>
-                      <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-slate-100 border border-slate-200">
-                        <CaseThumbnail item={item} />
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="truncate text-sm font-semibold text-slate-900">
-                          {formatTypography(item.name)}
-                        </h4>
-                        <p className="truncate text-xs text-slate-500">
-                          {item.type} · {item.href}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      className="peak-admin__icon-button"
-                      onClick={() => moveItem(index, -1)}
-                      disabled={index === 0}
-                      aria-label="Переместить кейс выше"
-                    >
-                      <ArrowUp className="size-4" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      className="peak-admin__icon-button"
-                      onClick={() => moveItem(index, 1)}
-                      disabled={index === selectedCasesList.length - 1}
-                      aria-label="Переместить кейс ниже"
-                    >
-                      <ArrowDown className="size-4" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      className="peak-admin__icon-button peak-admin__icon-button--danger"
-                      onClick={() => removeItem(href)}
-                      aria-label="Исключить кейс"
-                      title="Исключить из главной"
-                    >
-                      <Trash2 className="size-4" aria-hidden="true" />
-                    </button>
+            <div className="peak-admin__case-table" role="table" aria-label="Кейсы на главной странице">
+              <div className="peak-admin__case-table-head" role="row">
+                <div role="columnheader">#</div>
+                <div role="columnheader">Проект</div>
+                <div role="columnheader">Категория</div>
+                <div role="columnheader">Адрес</div>
+                <div role="columnheader" className="text-right">Действия</div>
+              </div>
+              <DndContext id="home-cases-editor" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={selectedHrefs} strategy={verticalListSortingStrategy}>
+                  <div role="rowgroup">
+                    {selectedCasesList.map(({ href, item }, index) => (
+                      <SortableHomeCaseRow
+                        key={href}
+                        href={href}
+                        index={index}
+                        item={item}
+                        onMove={(direction) => moveItem(index, direction)}
+                        onRemove={() => removeItem(href)}
+                        total={selectedCasesList.length}
+                      />
+                    ))}
                   </div>
-                </article>
-              ))}
+                </SortableContext>
+              </DndContext>
             </div>
           ) : (
             <p className="peak-admin__protected">На главную страницу не выбрано ни одного кейса.</p>
           )}
 
           {unselectedCasesList.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-slate-200">
+            <div className="peak-admin__case-media-add">
               <h3 className="peak-admin__settings-title mb-2">Добавить кейс на главную</h3>
               <div className="flex flex-wrap items-center gap-3">
                 <select

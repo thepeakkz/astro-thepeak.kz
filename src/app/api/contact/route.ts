@@ -3,6 +3,11 @@ import { formatTelegramLead } from "@/lib/lead-notification";
 import { parseUtmAttribution, UTM_COOKIE_NAME } from "@/lib/utm";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import {
+  ANALYTICS_SESSION_COOKIE,
+  ANALYTICS_VISITOR_COOKIE,
+  isUuid,
+} from "@/lib/analytics";
 
 function parseComment(comment: unknown) {
   const rawComment = typeof comment === "string" ? comment.trim() : "";
@@ -66,8 +71,35 @@ export async function POST(request: NextRequest) {
 
     const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
-    // 1. Prepare Telegram request promise
-    const telegramPromise = fetch(url, {
+    const visitorCookie = request.cookies.get(ANALYTICS_VISITOR_COOKIE)?.value;
+    const sessionCookie = request.cookies.get(ANALYTICS_SESSION_COOKIE)?.value;
+
+    // The CRM is the source of truth. Store the lead before sending notifications.
+    if (hasSupabaseEnv()) {
+      try {
+        const supabase = await createClient();
+        const { error } = await supabase.from("leads").insert({
+          name: name.trim(),
+          phone: phone.trim(),
+          source: sourceText,
+          comment: project,
+          contact_method: formatContactMethod(contactMethod),
+          status: "new",
+          attribution: utmAttribution ?? {},
+          visitor_id: isUuid(visitorCookie) ? visitorCookie : null,
+          session_id: isUuid(sessionCookie) ? sessionCookie : null,
+        });
+        if (error) throw error;
+      } catch (error) {
+        console.error("Failed to insert lead into Supabase:", error);
+        return NextResponse.json(
+          { error: "Не удалось сохранить заявку. Попробуйте ещё раз." },
+          { status: 500 },
+        );
+      }
+    }
+
+    const telegramResponse = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -80,41 +112,12 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    // 2. Prepare Supabase insert promise
-    const supabasePromise = (async () => {
-      if (!hasSupabaseEnv()) return;
-      try {
-        const supabase = await createClient();
-        const { error } = await supabase.from("leads").insert({
-          name: name.trim(),
-          phone: phone.trim(),
-          source: sourceText,
-          comment: project,
-          contact_method: formatContactMethod(contactMethod),
-          status: "new",
-          attribution: utmAttribution ?? {},
-        });
-        if (error) {
-          console.error("Supabase Lead Insert Error:", error);
-        }
-      } catch (err) {
-        console.error("Failed to insert lead into Supabase:", err);
-      }
-    })();
-
-    // 3. Execute requests concurrently
-    const [telegramResponse] = await Promise.all([
-      telegramPromise,
-      supabasePromise,
-    ]);
-
     if (!telegramResponse.ok) {
       const errorData = await telegramResponse.text();
       console.error("Telegram API Error Response:", errorData);
-      return NextResponse.json(
-        { error: "Не удалось отправить сообщение в Telegram" },
-        { status: 500 }
-      );
+      // The lead is already safely stored in the CRM, so do not invite a retry
+      // that would create a duplicate record.
+      return NextResponse.json({ success: true, notificationWarning: true }, { status: 200 });
     }
 
     return NextResponse.json({ success: true }, { status: 200 });

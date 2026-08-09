@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   closestCenter,
   DndContext,
@@ -23,9 +24,8 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   ArrowLeft,
   Check,
-  ChevronDown,
-  ChevronUp,
   CloudOff,
+  ExternalLink,
   Eye,
   EyeOff,
   GripVertical,
@@ -34,6 +34,7 @@ import {
   Plus,
   RotateCcw,
   Save,
+  Send,
   Settings,
   Trash2,
   X,
@@ -140,7 +141,7 @@ function FieldEditor({
               {formatTypography(field.label)}{field.required ? <span className="peak-admin__required"> *</span> : null}
             </h3>
             <p className="peak-admin__section-description">
-              Загрузите фото или видео. После загрузки обязательно сохраните страницу.
+              {formatTypography("Загрузите фото или видео. После загрузки обязательно сохраните страницу.")}
             </p>
           </div>
         </div>
@@ -199,29 +200,48 @@ function FieldEditor({
   );
 }
 
-function SortableBlock({
+function SortableSectionTab({
+  active,
+  block,
+  index,
+  onSelect,
+}: {
+  active: boolean;
+  block: CmsEditorBlock;
+  index: number;
+  onSelect: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={`peak-admin__editor-tab ${active ? "is-active" : ""} ${isDragging ? "is-dragging" : ""}`}>
+      <button type="button" {...attributes} {...listeners} className="peak-admin__editor-tab-handle" aria-label={`Изменить позицию секции ${block.template.name}`}>
+        <GripVertical className="size-4" aria-hidden="true" />
+      </button>
+      <button type="button" role="tab" aria-selected={active} onClick={onSelect} className="peak-admin__editor-tab-main">
+        <span>{String(index + 1).padStart(2, "0")}</span>
+        <span><strong>{formatTypography(block.template.name)}</strong><small>{block.is_visible ? "Показывается" : "Скрыта"}</small></span>
+      </button>
+    </div>
+  );
+}
+
+function BlockEditorPanel({
   availableCases,
   block,
-  expanded,
   protectedBlock,
   uploadFolder,
   onChange,
   onDelete,
-  onToggleExpanded,
   onToggleVisible,
 }: {
   availableCases?: CaseItem[];
   block: CmsEditorBlock;
-  expanded: boolean;
   protectedBlock: boolean;
   uploadFolder: "pages" | "cases";
   onChange: (name: string, value: string) => void;
   onDelete: () => void;
-  onToggleExpanded: () => void;
   onToggleVisible: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
   const automaticMediaTypeFields = new Set(
     block.template.fields.flatMap((field) => field.mediaTypeField ? [field.mediaTypeField] : []),
   );
@@ -231,41 +251,24 @@ function SortableBlock({
   const hasMedia = editableFields.some((field) => field.type === "media");
 
   return (
-    <article
-      ref={setNodeRef}
-      style={style}
-      className={`peak-admin__block ${isDragging ? "peak-admin__block--dragging" : ""} ${block.is_visible ? "" : "peak-admin__block--hidden"}`}
-    >
-      <div className="peak-admin__block-header">
-        <button
-          type="button"
-          {...attributes}
-          {...listeners}
-          aria-label={`Перетащить блок ${block.template.name}`}
-          className="peak-admin__drag-handle"
-        >
-          <GripVertical className="size-5" aria-hidden="true" />
-        </button>
-        <button type="button" onClick={onToggleExpanded} className="peak-admin__block-main">
-          <span className="flex items-center gap-2">
-            <span className="peak-admin__block-title truncate">{formatTypography(block.template.name)}</span>
-            {hasMedia && (
-              <span className="peak-admin__media-tag">
-                Медиа
-              </span>
-            )}
-          </span>
-          <span className="peak-admin__block-description">
-            {formatTypography(stringValue(block.content.title) || stringValue(block.content.heading) || block.template.description)}
-          </span>
-        </button>
+    <article className={`peak-admin__editor-panel ${block.is_visible ? "" : "is-hidden"}`}>
+      <div className="peak-admin__editor-panel-head">
+        <div>
+          <div className="peak-admin__editor-panel-title">
+            <h2>{formatTypography(block.template.name)}</h2>
+            {hasMedia && <span className="peak-admin__media-tag">Медиа</span>}
+          </div>
+          <p>{formatTypography(stringValue(block.content.title) || stringValue(block.content.heading) || block.template.description)}</p>
+        </div>
+        <div className="peak-admin__editor-panel-actions">
         <button
           type="button"
           onClick={onToggleVisible}
           aria-label={block.is_visible ? "Скрыть блок" : "Показать блок"}
-          className="peak-admin__icon-button"
+          className="peak-admin__button peak-admin__button--outline"
         >
-          {block.is_visible ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
+          {block.is_visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+          {block.is_visible ? "Показывается" : "Скрыта"}
         </button>
         {!protectedBlock && (
           <button
@@ -277,17 +280,9 @@ function SortableBlock({
             <Trash2 className="size-4" aria-hidden="true" />
           </button>
         )}
-        <button
-          type="button"
-          onClick={onToggleExpanded}
-          aria-label={expanded ? "Свернуть форму" : "Открыть форму"}
-          className="peak-admin__icon-button"
-        >
-          {expanded ? <ChevronUp className="size-5" /> : <ChevronDown className="size-5" />}
-        </button>
+        </div>
       </div>
-      {expanded && (
-        <div className="peak-admin__block-body">
+      <div className="peak-admin__editor-panel-body">
           {block.template.type === "home_work_cases" ? (
             <HomeCasesEditor
               initialAvailableCases={availableCases}
@@ -308,12 +303,11 @@ function SortableBlock({
             <div className="peak-admin__protected">
               <span className="block font-semibold" style={{ color: "var(--peak-ink)" }}>Готовая секция</span>
               <span className="mt-0.5 block">
-                Внутренняя вёрстка защищена. Секцию можно перемещать и скрывать кнопкой с глазом.
+                {formatTypography("Внутренняя вёрстка защищена. Секцию можно перемещать и скрывать кнопкой с глазом.")}
               </span>
             </div>
           )}
-        </div>
-      )}
+      </div>
     </article>
   );
 }
@@ -385,7 +379,7 @@ function DraftRestoreBanner({
   );
 }
 
-/* ─── Индикатор автосохранения ─── */
+/* ─── Индикатор локального черновика ─── */
 function AutoSaveIndicator({ savedAt }: { savedAt: Date | null }) {
   if (!savedAt) return null;
 
@@ -413,7 +407,7 @@ function AutoSaveIndicator({ savedAt }: { savedAt: Date | null }) {
           borderRadius: "50%",
         }}
       />
-      Черновик сохранён в {time}
+      Черновик на{"\u00a0"}устройстве · {time}
     </span>
   );
 }
@@ -439,12 +433,13 @@ export default function PageEditor({
     seoDescription: initialPage.seo_description,
   });
   const [blocks, setBlocks] = useState(initialBlocks);
-  const [expandedId, setExpandedId] = useState<string | null>(initialBlocks[0]?.id || null);
+  const [activeBlockId, setActiveBlockId] = useState<string | null>(initialBlocks[0]?.id || null);
   const [dirty, setDirty] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -530,6 +525,15 @@ export default function PageEditor({
   }, [dirty]);
 
   const visibleCount = useMemo(() => blocks.filter((block) => block.is_visible).length, [blocks]);
+  const completion = useMemo(() => {
+    const requiredFields = blocks.flatMap((block) => block.template.fields.filter((field) => field.required).map((field) => ({ block, field })));
+    const trackedFields = requiredFields.length > 0
+      ? requiredFields
+      : blocks.flatMap((block) => block.template.fields.slice(0, 2).map((field) => ({ block, field })));
+    const completed = trackedFields.filter(({ block, field }) => stringValue(block.content[field.name]).trim().length > 0).length;
+    return { completed, total: trackedFields.length, percent: trackedFields.length > 0 ? Math.round((completed / trackedFields.length) * 100) : 100 };
+  }, [blocks]);
+  const activeBlock = blocks.find((block) => block.id === activeBlockId) || blocks[0];
   const isCasePage = initialPage.page_kind === "case";
   const addressLocked = initialPage.is_system || isCasePage;
   const caseContentBlock = isCasePage ? blocks.find((block) => block.template.type === "case_page") : undefined;
@@ -585,7 +589,7 @@ export default function PageEditor({
     };
     const nextBlocks = [...blocks, block];
     setBlocks(nextBlocks);
-    setExpandedId(block.id);
+    setActiveBlockId(block.id);
     setAddOpen(false);
     setDirty(true);
     scheduleDraftSave(page, nextBlocks);
@@ -595,7 +599,7 @@ export default function PageEditor({
     const nextBlocks = blocks.filter((item) => item.id !== block.id);
     setBlocks(nextBlocks);
     setRemovedBlocks((current) => [...current, block]);
-    if (expandedId === block.id) setExpandedId(null);
+    if (activeBlockId === block.id) setActiveBlockId(nextBlocks[0]?.id || null);
     setDirty(true);
     scheduleDraftSave(page, nextBlocks);
   }
@@ -604,7 +608,7 @@ export default function PageEditor({
     setRemovedBlocks((current) => current.filter((item) => item.id !== block.id));
     const nextBlocks = [...blocks, block];
     setBlocks(nextBlocks);
-    setExpandedId(block.id);
+    setActiveBlockId(block.id);
     setDirty(true);
     scheduleDraftSave(page, nextBlocks);
   }
@@ -630,6 +634,7 @@ export default function PageEditor({
     });
 
     setBlocks(restoredBlocks);
+    setActiveBlockId(restoredBlocks[0]?.id || null);
     setDirty(true);
     setDraftBannerVisible(false);
     setLocalDraft(null);
@@ -668,6 +673,7 @@ export default function PageEditor({
     });
 
     setBlocks(restoredBlocks);
+    setActiveBlockId(restoredBlocks[0]?.id || null);
     setDirty(true);
     setMessage({
       type: "success",
@@ -675,12 +681,12 @@ export default function PageEditor({
     });
   }
 
-  function save() {
+  function persistPage(nextPage: typeof page, successMessage?: string) {
     setMessage(null);
     startTransition(async () => {
       const result = await savePageAction({
         id: initialPage.id,
-        ...page,
+        ...nextPage,
         routePath: initialPage.route_path,
         isSystem: initialPage.is_system,
         blocks: blocks.map((block) => ({
@@ -694,73 +700,96 @@ export default function PageEditor({
         setMessage({ type: "error", text: result.error });
         return;
       }
+      setPage(nextPage);
       setDirty(false);
       // Очищаем локальный черновик — данные уже на сервере
       clearDraft(initialPage.id);
       setAutoSavedAt(null);
       setDraftBannerVisible(false);
-      setMessage({ type: "success", text: result.success || "Изменения сохранены." });
+      setMessage({ type: "success", text: successMessage || result.success || "Изменения сохранены." });
       router.refresh();
     });
   }
 
+  function save() {
+    persistPage(page);
+  }
+
+  function publish() {
+    const nextPage: typeof page = { ...page, status: "published" };
+    persistPage(nextPage, isCasePage ? "Кейс опубликован." : "Страница опубликована.");
+  }
+
   return (
     <main className="peak-admin__main">
-      {/* Навигация назад */}
-      <Link href={isCasePage ? "/admin/cases" : "/admin"} className="peak-admin__back">
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        {isCasePage ? "Все кейсы" : "Все страницы"}
-      </Link>
-
-      {/* Компактный заголовок страницы */}
-      <div className="peak-admin__page-header">
-        <div>
-          <h1 className="peak-admin__page-title">
-            {isCasePage ? "Редактор кейса" : "Редактор страницы"}
-          </h1>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.25rem", flexWrap: "wrap" }}>
-            <p className="peak-admin__page-meta" style={{ margin: 0 }}>{blocks.length} блоков · {visibleCount} видно на сайте</p>
+      <div className="peak-admin__page-header peak-admin__page-header--editor">
+        <div className="min-w-0">
+          <Link href={isCasePage ? "/admin/cases" : "/admin"} className="peak-admin__breadcrumb peak-admin__breadcrumb-link">
+            <ArrowLeft className="size-3" aria-hidden="true" />
+            {isCasePage ? "Кейсы" : "Страницы"} / Редактор
+          </Link>
+          <h1 className="peak-admin__page-title truncate">{formatTypography(page.title)}</h1>
+          <div className="peak-admin__editor-meta">
+            <span className="peak-admin__page-route">{initialPage.route_path}</span>
+            <span>{blocks.length} блоков · {visibleCount} видно</span>
             <AutoSaveIndicator savedAt={autoSavedAt} />
           </div>
         </div>
         <div className="peak-admin__page-header-actions">
-          <button
-            type="button"
-            onClick={() => setHistoryOpen(true)}
-            className="peak-admin__button peak-admin__button--outline"
-            title="История версий"
-          >
-            <History className="size-3.5" aria-hidden="true" />
-            История
-          </button>
-          <button
-            type="button"
-            onClick={() => setSettingsOpen(true)}
-            className="peak-admin__button peak-admin__button--outline"
-            title="Настройки страницы"
-          >
-            <Settings className="size-3.5" aria-hidden="true" />
-            Настройки
-          </button>
           {page.status === "published" && (
             <Link
               href={initialPage.route_path}
               target="_blank"
-              className="peak-admin__button peak-admin__button--outline"
+              className="peak-admin__icon-button peak-admin__editor-action"
+              title="Открыть страницу на сайте"
+              aria-label="Открыть страницу на сайте"
             >
-              Открыть
+              <ExternalLink className="size-4" aria-hidden="true" />
             </Link>
           )}
           <button
             type="button"
-            onClick={save}
-            disabled={pending || !dirty}
-            className="peak-admin__button peak-admin__button--primary"
+            onClick={() => setSettingsOpen(true)}
+            className="peak-admin__icon-button peak-admin__editor-action"
+            title="Настройки страницы"
+            aria-label="Настройки страницы"
           >
-            {pending ? <Save className="size-4 animate-pulse" /> : <Check className="size-4" />}
-            {pending ? "Сохраняем…" : dirty ? "Сохранить" : "Сохранено"}
+            <Settings className="size-4" aria-hidden="true" />
           </button>
+          {!initialPage.is_system && page.status === "draft" && (
+            <button
+              type="button"
+              onClick={publish}
+              disabled={pending}
+              className="peak-admin__button peak-admin__button--dark"
+            >
+              <Send className="size-4" aria-hidden="true" />
+              {pending ? "Публикуем…" : "Опубликовать"}
+            </button>
+          )}
+          {dirty || pending ? (
+            <button
+              type="button"
+              onClick={save}
+              disabled={pending}
+              className="peak-admin__button peak-admin__button--primary"
+            >
+              {pending ? <Save className="size-4 animate-pulse" /> : <Save className="size-4" />}
+              {pending ? "Сохраняем…" : "Сохранить"}
+            </button>
+          ) : (
+            <span className="peak-admin__save-status" role="status">
+              <Check className="size-3.5" aria-hidden="true" />
+              Сохранено
+            </span>
+          )}
         </div>
+      </div>
+
+      <div className="peak-admin__editor-progress" aria-label={`Заполнено ${completion.percent}%`}>
+        <div><span>Готовность контента</span><strong>{completion.percent}%</strong></div>
+        <div className="peak-admin__editor-progress-track"><span style={{ width: `${completion.percent}%` }} /></div>
+        <small>{formatTypography(`${completion.completed} из ${completion.total} ключевых полей заполнено`)}</small>
       </div>
 
       {/* Баннер восстановления черновика */}
@@ -773,50 +802,48 @@ export default function PageEditor({
       )}
 
       {message && (
-        <p role="status" className={`peak-admin__notice ${message.type === "error" ? "peak-admin__notice--error" : "peak-admin__notice--success"}`}>
-          {formatTypography(message.text)}
-        </p>
+        <div role="status" className={`peak-admin__toast ${message.type === "error" ? "peak-admin__toast--error" : "peak-admin__toast--success"}`}>
+          <span>{formatTypography(message.text)}</span><button type="button" onClick={() => setMessage(null)} aria-label="Закрыть уведомление">×</button>
+        </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Левая колонка — Содержание и блоки (75% ширины) */}
-        <section className="lg:col-span-8 xl:col-span-9 space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="peak-admin__section-title !mt-0">{isCasePage ? "Содержание кейса" : "Секции страницы"}</h2>
-              <p className="peak-admin__section-description">
-                {isCasePage ? "Откройте блок и заполните понятные поля проекта." : "Перетаскивайте за ручку слева, чтобы изменить порядок."}
-              </p>
-            </div>
-          </div>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <section className="peak-admin__editor-workspace">
+        <div className="peak-admin__editor-shell">
+          <DndContext id={`page-blocks-${initialPage.id}`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={blocks.map((block) => block.id)} strategy={verticalListSortingStrategy}>
-              <div className="peak-admin__block-list">
-                {blocks.map((block) => (
-                  <SortableBlock
-                    key={block.id}
+              <aside className="peak-admin__editor-tabs" role="tablist" aria-label="Секции страницы">
+                <div className="peak-admin__editor-tabs-head"><span>{isCasePage ? "Содержание кейса" : "Секции страницы"}</span><small>{blocks.length}</small></div>
+                {blocks.map((block, index) => <SortableSectionTab key={block.id} active={activeBlock?.id === block.id} block={block} index={index} onSelect={() => setActiveBlockId(block.id)} />)}
+              </aside>
+            </SortableContext>
+          </DndContext>
+
+          <div className="peak-admin__editor-stage">
+            <AnimatePresence mode="wait" initial={false}>
+              {activeBlock && (
+                <motion.div key={activeBlock.id} initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -5 }} transition={{ duration: reduceMotion ? 0 : 0.18, ease: [0.22, 1, 0.36, 1] }}>
+                  <BlockEditorPanel
                     availableCases={availableCases}
-                    block={block}
-                    expanded={expandedId === block.id}
+                    block={activeBlock}
                     protectedBlock={initialPage.is_system || isCasePage}
                     uploadFolder={isCasePage ? "cases" : "pages"}
-                    onToggleExpanded={() => setExpandedId((current) => current === block.id ? null : block.id)}
                     onToggleVisible={() => {
                       let nextBlocks: CmsEditorBlock[] = [];
                       setBlocks((current) => {
-                        nextBlocks = current.map((item) => item.id === block.id ? { ...item, is_visible: !item.is_visible } : item);
+                        nextBlocks = current.map((item) => item.id === activeBlock.id ? { ...item, is_visible: !item.is_visible } : item);
                         return nextBlocks;
                       });
                       setDirty(true);
                       setTimeout(() => scheduleDraftSave(page, nextBlocks), 0);
                     }}
-                    onDelete={() => deleteBlock(block)}
-                    onChange={(name, value) => updateBlock(block.id, name, value)}
+                    onDelete={() => deleteBlock(activeBlock)}
+                    onChange={(name, value) => updateBlock(activeBlock.id, name, value)}
                   />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
 
           {removedBlocks.length > 0 && (
             <div style={{ marginTop: "0.75rem", padding: "0.875rem", border: "1px dashed var(--peak-line-strong)", background: "var(--peak-bg)" }}>
@@ -825,7 +852,7 @@ export default function PageEditor({
                 Удалённые блоки ({removedBlocks.length})
               </h3>
               <p style={{ fontSize: "0.75rem", color: "var(--peak-muted)", margin: "0.25rem 0 0" }}>
-                Нажмите «Восстановить», чтобы вернуть блок в редактор до сохранения.
+                {formatTypography("Нажмите «Восстановить», чтобы вернуть блок в редактор до сохранения.")}
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.375rem", marginTop: "0.5rem" }}>
                 {removedBlocks.map((blk) => (
@@ -877,115 +904,7 @@ export default function PageEditor({
               </div>
             )}
           </div>}
-        </section>
-
-        {/* Правая колонка — Закрепленная панель настроек (Sticky Cockpit Sidebar) */}
-        <aside className="lg:col-span-4 xl:col-span-3 sticky top-16 space-y-4">
-          <div className="bg-white border border-slate-200 p-4 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                <Settings className="size-4 text-[#FD4B32]" />
-                Настройки {isCasePage ? "кейса" : "страницы"}
-              </h3>
-              <span
-                className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border ${
-                  page.status === "published"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-amber-50 text-amber-700 border-amber-200"
-                }`}
-              >
-                {page.status === "published" ? "Опубликована" : "Черновик"}
-              </span>
-            </div>
-
-            <label className="peak-admin__field">
-              <span className="peak-admin__label">Статус публикации</span>
-              <select
-                value={page.status}
-                disabled={initialPage.is_system}
-                onChange={(event) => updatePage("status", event.target.value as CmsPageStatus)}
-                className="peak-admin__select"
-              >
-                <option value="draft">Черновик</option>
-                <option value="published">Опубликована</option>
-              </select>
-            </label>
-
-            <label className="peak-admin__field">
-              <span className="peak-admin__label">Название</span>
-              <input
-                value={page.title}
-                onChange={(event) => updatePage("title", event.target.value)}
-                maxLength={160}
-                className="peak-admin__input"
-              />
-            </label>
-
-            <label className="peak-admin__field">
-              <span className="peak-admin__label">Адрес страницы</span>
-              {addressLocked ? (
-                <div className="peak-admin__locked-field text-xs truncate">
-                  {initialPage.route_path}
-                </div>
-              ) : (
-                <div className="peak-admin__url-field">
-                  <span className="peak-admin__url-prefix">/</span>
-                  <input
-                    value={page.slug}
-                    onChange={(event) => updatePage("slug", event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                    className="peak-admin__inline-input"
-                  />
-                </div>
-              )}
-            </label>
-
-            <div className="border-t border-slate-100 pt-3 space-y-3">
-              <span className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                SEO параметры
-              </span>
-              <label className="peak-admin__field">
-                <span className="peak-admin__label">SEO Заголовок</span>
-                <input
-                  value={page.seoTitle}
-                  onChange={(event) => updatePage("seoTitle", event.target.value)}
-                  maxLength={160}
-                  className="peak-admin__input"
-                />
-              </label>
-              <label className="peak-admin__field">
-                <span className="peak-admin__label">SEO Описание</span>
-                <textarea
-                  value={page.seoDescription}
-                  onChange={(event) => updatePage("seoDescription", event.target.value)}
-                  maxLength={320}
-                  rows={3}
-                  className="peak-admin__textarea"
-                />
-              </label>
-            </div>
-
-            <div className="border-t border-slate-100 pt-3 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={save}
-                disabled={pending || !dirty}
-                className="peak-admin__button peak-admin__button--primary w-full justify-center"
-              >
-                {pending ? <Save className="size-4 animate-pulse" /> : <Check className="size-4" />}
-                {pending ? "Сохраняем…" : dirty ? "Сохранить изменения" : "Сохранено"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setHistoryOpen(true)}
-                className="peak-admin__button peak-admin__button--outline w-full justify-center text-xs"
-              >
-                <History className="size-3.5" aria-hidden="true" />
-                История версий
-              </button>
-            </div>
-          </div>
-        </aside>
-      </div>
+      </section>
 
       <RevisionHistoryModal
         isOpen={historyOpen}
@@ -1004,9 +923,11 @@ export default function PageEditor({
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 id="settings-modal-title" className="peak-admin__modal-title">Настройки страницы</h2>
+                <h2 id="settings-modal-title" className="peak-admin__modal-title">
+                  Настройки {isCasePage ? "кейса" : "страницы"}
+                </h2>
                 <p className="peak-admin__modal-copy">
-                  Навание страницы, адрес, статус публикации и настройки для поиска.
+                  {formatTypography("Название, адрес, статус публикации и настройки для поиска.")}
                 </p>
               </div>
               <button
@@ -1061,7 +982,7 @@ export default function PageEditor({
                 </select>
                 {initialPage.is_system && (
                   <span className="peak-admin__section-description block text-xs mt-1">
-                    Встроенная страница всегда опубликована. Отдельные секции можно скрывать кнопкой с глазом.
+                    {formatTypography("Встроенная страница всегда опубликована. Отдельные секции можно скрывать кнопкой с глазом.")}
                   </span>
                 )}
               </label>
@@ -1092,7 +1013,18 @@ export default function PageEditor({
               </details>
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="peak-admin__modal-footer">
+              <button
+                type="button"
+                onClick={() => {
+                  setSettingsOpen(false);
+                  setHistoryOpen(true);
+                }}
+                className="peak-admin__button peak-admin__button--outline"
+              >
+                <History className="size-3.5" aria-hidden="true" />
+                История версий
+              </button>
               <button
                 type="button"
                 onClick={() => setSettingsOpen(false)}

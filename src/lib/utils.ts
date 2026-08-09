@@ -21,3 +21,8 @@ export function parseStringArray(value: unknown): string[] | undefined {
   }
   return undefined;
 }
+
+export function whatsappUrl(phone: string): string | null {
+  const digits = phone.replace(/\D/g, "");
+  return digits ? `https://wa.me/${digits}` : null;
+}

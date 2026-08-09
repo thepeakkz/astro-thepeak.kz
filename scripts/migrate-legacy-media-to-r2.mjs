@@ -1,7 +1,6 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { Readable } from "node:stream";
 
 const projectRoot = process.cwd();
 const execute = process.argv.includes("--execute");
@@ -119,4 +118,3 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : error);
   process.exitCode = 1;
 });
-

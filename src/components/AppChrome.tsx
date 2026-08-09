@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
-import FormConversionTracker from "@/components/FormConversionTracker";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 import GlobalPreloader from "@/components/GlobalPreloader";
 import GridGuide from "@/components/GridGuide";
 import HeroVideoPreload from "@/components/HeroVideoPreload";
@@ -21,9 +21,9 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
   return (
     <>
       <GlobalPreloader />
-      <FormConversionTracker />
       <Suspense fallback={null}>
         <UtmTracker />
+        <AnalyticsTracker />
       </Suspense>
       <HeroVideoPreload />
       <SmoothScroll />
@@ -33,4 +33,3 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-

@@ -28,7 +28,10 @@ import { formatTypography } from "@/utils/typography";
 
 type DeepAnalyticsData = {
   period?: string;
-  liveSource: "cloudflare" | "demo";
+  liveSource: "supabase" | "unavailable";
+  sources: Record<"analytics" | "leads" | "r2" | "tinify", "live" | "unavailable">;
+  warnings: string[];
+  collectionStartedAt: string | null;
   totals: {
     uniqueVisitors: number;
     pageviews: number;
@@ -57,17 +60,18 @@ type DeepAnalyticsData = {
   topCities: Array<{ city: string; percent: number }>;
   systemLimits: {
     tinify: {
-      used: number;
+      used: number | null;
       limit: number;
-      remaining: number;
+      remaining: number | null;
       percent: number;
       plan: string;
     };
     r2: {
-      storageUsed: string;
+      storageUsed: string | null;
       storageLimit: string;
       storagePercent: number;
-      classBUsed: string;
+      objectCount: number | null;
+      classBUsed: string | null;
       classBLimit: string;
       plan: string;
     };
@@ -118,7 +122,7 @@ export default function AnalyticsDashboardClient() {
       {/* Навигация назад */}
       <Link href="/admin" className="peak-admin__back">
         <ArrowLeft className="size-4" aria-hidden="true" />
-        Назад в дашборд
+        {formatTypography("Назад в дашборд")}
       </Link>
 
       {/* Компактный заголовок страницы — без eyebrow, без hero */}
@@ -166,6 +170,20 @@ export default function AnalyticsDashboardClient() {
         </p>
       )}
 
+      {data?.warnings.map((warning) => (
+        <p key={warning} role="status" className="peak-admin__notice peak-admin__notice--error">
+          {formatTypography(warning)}
+        </p>
+      ))}
+
+      {data?.sources.analytics === "live" && (
+        <p className="peak-admin__notice peak-admin__notice--success">
+          {formatTypography(data.collectionStartedAt
+            ? `Показываются реальные события сайта. Сбор начат ${new Date(data.collectionStartedAt).toLocaleDateString("ru-RU")}.`
+            : "Сбор реальных событий подключён. Данные появятся после первых посещений.")}
+        </p>
+      )}
+
       {loading && !data ? (
         <div style={{ padding: "3rem 0", textAlign: "center", color: "var(--peak-muted)" }}>
           <LoaderCircle
@@ -174,7 +192,7 @@ export default function AnalyticsDashboardClient() {
             aria-hidden="true"
           />
           <p style={{ marginTop: "0.75rem", fontSize: "0.875rem", fontWeight: 600 }}>
-            Загружаем аналитику за {periodLabels[period]}…
+            {formatTypography(`Загружаем аналитику за ${periodLabels[period]}…`)}
           </p>
         </div>
       ) : data ? (
@@ -184,7 +202,7 @@ export default function AnalyticsDashboardClient() {
           <div className="peak-admin__analytics-section">
             <p className="peak-admin__analytics-label">
               <HardDrive className="size-3.5" aria-hidden="true" />
-              Системные лимиты и квоты
+              {formatTypography("Системные лимиты и квоты")}
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1px", background: "var(--peak-line)" }}>
               {/* Tinify */}
@@ -197,13 +215,13 @@ export default function AnalyticsDashboardClient() {
                       <div style={{ fontSize: "0.6875rem", color: "var(--peak-muted)" }}>{data.systemLimits.tinify.plan}</div>
                     </div>
                   </div>
-                  <span className={`peak-admin__badge ${data.systemLimits.tinify.percent > 85 ? "peak-admin__badge--danger" : "peak-admin__badge--success"}`}>
-                    {data.systemLimits.tinify.percent}% использовано
+                  <span className={`peak-admin__badge ${data.sources.tinify === "live" ? (data.systemLimits.tinify.percent > 85 ? "peak-admin__badge--danger" : "peak-admin__badge--success") : "peak-admin__badge--neutral"}`}>
+                    {data.sources.tinify === "live" ? `${data.systemLimits.tinify.percent}% использовано` : "Нет данных"}
                   </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontWeight: 600, marginBottom: "0.375rem" }}>
-                  <span style={{ color: "var(--peak-muted)" }}>Сжато в этом месяце</span>
-                  <span style={{ color: "var(--peak-ink)" }}>{data.systemLimits.tinify.used} / {data.systemLimits.tinify.limit}</span>
+                  <span style={{ color: "var(--peak-muted)" }}>{formatTypography("Сжато в этом месяце")}</span>
+                  <span style={{ color: "var(--peak-ink)" }}>{data.systemLimits.tinify.used ?? "—"} / {data.systemLimits.tinify.limit}</span>
                 </div>
                 <div className="peak-admin__progress-track">
                   <div
@@ -212,7 +230,7 @@ export default function AnalyticsDashboardClient() {
                   />
                 </div>
                 <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.375rem" }}>
-                  Осталось: <strong style={{ color: "var(--peak-ink)" }}>{data.systemLimits.tinify.remaining}</strong> сжатий
+                  Осталось: <strong style={{ color: "var(--peak-ink)" }}>{data.systemLimits.tinify.remaining ?? "—"}</strong> сжатий
                 </p>
               </div>
 
@@ -226,11 +244,13 @@ export default function AnalyticsDashboardClient() {
                       <div style={{ fontSize: "0.6875rem", color: "var(--peak-muted)" }}>{data.systemLimits.r2.plan}</div>
                     </div>
                   </div>
-                  <span className="peak-admin__badge peak-admin__badge--success">Норма</span>
+                  <span className={`peak-admin__badge ${data.sources.r2 === "live" ? "peak-admin__badge--success" : "peak-admin__badge--neutral"}`}>
+                    {data.sources.r2 === "live" ? "Онлайн" : "Нет данных"}
+                  </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontWeight: 600, marginBottom: "0.375rem" }}>
                   <span style={{ color: "var(--peak-muted)" }}>Занято места</span>
-                  <span style={{ color: "var(--peak-ink)" }}>{data.systemLimits.r2.storageUsed} / {data.systemLimits.r2.storageLimit}</span>
+                  <span style={{ color: "var(--peak-ink)" }}>{data.systemLimits.r2.storageUsed ?? "—"} / {data.systemLimits.r2.storageLimit}</span>
                 </div>
                 <div className="peak-admin__progress-track">
                   <div
@@ -239,7 +259,9 @@ export default function AnalyticsDashboardClient() {
                   />
                 </div>
                 <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.375rem" }}>
-                  Чтений: <strong style={{ color: "var(--peak-ink)" }}>{data.systemLimits.r2.classBUsed}</strong> из {data.systemLimits.r2.classBLimit}
+                  {formatTypography(data.systemLimits.r2.objectCount === null
+                    ? "Количество объектов недоступно"
+                    : `Объектов в bucket: ${data.systemLimits.r2.objectCount}. Операции Class B доступны в кабинете Cloudflare.`)}
                 </p>
               </div>
             </div>
@@ -249,7 +271,7 @@ export default function AnalyticsDashboardClient() {
           <div className="peak-admin__analytics-section">
             <p className="peak-admin__analytics-label">
               <BarChart3 className="size-3.5" aria-hidden="true" />
-              Ключевые показатели за {periodLabels[period]}
+              {formatTypography(`Ключевые показатели за ${periodLabels[period]}`)}
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "1px", background: "var(--peak-line)" }}>
               <div className="peak-admin__analytics-card">
@@ -271,7 +293,7 @@ export default function AnalyticsDashboardClient() {
                 <p style={{ marginTop: "0.75rem", fontSize: "1.75rem", fontWeight: 900, color: "var(--peak-ink)", lineHeight: 1, letterSpacing: "-0.03em" }}>
                   {data.totals.pageviews.toLocaleString()}
                 </p>
-                <p style={{ marginTop: "0.25rem", fontSize: "0.6875rem", color: "var(--peak-muted)" }}>Страниц и кейсов</p>
+                <p style={{ marginTop: "0.25rem", fontSize: "0.6875rem", color: "var(--peak-muted)" }}>{formatTypography("Страниц и кейсов")}</p>
               </div>
 
               <div className="peak-admin__analytics-card">
@@ -293,7 +315,7 @@ export default function AnalyticsDashboardClient() {
                 <p style={{ marginTop: "0.75rem", fontSize: "1.75rem", fontWeight: 900, color: "var(--peak-coral)", lineHeight: 1, letterSpacing: "-0.03em" }}>
                   {data.totals.conversionRate}
                 </p>
-                <p style={{ marginTop: "0.25rem", fontSize: "0.6875rem", color: "var(--peak-muted)" }}>Доля лидов от посещений</p>
+                <p style={{ marginTop: "0.25rem", fontSize: "0.6875rem", color: "var(--peak-muted)" }}>{formatTypography("Доля лидов от посещений")}</p>
               </div>
             </div>
           </div>
@@ -325,6 +347,9 @@ export default function AnalyticsDashboardClient() {
                   </tr>
                 </thead>
                 <tbody>
+                  {data.utmCampaigns.length === 0 && (
+                    <tr><td colSpan={5} style={{ padding: "1rem 0", color: "var(--peak-muted)", textAlign: "center" }}>{formatTypography("За период нет UTM-переходов")}</td></tr>
+                  )}
                   {data.utmCampaigns.map((item, idx) => (
                     <tr key={idx} style={{ borderBottom: "1px solid var(--peak-line)" }}>
                       <td style={{ padding: "0.5rem 0", fontWeight: 600, color: "var(--peak-ink)" }}>
@@ -353,7 +378,7 @@ export default function AnalyticsDashboardClient() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "1rem" }}>
               <div>
                 <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)" }}>Динамика посещаемости ({periodLabels[period]})</div>
-                <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.125rem" }}>Визиты и просмотры по дням</p>
+                <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.125rem" }}>{formatTypography("Визиты и просмотры по дням")}</p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.6875rem", fontWeight: 600 }}>
                 <span style={{ display: "flex", alignItems: "center", gap: "0.375rem", color: "var(--peak-coral)" }}>
@@ -397,21 +422,16 @@ export default function AnalyticsDashboardClient() {
                     <Filter className="size-4" style={{ color: "var(--peak-coral)" }} aria-hidden="true" />
                     Воронка микро-конверсий
                   </div>
-                  <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.125rem" }}>Движение посетителей к заявке</p>
+                  <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.125rem" }}>{formatTypography("Движение посетителей к заявке")}</p>
                 </div>
                 <span className="peak-admin__badge peak-admin__badge--success">CR {data.totals.conversionRate}</span>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <div className="peak-admin__funnel" aria-label="Воронка микро-конверсий">
                 {data.microFunnel.map((item, idx) => (
-                  <div key={idx}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8125rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>
-                      <span>{item.step}</span>
-                      <span style={{ fontWeight: 700 }}>{item.count} чел. ({item.percent}%)</span>
-                    </div>
-                    <div className="peak-admin__progress-track">
-                      <div className="peak-admin__progress-fill" style={{ width: `${item.percent}%` }} />
-                    </div>
+                  <div key={idx} className="peak-admin__funnel-step" style={{ width: `${Math.max(item.percent, 22)}%` }}>
+                    <span>{item.step.replace(/^\d+\.\s*/, "")}</span>
+                    <strong>{item.count} <small>{item.percent}%</small></strong>
                   </div>
                 ))}
               </div>
@@ -449,9 +469,12 @@ export default function AnalyticsDashboardClient() {
                 <Trophy className="size-4" style={{ color: "var(--peak-coral)" }} aria-hidden="true" />
                 Рейтинг конверсионных кейсов
               </div>
-              <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginBottom: "0.75rem" }}>Проекты, с которых чаще всего приходят заявки</p>
+              <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginBottom: "0.75rem" }}>{formatTypography("Проекты, с которых чаще всего приходят заявки")}</p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
+                {data.topConvertingCases.length === 0 && (
+                  <p style={{ padding: "1rem 0", color: "var(--peak-muted)", fontSize: "0.75rem" }}>{formatTypography("Переходов по кейсам за период пока нет.")}</p>
+                )}
                 {data.topConvertingCases.map((item, idx) => (
                   <div
                     key={idx}
@@ -479,8 +502,8 @@ export default function AnalyticsDashboardClient() {
 
             {/* Конверсия по устройствам */}
             <div className="peak-admin__analytics-card">
-              <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>Конверсия по устройствам</div>
-              <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginBottom: "0.75rem" }}>Эффективность на ПК и смартфонах</p>
+              <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>{formatTypography("Конверсия по устройствам")}</div>
+              <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginBottom: "0.75rem" }}>{formatTypography("Эффективность на ПК и смартфонах")}</p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", background: "var(--peak-bg)" }}>
@@ -516,18 +539,18 @@ export default function AnalyticsDashboardClient() {
                 <Share2 className="size-4" style={{ color: "var(--peak-muted)" }} aria-hidden="true" />
                 Источники трафика
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-                {data.trafficChannels.map((item, idx) => (
-                  <div key={idx}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: "0.5rem" }}>{item.channel}</span>
-                      <span style={{ fontWeight: 700, flexShrink: 0 }}>{item.percent}%</span>
-                    </div>
-                    <div className="peak-admin__progress-track">
-                      <div className="peak-admin__progress-fill" style={{ width: `${item.percent}%` }} />
-                    </div>
-                  </div>
-                ))}
+              <div className="peak-admin__donut-layout">
+                <div
+                  className="peak-admin__donut"
+                  role="img"
+                  aria-label="Распределение источников трафика"
+                  style={{ background: `conic-gradient(var(--peak-coral) 0 ${data.trafficChannels[0]?.percent || 0}%, var(--peak-ink) ${data.trafficChannels[0]?.percent || 0}% ${(data.trafficChannels[0]?.percent || 0) + (data.trafficChannels[1]?.percent || 0)}%, var(--peak-green) ${(data.trafficChannels[0]?.percent || 0) + (data.trafficChannels[1]?.percent || 0)}% ${(data.trafficChannels[0]?.percent || 0) + (data.trafficChannels[1]?.percent || 0) + (data.trafficChannels[2]?.percent || 0)}%, var(--peak-line-strong) ${(data.trafficChannels[0]?.percent || 0) + (data.trafficChannels[1]?.percent || 0) + (data.trafficChannels[2]?.percent || 0)}% 100%)` }}
+                >
+                  <span><strong>{data.trafficChannels.length > 0 ? "100%" : "—"}</strong><small>трафика</small></span>
+                </div>
+                <div className="peak-admin__donut-legend">
+                  {data.trafficChannels.map((item, idx) => <div key={item.channel}><span className={`tone-${idx}`} /><p>{item.channel}</p><strong>{item.percent}%</strong></div>)}
+                </div>
               </div>
             </div>
 
@@ -535,9 +558,12 @@ export default function AnalyticsDashboardClient() {
             <div className="peak-admin__analytics-card">
               <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.75rem" }}>
                 <MapPin className="size-4" style={{ color: "var(--peak-coral)" }} aria-hidden="true" />
-                Топ городов
+                География
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+                {data.topCities.length === 0 && (
+                  <p style={{ color: "var(--peak-muted)", fontSize: "0.75rem" }}>{formatTypography("География появится после первых посещений.")}</p>
+                )}
                 {data.topCities.map((item, idx) => (
                   <div key={idx}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>

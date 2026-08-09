@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { ArrowLeft, ExternalLink, Eye, EyeOff, FolderOpen, Plus, Search, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ExternalLink, Eye, EyeOff, FolderOpen, LayoutGrid, List, Plus, Search, X } from "lucide-react";
 import { createCaseAction, deletePageAction, togglePageStatusAction } from "@/app/admin/actions";
+import type { CaseItem } from "@/data/cases";
 import type { CmsPage } from "@/types/cms";
 import { formatTypography } from "@/utils/typography";
 
@@ -34,12 +35,29 @@ export default function CasesDashboardClient({ initialPages }: { initialPages: C
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [message, setMessage] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const [caseCatalog, setCaseCatalog] = useState<CaseItem[]>([]);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     setPages(initialPages);
   }, [initialPages]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/admin/cases-list", { cache: "no-store", signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = await response.json() as { cases?: CaseItem[] };
+        setCaseCatalog(data.cases || []);
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, []);
+
+  const caseByHref = useMemo(() => new Map(caseCatalog.map((item) => [item.href, item])), [caseCatalog]);
 
   const filteredPages = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("ru");
@@ -105,24 +123,22 @@ export default function CasesDashboardClient({ initialPages }: { initialPages: C
 
   return (
     <main className="peak-admin__main">
-      {/* Навигация назад */}
-      <Link href="/admin" className="peak-admin__back">
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        Все страницы
-      </Link>
-
-      {/* Компактный заголовок страницы */}
       <div className="peak-admin__page-header">
         <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
           <span className="peak-admin__featured-icon" style={{ width: "2rem", height: "2rem" }}>
             <FolderOpen className="size-4" aria-hidden="true" />
           </span>
           <div>
+            <p className="peak-admin__breadcrumb">CMS / Кейсы</p>
             <h1 className="peak-admin__page-title">Кейсы</h1>
             <p className="peak-admin__page-meta">{pages.length} проектов</p>
           </div>
         </div>
         <div className="peak-admin__page-header-actions">
+          <div className="peak-admin__view-switcher" aria-label="Режим отображения">
+            <button type="button" className={viewMode === "list" ? "is-active" : ""} onClick={() => setViewMode("list")} title="Список"><List className="size-4" /></button>
+            <button type="button" className={viewMode === "grid" ? "is-active" : ""} onClick={() => setViewMode("grid")} title="Карточки"><LayoutGrid className="size-4" /></button>
+          </div>
           <label className="peak-admin__search" style={{ maxWidth: "16rem" }}>
             <span className="sr-only">Поиск по кейсам</span>
             <Search className="peak-admin__search-icon size-4" aria-hidden="true" />
@@ -146,95 +162,49 @@ export default function CasesDashboardClient({ initialPages }: { initialPages: C
       </div>
 
       {message && (
-        <p role="status" className="peak-admin__notice peak-admin__notice--error">
-          {formatTypography(message)}
-        </p>
+        <div role="status" className="peak-admin__toast peak-admin__toast--error"><span>{formatTypography(message)}</span><button type="button" onClick={() => setMessage("")} aria-label="Закрыть уведомление">×</button></div>
       )}
 
-      {/* Hairline-таблица кейсов */}
-      <div className="peak-admin__hairline" role="list" aria-label="Список кейсов">
-        {filteredPages.length > 0 && (
-          <div className="hidden sm:grid grid-cols-12 items-center gap-4 px-3.5 py-2.5 bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            <div className="col-span-5">Название кейса</div>
-            <div className="col-span-5">Адрес страницы</div>
-            <div className="col-span-2 text-right">Действия</div>
-          </div>
-        )}
-
-        {filteredPages.length > 0 ? (
-          filteredPages.map((page) => (
-            <article
-              key={page.id}
-              role="listitem"
-              onClick={() => router.push(`/admin/pages/${page.id}`)}
-              className="peak-admin__hairline-row group grid grid-cols-12 items-center gap-4"
-            >
-              <div className="col-span-12 sm:col-span-5 flex items-center gap-2 min-w-0">
-                <h2 className="peak-admin__hairline-title truncate">
-                  {formatTypography(page.title)}
-                </h2>
-                {page.status !== "published" && (
-                  <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200">
-                    Черновик
-                  </span>
-                )}
-              </div>
-
-              <div className="col-span-12 sm:col-span-5 min-w-0">
-                <span className="peak-admin__hairline-route truncate block font-mono text-xs text-slate-500">
-                  {page.route_path}
-                </span>
-              </div>
-
-              <div className="col-span-12 sm:col-span-2 peak-admin__hairline-actions justify-end">
-                <button
-                  type="button"
-                  disabled={pending}
-                  className="peak-admin__icon-button"
-                  title={page.status === "published" ? "Снять с публикации" : "Опубликовать кейс"}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    toggleStatus(page);
-                  }}
-                >
-                  {page.status === "published" ? (
-                    <Eye className="size-4" aria-hidden="true" />
-                  ) : (
-                    <EyeOff className="size-4" aria-hidden="true" />
-                  )}
-                </button>
-                {page.status === "published" && (
-                  <button
-                    type="button"
-                    className="peak-admin__icon-button"
-                    title="Открыть страницу на сайте"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      window.open(page.route_path, "_blank");
-                    }}
-                  >
-                    <ExternalLink className="size-4" aria-hidden="true" />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    removePage(page);
-                  }}
-                  disabled={pending}
-                  title="Удалить кейс"
-                  aria-label={`Удалить кейс ${page.title}`}
-                  className="peak-admin__icon-button peak-admin__icon-button--danger"
-                >
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-              </div>
-            </article>
-          ))
-        ) : (
+      {filteredPages.length > 0 ? (
+        <AnimatePresence mode="wait" initial={false}>
+          {viewMode === "grid" ? (
+            <motion.div key="grid" className="peak-admin__cases-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.15 }} role="list" aria-label="Карточки кейсов">
+              {filteredPages.map((page) => {
+                const item = caseByHref.get(page.route_path);
+                const preview = item?.poster || item?.image || item?.video;
+                return (
+                  <article key={page.id} className="peak-admin__case-card" role="listitem" onClick={() => router.push(`/admin/pages/${page.id}`)}>
+                    <div className="peak-admin__case-card-media">
+                      {preview ? (/\.(mp4|webm|mov|m4v)(?:\?|$)/i.test(preview) ? <video src={preview} muted playsInline preload="metadata" /> : <img src={preview} alt="" />) : <div className="peak-admin__case-card-placeholder"><FolderOpen className="size-6" /><span>Нет обложки</span></div>}
+                      <span className={`peak-admin__case-card-status ${page.status === "published" ? "is-live" : ""}`}>{page.status === "published" ? "Опубликован" : "Черновик"}</span>
+                    </div>
+                    <div className="peak-admin__case-card-body">
+                      <div><h2>{formatTypography(page.title)}</h2><p>{item?.type ? formatTypography(item.type) : page.route_path}</p></div>
+                      <div className="peak-admin__case-card-actions">
+                        <button type="button" disabled={pending} title={page.status === "published" ? "Снять с публикации" : "Опубликовать"} onClick={(event) => { event.stopPropagation(); toggleStatus(page); }}>{page.status === "published" ? <Eye className="size-4" /> : <EyeOff className="size-4" />}</button>
+                        {page.status === "published" && <button type="button" title="Открыть на сайте" onClick={(event) => { event.stopPropagation(); window.open(page.route_path, "_blank"); }}><ExternalLink className="size-4" /></button>}
+                        <button type="button" disabled={pending} title="Удалить кейс" onClick={(event) => { event.stopPropagation(); removePage(page); }}>×</button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </motion.div>
+          ) : (
+            <motion.div key="list" className="peak-admin__hairline" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} role="list" aria-label="Список кейсов">
+              <div className="peak-admin__table-head peak-admin__table-head--pages"><div>Название кейса</div><div>Адрес страницы</div><div>Действия</div></div>
+              {filteredPages.map((page) => (
+                <article key={page.id} role="listitem" onClick={() => router.push(`/admin/pages/${page.id}`)} className="peak-admin__hairline-row peak-admin__page-row">
+                  <div className="peak-admin__page-row-title"><h2 className="peak-admin__hairline-title">{formatTypography(page.title)}</h2>{page.status !== "published" && <span className="peak-admin__badge peak-admin__badge--warning">Черновик</span>}</div>
+                  <span className="peak-admin__hairline-route">{page.route_path}</span>
+                  <div className="peak-admin__hairline-actions"><button type="button" disabled={pending} className="peak-admin__icon-button" onClick={(event) => { event.stopPropagation(); toggleStatus(page); }}>{page.status === "published" ? <Eye className="size-4" /> : <EyeOff className="size-4" />}</button>{page.status === "published" && <button type="button" className="peak-admin__icon-button" onClick={(event) => { event.stopPropagation(); window.open(page.route_path, "_blank"); }}><ExternalLink className="size-4" /></button>}<button type="button" disabled={pending} className="peak-admin__icon-button peak-admin__icon-button--danger" onClick={(event) => { event.stopPropagation(); removePage(page); }}>×</button></div>
+                </article>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      ) : (
+        <div className="peak-admin__hairline">
           <div className="peak-admin__empty">
             <div>
               <span className="peak-admin__empty-icon">
@@ -244,8 +214,8 @@ export default function CasesDashboardClient({ initialPages }: { initialPages: C
               <p className="peak-admin__empty-copy">Попробуйте изменить запрос.</p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Модалка создания кейса */}
       {creating && (
@@ -261,7 +231,7 @@ export default function CasesDashboardClient({ initialPages }: { initialPages: C
               <div>
                 <h2 id="new-case-title" className="peak-admin__modal-title">Новый кейс</h2>
                 <p className="peak-admin__modal-copy">
-                  Поля проекта и загрузчик обложки добавятся автоматически.
+                  {formatTypography("Поля проекта и загрузчик обложки добавятся автоматически.")}
                 </p>
               </div>
               <button

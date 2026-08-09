@@ -1,272 +1,222 @@
+import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
+import { trafficChannel } from "@/lib/analytics";
+import { createR2Client, getR2Config } from "@/lib/r2";
 import { getAdminSession } from "@/lib/supabase/auth";
-import { allCasesData } from "@/data/cases";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-async function getTinifyCompressionCount(apiKey: string): Promise<number | null> {
-  try {
-    const auth = Buffer.from(`api:${apiKey}`).toString("base64");
-    const res = await fetch("https://api.tinify.com/shrink", {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ source: { url: "https://tinypng.com/images/apilogo.png" } }),
-    });
-    const countHeader = res.headers.get("compression-count");
-    if (countHeader) {
-      return parseInt(countHeader, 10);
-    }
-  } catch {
-    // Игнорируем сетевые ошибки
-  }
-  return null;
+type PeriodOption = "7d" | "30d" | "90d" | "all";
+type Report = {
+  totals?: { uniqueVisitors?: number; pageviews?: number; leadsCount?: number };
+  dailyData?: Array<{ date: string; visitors: number; pageviews: number }>;
+  topPages?: Array<{ path: string; title: string; views: number }>;
+  deviceRows?: Array<{ deviceType: string; visitors: number; pageviews: number; leads: number }>;
+  campaigns?: Array<{ source: string; medium: string; campaign: string; visits: number; leads: number }>;
+  funnel?: { visits?: number; sections?: number; cta_clicks?: number };
+  scrollRows?: Array<{ threshold: number; visitors: number }>;
+  cases?: Array<{ page_path: string; title: string; visitors: number; leads: number }>;
+  sources?: Array<{ source: string; visits: number }>;
+  locations?: Array<{ location: string; visitors: number }>;
+  collectionStartedAt?: string | null;
+};
+
+function dateInQostanay(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Qostanay",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value || "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
-export async function GET(req: NextRequest) {
+function subtractDays(dateValue: string, days: number) {
+  const date = new Date(`${dateValue}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() - days);
+  return date.toISOString().slice(0, 10);
+}
+
+function percent(part: number, total: number, digits = 1) {
+  return total > 0 ? Number(((part / total) * 100).toFixed(digits)) : 0;
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1_000_000_000) return `${(bytes / 1_000_000).toFixed(1)} МБ`;
+  return `${(bytes / 1_000_000_000).toFixed(2)} ГБ`;
+}
+
+async function getR2Usage() {
+  const { bucket } = getR2Config();
+  const client = createR2Client();
+  let continuationToken: string | undefined;
+  let bytes = 0;
+  let objects = 0;
+
+  do {
+    const result = await client.send(new ListObjectsV2Command({
+      Bucket: bucket,
+      ContinuationToken: continuationToken,
+      MaxKeys: 1000,
+    }));
+    for (const object of result.Contents || []) {
+      bytes += object.Size || 0;
+      objects += 1;
+    }
+    continuationToken = result.IsTruncated ? result.NextContinuationToken : undefined;
+  } while (continuationToken);
+
+  return { bytes, objects };
+}
+
+async function getTinifyCompressionCount(apiKey: string) {
+  const auth = Buffer.from(`api:${apiKey}`).toString("base64");
+  const response = await fetch("https://api.tinify.com/shrink", {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/json",
+    },
+    // An empty validation request returns account headers without compressing an image.
+    body: "{}",
+    cache: "no-store",
+  });
+  const value = response.headers.get("compression-count");
+  return value && /^\d+$/.test(value) ? Number(value) : null;
+}
+
+export async function GET(request: NextRequest) {
   const session = await getAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: "Необходима авторизация" }, { status: 401 });
+  if (!session) return NextResponse.json({ error: "Необходима авторизация" }, { status: 401 });
+
+  const periodValue = request.nextUrl.searchParams.get("period") || "7d";
+  if (!["7d", "30d", "90d", "all"].includes(periodValue)) {
+    return NextResponse.json({ error: "Некорректный период" }, { status: 400 });
+  }
+  const period = periodValue as PeriodOption;
+  const endDate = dateInQostanay();
+  const startDate = subtractDays(endDate, period === "7d" ? 6 : period === "30d" ? 29 : period === "90d" ? 89 : 3650);
+  const warnings: string[] = [];
+
+  let report: Report = {};
+  let analyticsStatus: "live" | "unavailable" = "live";
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("cms_analytics_report", {
+      p_start: startDate,
+      p_end: endDate,
+    });
+    if (error) throw error;
+    report = (data || {}) as Report;
+  } catch (error) {
+    analyticsStatus = "unavailable";
+    warnings.push("Сбор событий недоступен: проверьте, что миграция аналитики применена в Supabase.");
+    console.error("Analytics report failed:", error);
   }
 
-  const searchParams = req.nextUrl.searchParams;
-  const period = searchParams.get("period") || "7d";
+  const totals = {
+    uniqueVisitors: report.totals?.uniqueVisitors || 0,
+    pageviews: report.totals?.pageviews || 0,
+    leadsCount: report.totals?.leadsCount || 0,
+    conversionRate: `${percent(report.totals?.leadsCount || 0, report.totals?.uniqueVisitors || 0).toFixed(1)}%`,
+  };
 
-  let daysCount = 7;
-  if (period === "30d") daysCount = 30;
-  if (period === "90d") daysCount = 90;
-  if (period === "all") daysCount = 180;
-
-  const cfToken = process.env.CLOUDFLARE_API_TOKEN;
-  const cfZoneId = process.env.CLOUDFLARE_ZONE_ID;
-  const tinifyKey = process.env.TINIFY_API_KEY;
-
-  let liveSource: "cloudflare" | "demo" = "demo";
-  let uniqueVisitors = Math.round(40 * (daysCount / 7));
-  let pageviews = Math.round(122 * (daysCount / 7));
-
-  // Формируем сетку за выбранный период
-  const daysMap: Record<string, { date: string; visitors: number; pageviews: number }> = {};
-  const today = new Date();
-
-  for (let i = daysCount - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const isoDate = d.toISOString().split("T")[0];
-    const displayDate = `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`;
-    daysMap[isoDate] = { date: displayDate, visitors: 0, pageviews: 0 };
-  }
-
-  const devices = { desktop: 62, mobile: 34, tablet: 4 };
-
-  if (cfToken && cfZoneId) {
-    try {
-      const dateDaysAgo = new Date(Date.now() - daysCount * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-      const query = `
-        query GetZoneAnalytics($zoneTag: string!, $dateGeq: String!) {
-          viewer {
-            zones(filter: {zoneTag: $zoneTag}) {
-              httpRequests1dGroups(limit: ${daysCount}, filter: {date_geq: $dateGeq}) {
-                dimensions {
-                  date
-                }
-                sum {
-                  requests
-                }
-                uniq {
-                  uniques
-                }
-              }
-            }
-          }
-        }
-      `;
-
-      const res = await fetch("https://api.cloudflare.com/client/v4/graphql", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${cfToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query, variables: { zoneTag: cfZoneId, dateGeq: dateDaysAgo } }),
-        next: { revalidate: 300 },
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        if (json?.data?.viewer?.zones?.[0]?.httpRequests1dGroups?.length) {
-          liveSource = "cloudflare";
-          const groups = json.data.viewer.zones[0].httpRequests1dGroups;
-          let totalReq = 0;
-          let totalUniques = 0;
-
-          groups.forEach((g: {
-            dimensions?: { date: string };
-            sum: { requests: number };
-            uniq: { uniques: number };
-          }) => {
-            const req = g.sum.requests || 0;
-            const uniques = g.uniq.uniques || 0;
-
-            totalReq += req;
-            totalUniques += uniques;
-
-            if (g.dimensions?.date && daysMap[g.dimensions.date]) {
-              daysMap[g.dimensions.date].pageviews = req;
-              daysMap[g.dimensions.date].visitors = uniques;
-            }
-          });
-
-          pageviews = totalReq;
-          uniqueVisitors = totalUniques;
-        }
-      }
-    } catch {
-      // Игнорируем сетевые ошибки
-    }
-  }
-
-  const dailyData = Object.values(daysMap);
-
-  // Реальные кейсы из allCasesData
-  const realCase1 = allCasesData[0]?.name || "Lukoil Lubricants";
-  const realCase2 = allCasesData[4]?.name || "Compass";
-  const realCase3 = allCasesData[3]?.name || "Shanding Logistics";
-  const realCase4 = allCasesData[1]?.name || "Sensata";
-
-  // Реальные страницы сайта
-  const topPages = [
-    { path: "/", title: "Главная страница", views: Math.round(pageviews * 0.44), percent: 44.0 },
-    { path: "/site-development", title: "Разработка сайтов", views: Math.round(pageviews * 0.22), percent: 22.0 },
-    { path: "/cases", title: "Каталог кейсов", views: Math.round(pageviews * 0.16), percent: 16.0 },
-    { path: allCasesData[0]?.href || "/cases/lukoil", title: `Кейс: ${realCase1}`, views: Math.round(pageviews * 0.11), percent: 11.0 },
-    { path: allCasesData[4]?.href || "/cases/compass", title: `Кейс: ${realCase2}`, views: Math.round(pageviews * 0.07), percent: 7.0 },
-  ];
-
-  // Конверсии и лиды
-  const leadsCount = Math.max(Math.round(3 * (daysCount / 7)), 1);
-  const conversionRate = uniqueVisitors > 0
-    ? ((leadsCount / uniqueVisitors) * 100).toFixed(1) + "%"
-    : "0.0%";
-
-  // UTM Рекламные Кампании
-  const utmCampaigns = [
-    {
-      source: "google / cpc",
-      campaign: "sites_search_almaty",
-      visits: Math.round(uniqueVisitors * 0.28),
-      leads: Math.max(Math.round(leadsCount * 0.5), 1),
-      conversionRate: "5.2%",
-    },
-    {
-      source: "instagram / cpm",
-      campaign: "reels_agency_branding",
-      visits: Math.round(uniqueVisitors * 0.18),
-      leads: Math.max(Math.round(leadsCount * 0.3), 1),
-      conversionRate: "3.8%",
-    },
-    {
-      source: "yandex / cpc",
-      campaign: "direct_site_dev",
-      visits: Math.round(uniqueVisitors * 0.12),
-      leads: Math.max(Math.round(leadsCount * 0.2), 0),
-      conversionRate: "2.9%",
-    },
-    {
-      source: "telegram / post",
-      campaign: "peak_channel_promo",
-      visits: Math.round(uniqueVisitors * 0.08),
-      leads: 0,
-      conversionRate: "0.0%",
-    },
-  ];
-
-  // Воронка микро-конверсий
-  const microFunnel = [
-    { step: "1. Визит на сайт", count: uniqueVisitors, percent: 100 },
-    { step: "2. Просмотр секций Услуги / Кейсы", count: Math.round(uniqueVisitors * 0.65), percent: 65 },
-    { step: "3. Нажатие «Обсудить проект»", count: Math.round(uniqueVisitors * 0.175), percent: 17.5 },
-    { step: "4. Отправка формы заявки (Лид)", count: leadsCount, percent: Math.round((leadsCount / uniqueVisitors) * 100) || 7.5 },
-  ];
-
-  // Глубина скролла
-  const scrollDepth = [
-    { label: "До 25% (Главный экран)", percent: 100 },
-    { label: "До 50% (Услуги и кейсы)", percent: 68 },
-    { label: "До 75% (О компании)", percent: 44 },
-    { label: "До 100% (Футер и Контакты)", percent: 28 },
-  ];
-
-  // Конверсия по типам устройств
+  const totalDeviceVisitors = (report.deviceRows || []).reduce((sum, item) => sum + item.visitors, 0);
+  const byDevice = Object.fromEntries((report.deviceRows || []).map((item) => [item.deviceType, item]));
+  const devices = {
+    desktop: percent(byDevice["Компьютер"]?.visitors || 0, totalDeviceVisitors, 0),
+    mobile: percent(byDevice["Мобильный"]?.visitors || 0, totalDeviceVisitors, 0),
+    tablet: percent(byDevice["Планшет"]?.visitors || 0, totalDeviceVisitors, 0),
+  };
   const deviceConversions = {
-    desktopCR: "4.2%",
-    mobileCR: "1.8%",
-    tabletCR: "2.1%",
+    desktopCR: `${percent(byDevice["Компьютер"]?.leads || 0, byDevice["Компьютер"]?.visitors || 0).toFixed(1)}%`,
+    mobileCR: `${percent(byDevice["Мобильный"]?.leads || 0, byDevice["Мобильный"]?.visitors || 0).toFixed(1)}%`,
+    tabletCR: `${percent(byDevice["Планшет"]?.leads || 0, byDevice["Планшет"]?.visitors || 0).toFixed(1)}%`,
   };
 
-  // Использование РЕАЛЬНЫХ кейсов проекта в рейтинге конверсий
-  const topConvertingCases = [
-    { caseName: `Кейс: ${realCase1}`, leadsCount: Math.max(Math.round(leadsCount * 0.5), 1), conversionRate: "4.8%" },
-    { caseName: `Кейс: ${realCase2}`, leadsCount: Math.max(Math.round(leadsCount * 0.3), 1), conversionRate: "3.2%" },
-    { caseName: `Кейс: ${realCase3}`, leadsCount: Math.max(Math.round(leadsCount * 0.2), 0), conversionRate: "2.1%" },
-    { caseName: `Кейс: ${realCase4}`, leadsCount: 0, conversionRate: "1.0%" },
-  ];
+  const utmCampaigns = (report.campaigns || []).map((item) => ({
+    source: [item.source, item.medium].filter(Boolean).join(" / "),
+    campaign: item.campaign || "Без названия",
+    visits: item.visits,
+    leads: item.leads,
+    conversionRate: `${percent(item.leads, item.visits).toFixed(1)}%`,
+  }));
 
-  // Источники трафика
-  const trafficChannels = [
-    { channel: "Поисковые системы (SEO)", percent: 42, color: "bg-emerald-500" },
-    { channel: "Платная реклама (Paid Ads)", percent: 28, color: "bg-indigo-500" },
-    { channel: "Прямые визиты (Direct)", percent: 18, color: "bg-[#FD4B32]" },
-    { channel: "Telegram и соцсети", percent: 12, color: "bg-sky-500" },
+  const funnelVisits = report.funnel?.visits || 0;
+  const microFunnel = [
+    { step: "1. Визит на сайт", count: funnelVisits, percent: funnelVisits > 0 ? 100 : 0 },
+    { step: "2. Просмотр содержимого", count: report.funnel?.sections || 0, percent: percent(report.funnel?.sections || 0, funnelVisits) },
+    { step: "3. Нажатие CTA", count: report.funnel?.cta_clicks || 0, percent: percent(report.funnel?.cta_clicks || 0, funnelVisits) },
+    { step: "4. Отправка формы заявки", count: totals.leadsCount, percent: percent(totals.leadsCount, funnelVisits) },
   ];
+  const scrollMap = Object.fromEntries((report.scrollRows || []).map((item) => [item.threshold, item.visitors]));
+  const scrollDepth = [25, 50, 75, 100].map((threshold) => ({
+    label: `До ${threshold}% страницы`,
+    percent: percent(scrollMap[threshold] || 0, funnelVisits),
+  }));
 
-  // География посетителей
-  const topCities = [
-    { city: "Алматы", percent: 42.0 },
-    { city: "Астана", percent: 31.0 },
-    { city: "Шымкент", percent: 12.0 },
-    { city: "Другие / Зарубежье", percent: 15.0 },
-  ];
+  const topConvertingCases = (report.cases || []).map((item) => ({
+    caseName: item.title,
+    leadsCount: item.leads,
+    conversionRate: `${percent(item.leads, item.visitors).toFixed(1)}%`,
+  }));
+  const channelCounts = new Map<string, number>();
+  for (const item of report.sources || []) {
+    const channel = trafficChannel(item.source, "");
+    channelCounts.set(channel, (channelCounts.get(channel) || 0) + item.visits);
+  }
+  const totalChannelVisits = [...channelCounts.values()].reduce((sum, value) => sum + value, 0);
+  const colors = ["bg-emerald-500", "bg-indigo-500", "bg-[#FD4B32]", "bg-sky-500", "bg-neutral-400"];
+  const trafficChannels = [...channelCounts.entries()]
+    .sort((left, right) => right[1] - left[1])
+    .map(([channel, visits], index) => ({ channel, percent: percent(visits, totalChannelVisits), color: colors[index % colors.length] }));
+  const topCities = (report.locations || []).map((item) => ({
+    city: item.location,
+    percent: percent(item.visitors, totals.uniqueVisitors),
+  }));
 
-  // Лимиты систем
-  let tinifyUsed = 14;
-  if (tinifyKey) {
-    const fetchedCount = await getTinifyCompressionCount(tinifyKey);
-    if (fetchedCount !== null) {
-      tinifyUsed = fetchedCount;
-    }
+  let r2Status: "live" | "unavailable" = "live";
+  let r2Usage = { bytes: 0, objects: 0 };
+  try {
+    r2Usage = await getR2Usage();
+  } catch (error) {
+    r2Status = "unavailable";
+    warnings.push("Не удалось получить использование Cloudflare R2.");
+    console.error("R2 usage failed:", error);
   }
 
-  const systemLimits = {
-    tinify: {
-      used: tinifyUsed,
-      limit: 500,
-      remaining: Math.max(500 - tinifyUsed, 0),
-      percent: Math.round((tinifyUsed / 500) * 100),
-      plan: "Free Tier (500 сжатий/мес)",
-    },
-    r2: {
-      storageUsed: "142 МБ",
-      storageLimit: "10 ГБ",
-      storagePercent: 1.4,
-      classBUsed: "1.2 тыс",
-      classBLimit: "10 млн",
-      plan: "Free Tier (10 ГБ хранилища / 10 млн операций)",
-    },
-  };
+  let tinifyStatus: "live" | "unavailable" = "unavailable";
+  let tinifyUsed: number | null = null;
+  if (process.env.TINIFY_API_KEY) {
+    try {
+      tinifyUsed = await getTinifyCompressionCount(process.env.TINIFY_API_KEY);
+      tinifyStatus = tinifyUsed === null ? "unavailable" : "live";
+    } catch (error) {
+      console.error("Tinify usage failed:", error);
+    }
+  }
+  if (tinifyStatus === "unavailable") warnings.push("Tinify не вернул текущий счётчик сжатий.");
+
+  const topPages = (report.topPages || []).map((item) => ({
+    ...item,
+    percent: percent(item.views, totals.pageviews),
+  }));
 
   return NextResponse.json({
     period,
-    liveSource,
-    totals: {
-      uniqueVisitors,
-      pageviews,
-      leadsCount,
-      conversionRate,
+    liveSource: analyticsStatus === "live" ? "supabase" : "unavailable",
+    sources: {
+      analytics: analyticsStatus,
+      leads: analyticsStatus,
+      r2: r2Status,
+      tinify: tinifyStatus,
     },
-    dailyData,
+    warnings,
+    collectionStartedAt: report.collectionStartedAt || null,
+    totals,
+    dailyData: report.dailyData || [],
     topPages,
     devices,
     deviceConversions,
@@ -276,7 +226,24 @@ export async function GET(req: NextRequest) {
     topConvertingCases,
     trafficChannels,
     topCities,
-    systemLimits,
+    systemLimits: {
+      tinify: {
+        used: tinifyUsed,
+        limit: 500,
+        remaining: tinifyUsed === null ? null : Math.max(500 - tinifyUsed, 0),
+        percent: tinifyUsed === null ? 0 : Math.round((tinifyUsed / 500) * 100),
+        plan: "Free Tier (500 сжатий/мес)",
+      },
+      r2: {
+        storageUsed: r2Status === "live" ? formatBytes(r2Usage.bytes) : null,
+        storageLimit: "10 ГБ",
+        storagePercent: r2Status === "live" ? percent(r2Usage.bytes, 10_000_000_000) : 0,
+        objectCount: r2Status === "live" ? r2Usage.objects : null,
+        classBUsed: null,
+        classBLimit: "10 млн",
+        plan: "Free Tier (10 ГБ хранилища / 10 млн операций Class B)",
+      },
+    },
     updatedAt: new Date().toISOString(),
   });
 }

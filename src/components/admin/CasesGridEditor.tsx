@@ -2,7 +2,24 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ExternalLink, Eye, EyeOff, FolderKanban, RefreshCw } from "lucide-react";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { ArrowDown, ArrowUp, Eye, EyeOff, GripVertical, RefreshCw } from "lucide-react";
 import type { CaseItem } from "@/data/cases";
 import type { CmsEditorBlock } from "@/types/cms";
 import { formatTypography } from "@/utils/typography";
@@ -26,9 +43,103 @@ function CaseThumbnail({ item }: { item: CaseItem }) {
     return <video src={video} className="size-full object-cover" muted playsInline preload="metadata" />;
   }
   return (
-    <div className="flex size-full items-center justify-center bg-slate-200 text-[10px] font-mono text-slate-400">
-      No img
+    <div className="peak-admin__media-placeholder size-full">
+      Нет медиа
     </div>
+  );
+}
+
+function SortableCaseRow({
+  index,
+  isHidden,
+  item,
+  onMove,
+  onToggleHidden,
+  total,
+}: {
+  index: number;
+  isHidden: boolean;
+  item: CaseItem;
+  onMove: (direction: -1 | 1) => void;
+  onToggleHidden: () => void;
+  total: number;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.href });
+  const project = (
+    <>
+      <span className="peak-admin__case-table-thumb">
+        <CaseThumbnail item={item} />
+      </span>
+      <span className="peak-admin__case-table-name-wrap">
+        <span className="peak-admin__case-table-name">{formatTypography(item.name)}</span>
+        {isHidden && <span className="peak-admin__case-table-state">Скрыт</span>}
+      </span>
+    </>
+  );
+
+  return (
+    <article
+      ref={setNodeRef}
+      role="row"
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`peak-admin__case-table-row ${isHidden ? "peak-admin__case-table-row--hidden" : ""} ${isDragging ? "peak-admin__case-table-row--dragging" : ""}`}
+    >
+      <div role="cell" className="peak-admin__case-table-index">
+        <button
+          type="button"
+          className="peak-admin__case-drag-handle"
+          aria-label={`Изменить позицию кейса ${item.name}`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-4" aria-hidden="true" />
+          <span>{index + 1}</span>
+        </button>
+      </div>
+
+      {item.adminEditUrl ? (
+        <Link href={item.adminEditUrl} role="cell" className="peak-admin__case-table-project" title="Редактировать кейс">
+          {project}
+        </Link>
+      ) : (
+        <div role="cell" className="peak-admin__case-table-project">{project}</div>
+      )}
+
+      <div role="cell" className="peak-admin__case-table-category" title={item.type}>
+        {formatTypography(item.type)}
+      </div>
+      <div role="cell" className="peak-admin__case-table-address" title={item.href}>{item.href}</div>
+
+      <div role="cell" className="peak-admin__case-table-actions">
+        <button
+          type="button"
+          className="peak-admin__table-action"
+          onClick={onToggleHidden}
+          aria-label={isHidden ? "Показать кейс на сайте" : "Скрыть кейс на сайте"}
+          title={isHidden ? "Показать на сайте" : "Скрыть на сайте"}
+        >
+          {isHidden ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
+        </button>
+        <button
+          type="button"
+          className="peak-admin__table-action peak-admin__case-arrow"
+          onClick={() => onMove(-1)}
+          disabled={index === 0}
+          aria-label="Переместить кейс выше"
+        >
+          <ArrowUp className="size-4" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="peak-admin__table-action peak-admin__case-arrow"
+          onClick={() => onMove(1)}
+          disabled={index === total - 1}
+          aria-label="Переместить кейс ниже"
+        >
+          <ArrowDown className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+    </article>
   );
 }
 
@@ -44,9 +155,13 @@ export default function CasesGridEditor({
   const [availableCases, setAvailableCases] = useState<CaseItem[]>(initialAvailableCases || []);
   const [loading, setLoading] = useState(!initialAvailableCases || initialAvailableCases.length === 0);
   const [error, setError] = useState("");
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
-  const savedOrder = parseStringArray(block.content.caseOrder);
-  const savedHidden = parseStringArray(block.content.hiddenHrefs) || [];
+  const savedOrder = useMemo(() => parseStringArray(block.content.caseOrder), [block.content.caseOrder]);
+  const savedHidden = useMemo(() => parseStringArray(block.content.hiddenHrefs) || [], [block.content.hiddenHrefs]);
 
   useEffect(() => {
     if (initialAvailableCases && initialAvailableCases.length > 0) {
@@ -108,6 +223,15 @@ export default function CasesGridEditor({
     updateState(nextOrder, savedHidden);
   }
 
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = orderedHrefs.indexOf(String(active.id));
+    const newIndex = orderedHrefs.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    updateState(arrayMove(orderedHrefs, oldIndex, newIndex), savedHidden);
+  }
+
   function toggleHidden(href: string) {
     const nextHidden = hiddenSet.has(href)
       ? savedHidden.filter((h) => h !== href)
@@ -126,18 +250,11 @@ export default function CasesGridEditor({
   return (
     <section className="peak-admin__case-media" aria-labelledby="cases-grid-title">
       <div className="peak-admin__case-media-heading">
-        <div className="flex items-start gap-3">
-          <span className="peak-admin__media-field-icon">
-            <FolderKanban className="size-5" aria-hidden="true" />
-          </span>
-          <div>
-            <h2 id="cases-grid-title" className="peak-admin__section-title !mt-0">
-              Порядок и видимость кейсов на странице /cases
-            </h2>
-            <p className="peak-admin__section-description">
-              Изменяйте порядок кейсов и скрывайте ненужные проекты. Скрытые кейсы не отображаются в каталоге и в фильтрах.
-            </p>
-          </div>
+        <div>
+          <h2 id="cases-grid-title" className="peak-admin__section-title !mt-0">Порядок и видимость кейсов</h2>
+          <p className="peak-admin__section-description">
+            {formatTypography(`${visibleCount} из ${orderedHrefs.length} кейсов отображаются · Меняйте порядок перетаскиванием`)}
+          </p>
         </div>
         <button
           type="button"
@@ -154,112 +271,35 @@ export default function CasesGridEditor({
       ) : (
         <>
           {error && <p role="alert" className="peak-admin__notice peak-admin__notice--error">{formatTypography(error)}</p>}
-
-          <div className="mb-4 text-xs font-semibold text-slate-700">
-            Отображается: {visibleCount} из {orderedHrefs.length} кейсов ({orderedHrefs.length - visibleCount} скрыто)
-          </div>
-
-          <div className="flex flex-col gap-2">
-            {orderedHrefs.map((href, index) => {
-              const item = casesByHref.get(href);
-              if (!item) return null;
-              const isHidden = hiddenSet.has(href);
-
-              return (
-                <article
-                  key={href}
-                  className={`flex items-center justify-between gap-4 rounded-xl border p-3 shadow-xs transition-opacity ${
-                    isHidden
-                      ? "border-amber-200 bg-amber-50/50 opacity-60"
-                      : "border-slate-200 bg-white"
-                  }`}
-                >
-                  {item.adminEditUrl ? (
-                    <Link
-                      href={item.adminEditUrl}
-                      className="flex items-center gap-3 min-w-0 flex-1 group"
-                      title="Редактировать кейс"
-                    >
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 font-mono text-xs font-bold text-slate-600">
-                        {index + 1}
-                      </span>
-                      <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-slate-100 border border-slate-200">
-                        <CaseThumbnail item={item} />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="truncate text-sm font-semibold text-slate-900 group-hover:text-red-600 transition-colors">
-                            {formatTypography(item.name)}
-                          </h4>
-                          {isHidden && (
-                            <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                              Скрыт
-                            </span>
-                          )}
-                        </div>
-                        <p className="truncate text-xs text-slate-500">
-                          {item.type} · {item.href}
-                        </p>
-                      </div>
-                    </Link>
-                  ) : (
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 font-mono text-xs font-bold text-slate-600">
-                        {index + 1}
-                      </span>
-                      <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-slate-100 border border-slate-200">
-                        <CaseThumbnail item={item} />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="truncate text-sm font-semibold text-slate-900">
-                            {formatTypography(item.name)}
-                          </h4>
-                          {isHidden && (
-                            <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                              Скрыт
-                            </span>
-                          )}
-                        </div>
-                        <p className="truncate text-xs text-slate-500">
-                          {item.type} · {item.href}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      className={`peak-admin__icon-button ${isHidden ? "text-amber-700 hover:text-slate-900" : ""}`}
-                      onClick={() => toggleHidden(href)}
-                      aria-label={isHidden ? "Показать кейс на сайте" : "Скрыть кейс на сайте"}
-                      title={isHidden ? "Показать на сайте" : "Скрыть на сайте"}
-                    >
-                      {isHidden ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                    <button
-                      type="button"
-                      className="peak-admin__icon-button"
-                      onClick={() => moveItem(index, -1)}
-                      disabled={index === 0}
-                      aria-label="Переместить кейс выше"
-                    >
-                      <ArrowUp className="size-4" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      className="peak-admin__icon-button"
-                      onClick={() => moveItem(index, 1)}
-                      disabled={index === orderedHrefs.length - 1}
-                      aria-label="Переместить кейс ниже"
-                    >
-                      <ArrowDown className="size-4" aria-hidden="true" />
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
+          <div className="peak-admin__case-table" role="table" aria-label="Порядок и видимость кейсов">
+            <div className="peak-admin__case-table-head" role="row">
+              <div role="columnheader">#</div>
+              <div role="columnheader">Проект</div>
+              <div role="columnheader">Категория</div>
+              <div role="columnheader">Адрес</div>
+              <div role="columnheader" className="text-right">Действия</div>
+            </div>
+            <DndContext id={`cases-grid-${block.id}`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={orderedHrefs} strategy={verticalListSortingStrategy}>
+                <div role="rowgroup">
+                  {orderedHrefs.map((href, index) => {
+                    const item = casesByHref.get(href);
+                    if (!item) return null;
+                    return (
+                      <SortableCaseRow
+                        key={href}
+                        index={index}
+                        isHidden={hiddenSet.has(href)}
+                        item={item}
+                        onMove={(direction) => moveItem(index, direction)}
+                        onToggleHidden={() => toggleHidden(href)}
+                        total={orderedHrefs.length}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </DndContext>
           </div>
         </>
       )}
