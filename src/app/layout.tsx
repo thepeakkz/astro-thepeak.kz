@@ -56,7 +56,7 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${interDisplay.variable} h-full antialiased`} data-scroll-behavior="smooth">
       <head />
-      <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-hidden">
+      <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-clip">
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-HCKHMPWG4L"
           strategy="afterInteractive"

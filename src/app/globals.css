@@ -811,6 +811,11 @@ p,
     opacity: 1;
     transition-delay: calc(var(--index) * .06s);
   }
+
+  .featured-service-button-overlay:is(:hover, :focus-visible) .button01_bg-mid,
+  .featured-service-button-overlay:is(:hover, :focus-visible) .button01_bg-pixel {
+    background-color: #000;
+  }
 }
 
 /* style only for touch devices */
@@ -864,5 +869,3 @@ p,
 .pdf-reader-arrow:hover {
   background: rgba(0, 0, 0, 0.7);
 }
-
-

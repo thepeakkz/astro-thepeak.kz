@@ -8,6 +8,7 @@ import { formatTypography } from "@/utils/typography";
 import PhoneInput from "@/components/ui/PhoneInput";
 import PrivacyConsentCheckbox from "@/components/PrivacyConsentCheckbox";
 import { Button01 } from "@/components/ui/nextjsshop-button";
+import GamificationCasesModal from "@/components/GamificationCasesModal";
 
 interface ServiceItem {
   title: string;
@@ -18,6 +19,7 @@ interface ServiceItem {
 interface FeaturedServiceItem extends ServiceItem {
   image: string;
   imageAlt: string;
+  hasCases?: boolean;
 }
 
 const servicesData: ServiceItem[] = [
@@ -30,7 +32,7 @@ const servicesData: ServiceItem[] = [
   {
     title: "Маркетинг и стратегия",
     description:
-      "Начинаем с аудита бизнеса и маркетинга, чтобы увидеть реальные точки роста. Формируем стратегию на 6–12 месяцев, выстраиваем путь клиента и определяем инструменты, которые помогут привлекать больше клиентов и масштабировать продажи.",
+      "Начинаем с аудита бизнеса и маркетинга, чтобы увидеть реальные точки роста. Формируем стратегию на срок от 6 до 12 месяцев, выстраиваем путь клиента и определяем инструменты, которые помогут привлекать больше клиентов и масштабировать продажи.",
     shape: "/shapes/shape-marketing.svg",
   },
   {
@@ -69,26 +71,27 @@ const featuredServicesData: FeaturedServiceItem[] = [
   {
     title: "Организация мероприятий",
     description:
-      "Берем на себя полный цикл организации мероприятий — от разработки концепции до реализации. Проводим конференции, форумы, фестивали, корпоративные события, спортивные мероприятия, презентации, открытия объектов и масштабные брендовые события, обеспечивая комплексное сопровождение проекта на каждом этапе.",
-    shape: "/shapes/shape-organization.svg",
-    image: "/cases/ris.webp",
-    imageAlt: "Ведущий на сцене во время мероприятия",
+      "Организуем мероприятия под ключ, от концепции до реализации. Проводим конференции, фестивали, корпоративные и брендовые события любого масштаба.",
+    shape: "/images/featured-services/event-production-icon.svg",
+    image: "/images/featured-services/event-production.webp",
+    imageAlt: "Стеклянная арена с аудиторией для организации мероприятий",
   },
   {
     title: "BTL и промо-активации",
     description:
-      "Разрабатываем и реализуем BTL-кампании. Организуем промо-акции, дегустации, road show, брендированные зоны, презентации новых продуктов, интеграции в городскую среду и специальные активации, усиливающие узнаваемость бренда и стимулирующие продажи.",
-    shape: "/shapes/shape-marketing.svg",
-    image: "/cases/puma.webp",
-    imageAlt: "Яркая рекламная кампания бренда в городской эстетике",
+      "Запускаем BTL-кампании, промо-акции, дегустации, road show и брендированные зоны, которые повышают узнаваемость и стимулируют продажи.",
+    shape: "/images/featured-services/btl-activations-icon.svg",
+    image: "/images/featured-services/btl-activations.webp",
+    imageAlt: "Промо-персонаж внутри стеклянной брендированной зоны",
   },
   {
     title: "Геймификация",
     description:
-      "Создаем игровые механики, которые превращают взаимодействие с брендом в опыт, к которому хочется возвращаться. Разрабатываем программы лояльности, брендированные игры, интерактивные акции, квесты, цифровые механики вовлечения и спецпроекты, которые увеличивают удержание аудитории, частоту повторных покупок и ценность бренда.",
-    shape: "/shapes/shape-design.svg",
-    image: "/cases/bebble.webp",
-    imageAlt: "Игровая визуальная механика бренда Bebble",
+      "Создаем брендированные игры, квесты и механики вовлечения. Они удерживают аудиторию, увеличивают повторные покупки и усиливают ценность бренда.",
+    shape: "/images/featured-services/gamification-icon.svg",
+    image: "/images/featured-services/gamification.webp",
+    imageAlt: "Игровой персонаж поднимается по стеклянным уровням",
+    hasCases: true,
   },
 ];
 
@@ -277,8 +280,117 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   );
 };
 
+interface FeaturedServiceContentProps {
+  service: FeaturedServiceItem;
+  imageFirst: boolean;
+  onRequest: () => void;
+  onCases?: () => void;
+}
+
+const FeaturedServiceContent: React.FC<FeaturedServiceContentProps> = ({
+  service,
+  imageFirst,
+  onRequest,
+  onCases,
+}) => {
+  const [scope, animate] = useAnimate();
+
+  const getNearestSide = (e: React.MouseEvent<HTMLDivElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const sides = [
+      { proximity: Math.abs(box.left - e.clientX), side: "left" as const },
+      { proximity: Math.abs(box.right - e.clientX), side: "right" as const },
+      { proximity: Math.abs(box.top - e.clientY), side: "top" as const },
+      { proximity: Math.abs(box.bottom - e.clientY), side: "bottom" as const },
+    ].sort((a, b) => a.proximity - b.proximity);
+
+    return sides[0].side;
+  };
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (window.innerWidth >= 768) {
+      const side = getNearestSide(e);
+      animate(scope.current, { clipPath: ENTRANCE_KEYFRAMES[side] });
+    }
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (window.innerWidth >= 768) {
+      const side = getNearestSide(e);
+      animate(scope.current, { clipPath: EXIT_KEYFRAMES[side] });
+    }
+  };
+
+  const renderContent = (isOverlay = false) => (
+    <>
+      <div className="relative z-10">
+        <Image
+          src={service.shape}
+          alt=""
+          width={32}
+          height={32}
+          className="mb-[clamp(3rem,8vw,7rem)] h-7 w-7 brightness-0 invert md:h-8 md:w-8"
+        />
+        <h3 className="no-invert max-w-[11ch] font-headline text-[clamp(1.875rem,3.8vw,4.5rem)] font-semibold leading-[0.92] tracking-[-0.04em] text-white">
+          {formatTypography(service.title)}
+        </h3>
+      </div>
+
+      <div className="relative z-10 mt-12 md:mt-16">
+        <p className="no-invert max-w-xl font-sans text-[clamp(1rem,1vw,1.1rem)] font-medium leading-[1.1] text-white/90">
+          {formatTypography(service.description)}
+        </p>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Button01
+            text="Оставить заявку"
+            variant="dark"
+            onClick={onRequest}
+            className={`pointer-events-auto w-full cursor-pointer sm:w-fit ${
+              isOverlay ? "featured-service-button-overlay" : ""
+            }`}
+            aria-label={`Оставить заявку на услугу «${service.title}»`}
+          />
+          {service.hasCases && onCases && (
+            <Button01
+              text="Кейс"
+              variant="dark"
+              onClick={onCases}
+              className={`pointer-events-auto w-full cursor-pointer sm:w-fit ${
+                isOverlay ? "featured-service-button-overlay" : ""
+              }`}
+              aria-label="Открыть кейсы по геймификации"
+            />
+          )}
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={`relative order-1 flex flex-col justify-start overflow-hidden p-5 text-white md:col-span-5 md:p-[clamp(2rem,3.6vw,4.5rem)] ${
+        imageFirst ? "md:order-2" : "md:order-1"
+      }`}
+    >
+      {renderContent()}
+
+      <div
+        ref={scope}
+        style={{ clipPath: BOTTOM_RIGHT_CLIP }}
+        className="pointer-events-none absolute inset-0 z-20 hidden flex-col justify-start bg-brand-red p-[clamp(2rem,3.6vw,4.5rem)] md:flex"
+        aria-hidden="true"
+      >
+        {renderContent(true)}
+      </div>
+    </div>
+  );
+};
+
 export default function ServicesAnimate() {
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
+  const [isGamificationCasesOpen, setIsGamificationCasesOpen] = useState(false);
   const [modalForm, setModalForm] = useState({
     name: "",
     contact: "",
@@ -403,17 +515,19 @@ export default function ServicesAnimate() {
       </div>
 
       <div className="swiss-grid mt-[clamp(4.5rem,9vw,9rem)]">
-        <div className="col-span-12 border-t border-brand-gray/15">
+        <div className="col-span-12">
           {featuredServicesData.map((service, index) => {
             const imageFirst = index % 2 === 0;
 
             return (
               <article
                 key={service.title}
-                className="group grid min-h-[clamp(38rem,58vw,52rem)] grid-cols-1 overflow-hidden border-b border-brand-gray/15 bg-[#080808] md:min-h-[clamp(32rem,45vw,48rem)] md:grid-cols-12"
+                data-featured-service={service.title}
+                style={{ zIndex: index + 10 }}
+                className="group sticky top-0 grid min-h-[clamp(38rem,100svh,52rem)] grid-cols-1 overflow-hidden bg-[#080808] [transform:translateZ(0)] md:min-h-[clamp(32rem,100svh,56rem)] md:grid-cols-12"
               >
                 <div
-                  className={`relative min-h-[22rem] overflow-hidden md:col-span-7 md:min-h-0 ${
+                  className={`relative order-2 min-h-[22rem] overflow-hidden md:col-span-7 md:min-h-0 ${
                     imageFirst ? "md:order-1" : "md:order-2"
                   }`}
                 >
@@ -425,47 +539,26 @@ export default function ServicesAnimate() {
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.025]"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-                  <span className="absolute left-5 top-5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80 md:left-7 md:top-7">
+                  <span className="absolute right-5 top-5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80 md:left-7 md:right-auto md:top-7">
                     {String(index + 1).padStart(2, "0")} / 03
                   </span>
                 </div>
 
-                <div
-                  className={`flex flex-col justify-between p-5 text-white md:col-span-5 md:p-[clamp(2rem,3.6vw,4.5rem)] ${
-                    imageFirst ? "md:order-2" : "md:order-1"
-                  }`}
-                >
-                  <div>
-                    <Image
-                      src={service.shape}
-                      alt=""
-                      width={32}
-                      height={32}
-                      className="mb-[clamp(3rem,8vw,7rem)] h-7 w-7 brightness-0 invert md:h-8 md:w-8"
-                    />
-                    <h3 className="no-invert max-w-[11ch] font-headline text-[clamp(2.15rem,4.4vw,5rem)] font-semibold leading-[0.92] tracking-[-0.04em] text-white">
-                      {formatTypography(service.title)}
-                    </h3>
-                  </div>
-
-                  <div className="mt-12 md:mt-16">
-                    <p className="no-invert max-w-xl font-sans text-[clamp(0.95rem,1.15vw,1.15rem)] leading-relaxed text-white/72">
-                      {formatTypography(service.description)}
-                    </p>
-                    <Button01
-                      text="Оставить заявку"
-                      variant="dark"
-                      onClick={() => openServiceModal(service)}
-                      className="mt-8 w-full cursor-pointer sm:w-fit"
-                      aria-label={`Оставить заявку на услугу «${service.title}»`}
-                    />
-                  </div>
-                </div>
+                <FeaturedServiceContent
+                  service={service}
+                  imageFirst={imageFirst}
+                  onRequest={() => openServiceModal(service)}
+                  onCases={service.hasCases ? () => setIsGamificationCasesOpen(true) : undefined}
+                />
               </article>
             );
           })}
         </div>
       </div>
+
+      {isGamificationCasesOpen && (
+        <GamificationCasesModal onClose={() => setIsGamificationCasesOpen(false)} />
+      )}
 
       {/* Swiss Pop-up Modal Form */}
       {selectedService && (
@@ -503,7 +596,10 @@ export default function ServicesAnimate() {
                 <h3 className="font-headline font-bold text-white text-xl md:text-2xl tracking-wide leading-tight">
                   {selectedService.title}
                 </h3>
-                <p className="font-sans text-xs text-white/60 mt-2 leading-relaxed">
+                <p
+                  style={{ fontSize: "0.75rem", lineHeight: 1.2 }}
+                  className="font-sans text-white/60 mt-2"
+                >
                   {selectedService.description}
                 </p>
               </div>
