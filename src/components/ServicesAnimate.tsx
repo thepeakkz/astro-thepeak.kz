@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useAnimate } from "framer-motion";
 import { MorphingText } from "@/components/ui/liquid-text";
 import { formatTypography } from "@/utils/typography";
@@ -12,6 +13,11 @@ interface ServiceItem {
   title: string;
   description: string;
   shape: string;
+}
+
+interface FeaturedServiceItem extends ServiceItem {
+  image: string;
+  imageAlt: string;
 }
 
 const servicesData: ServiceItem[] = [
@@ -56,6 +62,33 @@ const servicesData: ServiceItem[] = [
     description:
       "Технический надзор, аудит digital-процессов и контроль подрядчиков. Долгосрочная поддержка сайта и консалтинг по оптимизации маркетинга.",
     shape: "/shapes/shape-organization.svg",
+  },
+];
+
+const featuredServicesData: FeaturedServiceItem[] = [
+  {
+    title: "Организация мероприятий",
+    description:
+      "Берем на себя полный цикл организации мероприятий — от разработки концепции до реализации. Проводим конференции, форумы, фестивали, корпоративные события, спортивные мероприятия, презентации, открытия объектов и масштабные брендовые события, обеспечивая комплексное сопровождение проекта на каждом этапе.",
+    shape: "/shapes/shape-organization.svg",
+    image: "/cases/ris.webp",
+    imageAlt: "Ведущий на сцене во время мероприятия",
+  },
+  {
+    title: "BTL и промо-активации",
+    description:
+      "Разрабатываем и реализуем BTL-кампании. Организуем промо-акции, дегустации, road show, брендированные зоны, презентации новых продуктов, интеграции в городскую среду и специальные активации, усиливающие узнаваемость бренда и стимулирующие продажи.",
+    shape: "/shapes/shape-marketing.svg",
+    image: "/cases/puma.webp",
+    imageAlt: "Яркая рекламная кампания бренда в городской эстетике",
+  },
+  {
+    title: "Геймификация",
+    description:
+      "Создаем игровые механики, которые превращают взаимодействие с брендом в опыт, к которому хочется возвращаться. Разрабатываем программы лояльности, брендированные игры, интерактивные акции, квесты, цифровые механики вовлечения и спецпроекты, которые увеличивают удержание аудитории, частоту повторных покупок и ценность бренда.",
+    shape: "/shapes/shape-design.svg",
+    image: "/cases/bebble.webp",
+    imageAlt: "Игровая визуальная механика бренда Bebble",
   },
 ];
 
@@ -262,6 +295,18 @@ export default function ServicesAnimate() {
     }
   };
 
+  const openServiceModal = (service: ServiceItem) => {
+    setSelectedService(service);
+    setModalForm({
+      name: "",
+      contact: "",
+      contactMethod: "WhatsApp",
+      message: "",
+      privacyConsent: true,
+    });
+    setModalStatus("idle");
+  };
+
   const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedService || !modalForm.name.trim() || !modalForm.contact.trim() || !modalForm.privacyConsent) {
@@ -343,17 +388,7 @@ export default function ServicesAnimate() {
               title={formatTypography(service.title)}
               description={formatTypography(service.description)}
               shape={service.shape}
-              onClick={() => {
-                setSelectedService(service);
-                setModalForm({
-                  name: "",
-                  contact: "",
-                  contactMethod: "WhatsApp",
-                  message: "",
-          privacyConsent: true,
-                });
-                setModalStatus("idle");
-              }}
+              onClick={() => openServiceModal(service)}
             />
           ))}
 
@@ -364,6 +399,71 @@ export default function ServicesAnimate() {
             isCTA={true}
             onClick={handleScrollToContacts}
           />
+        </div>
+      </div>
+
+      <div className="swiss-grid mt-[clamp(4.5rem,9vw,9rem)]">
+        <div className="col-span-12 border-t border-brand-gray/15">
+          {featuredServicesData.map((service, index) => {
+            const imageFirst = index % 2 === 0;
+
+            return (
+              <article
+                key={service.title}
+                className="group grid min-h-[clamp(38rem,58vw,52rem)] grid-cols-1 overflow-hidden border-b border-brand-gray/15 bg-[#080808] md:min-h-[clamp(32rem,45vw,48rem)] md:grid-cols-12"
+              >
+                <div
+                  className={`relative min-h-[22rem] overflow-hidden md:col-span-7 md:min-h-0 ${
+                    imageFirst ? "md:order-1" : "md:order-2"
+                  }`}
+                >
+                  <Image
+                    src={service.image}
+                    alt={service.imageAlt}
+                    fill
+                    sizes="(max-width: 767px) 100vw, 58vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.025]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+                  <span className="absolute left-5 top-5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80 md:left-7 md:top-7">
+                    {String(index + 1).padStart(2, "0")} / 03
+                  </span>
+                </div>
+
+                <div
+                  className={`flex flex-col justify-between p-5 text-white md:col-span-5 md:p-[clamp(2rem,3.6vw,4.5rem)] ${
+                    imageFirst ? "md:order-2" : "md:order-1"
+                  }`}
+                >
+                  <div>
+                    <Image
+                      src={service.shape}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="mb-[clamp(3rem,8vw,7rem)] h-7 w-7 brightness-0 invert md:h-8 md:w-8"
+                    />
+                    <h3 className="no-invert max-w-[11ch] font-headline text-[clamp(2.15rem,4.4vw,5rem)] font-semibold leading-[0.92] tracking-[-0.04em] text-white">
+                      {formatTypography(service.title)}
+                    </h3>
+                  </div>
+
+                  <div className="mt-12 md:mt-16">
+                    <p className="no-invert max-w-xl font-sans text-[clamp(0.95rem,1.15vw,1.15rem)] leading-relaxed text-white/72">
+                      {formatTypography(service.description)}
+                    </p>
+                    <Button01
+                      text="Оставить заявку"
+                      variant="dark"
+                      onClick={() => openServiceModal(service)}
+                      className="mt-8 w-full cursor-pointer sm:w-fit"
+                      aria-label={`Оставить заявку на услугу «${service.title}»`}
+                    />
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </div>
 
