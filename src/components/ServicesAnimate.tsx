@@ -95,6 +95,8 @@ const featuredServicesData: FeaturedServiceItem[] = [
   },
 ];
 
+const GAMIFICATION_CASES_ENABLED = false;
+
 const NO_CLIP = "polygon(0 0, 100% 0, 100% 100%, 0% 100%)";
 const BOTTOM_RIGHT_CLIP = "polygon(0 0, 100% 0, 0 0, 0% 100%)";
 const TOP_RIGHT_CLIP = "polygon(0 0, 0 100%, 100% 100%, 0% 100%)";
@@ -548,7 +550,11 @@ export default function ServicesAnimate() {
                   service={service}
                   imageFirst={imageFirst}
                   onRequest={() => openServiceModal(service)}
-                  onCases={service.hasCases ? () => setIsGamificationCasesOpen(true) : undefined}
+                  onCases={
+                    GAMIFICATION_CASES_ENABLED && service.hasCases
+                      ? () => setIsGamificationCasesOpen(true)
+                      : undefined
+                  }
                 />
               </article>
             );
@@ -556,7 +562,7 @@ export default function ServicesAnimate() {
         </div>
       </div>
 
-      {isGamificationCasesOpen && (
+      {GAMIFICATION_CASES_ENABLED && isGamificationCasesOpen && (
         <GamificationCasesModal onClose={() => setIsGamificationCasesOpen(false)} />
       )}
 
