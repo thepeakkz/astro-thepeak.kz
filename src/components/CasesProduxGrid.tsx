@@ -175,10 +175,10 @@ function ProjectCard({
           {project.services.map((tag, idx) => (
             <div
               key={tag}
-              style={{ transitionDelay: showHoverEffects ? `${idx * 50}ms` : "0ms" }}
+              style={{ transitionDelay: showHoverEffects ? `${idx * 40}ms` : "0ms" }}
               className={cn(
-                "max-w-full translate-y-[1.95vh] whitespace-nowrap border border-white/5 bg-black/45 px-2 py-1 font-sans text-[clamp(0.6rem,0.65vw,0.75rem)] font-bold uppercase text-[#F2F2F2] opacity-0 blur-[4px] backdrop-blur-md rounded-none select-none transition-[transform,opacity,filter] duration-400 ease-out",
-                showHoverEffects && "translate-y-0 opacity-100 blur-0",
+                "max-w-full translate-y-2.5 whitespace-nowrap border border-white/10 bg-black/60 px-2.5 py-1 font-sans text-[clamp(0.6rem,0.65vw,0.75rem)] font-bold uppercase text-[#F2F2F2] opacity-0 backdrop-blur-md rounded-none select-none transition-[transform,opacity] duration-300 ease-out",
+                showHoverEffects && "translate-y-0 opacity-100",
               )}
             >
               {formatTypography(tag)}

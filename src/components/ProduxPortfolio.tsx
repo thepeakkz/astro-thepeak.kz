@@ -192,18 +192,17 @@ function ProjectCard({
           {project.tags.map((tag, idx) => (
             <motion.div
               key={tag}
-              initial={{ y: "1.95vh", opacity: 0, filter: "blur(4px)" }}
+              initial={{ y: "1.95vh", opacity: 0 }}
               animate={{
                 y: isHovered ? 0 : "1.95vh",
                 opacity: isHovered ? 1 : 0,
-                filter: isHovered ? "blur(0px)" : "blur(4px)",
               }}
               transition={{
-                duration: 0.4,
+                duration: 0.3,
                 ease: [0.25, 1, 0.5, 1],
-                delay: isHovered ? idx * 0.05 : 0,
+                delay: isHovered ? idx * 0.04 : 0,
               }}
-              className="font-sans text-[clamp(0.65rem,0.8vw,0.9rem)] font-bold border border-white/5 bg-black/45 px-3 py-1.5 uppercase backdrop-blur-md text-[#F2F2F2] rounded-none select-none"
+              className="font-sans text-[clamp(0.65rem,0.8vw,0.9rem)] font-bold border border-white/10 bg-black/60 px-3 py-1.5 uppercase backdrop-blur-md text-[#F2F2F2] rounded-none select-none"
             >
               {tag}
             </motion.div>
