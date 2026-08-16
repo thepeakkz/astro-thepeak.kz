@@ -52,7 +52,7 @@ export default function Team({
 }) {
   return (
     <section
-      className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] border-b border-brand-gray/10 bg-brand-light-gray/20 scroll-mt-[clamp(2rem,2.8vw,3.5rem)]"
+      className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] border-b border-brand-gray/10 bg-brand-light-gray/20 scroll-mt-[clamp(2rem,2.8vw,3.5rem)] content-visibility-auto"
       id="team"
     >
       {/* Two-column Swiss grid: intro on the left, team cards on the right. */}

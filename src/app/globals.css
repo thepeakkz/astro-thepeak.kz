@@ -754,3 +754,18 @@ p,
 .pdf-reader-arrow:hover {
   background: rgba(0, 0, 0, 0.7);
 }
+
+/* Performance & Rendering Containment */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-horizontal,
+  .animate-marquee-vertical,
+  .animate-marquee-reverse {
+    animation-play-state: paused !important;
+  }
+}
+

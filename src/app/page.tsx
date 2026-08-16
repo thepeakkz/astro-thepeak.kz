@@ -7,7 +7,7 @@ import { getAllCasesList, getPublishedPageByPath } from "@/lib/cms/data";
 import { createSeoMetadata, getBreadcrumbJsonLd, getServiceJsonLd, pageSeo } from "@/lib/seo";
 
 export const metadata: Metadata = createSeoMetadata(pageSeo.home);
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function Home() {
   const [cmsPage, allCases] = await Promise.all([

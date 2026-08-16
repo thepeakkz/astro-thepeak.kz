@@ -32,9 +32,8 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const hasVideoEndedRef = React.useRef(false);
   const [shouldLoadVideo, setShouldLoadVideo] = React.useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = React.useState(false);
   const logoIds = [2, 11, 12, 20, 21, 24, 38, 39, 40, 41, 44];
-  const marqueeItems = [...logoIds, ...logoIds, ...logoIds, ...logoIds];
+  const marqueeItems = [...logoIds, ...logoIds];
   const desktopTitle = content.title || "Маркетинг, который работает\nот идеи до результата";
   const mobileTitle = content.mobileTitle || "Маркетинг,\nкоторый работает\nот идеи до готового\nрезультата";
   const description = content.description || "Приходите к нам с задачей «сделать не как у всех».\nМы создаём маркетинг, который становится референсом для других.";
@@ -68,9 +67,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
     const playPromise = video.play();
 
     if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        setIsVideoPlaying(false);
-      });
+      playPromise.catch(() => {});
     }
   }, []);
 
@@ -108,17 +105,8 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
     const handleCanPlay = () => {
       playHeroVideo();
     };
-    const handlePlaying = () => {
-      setIsVideoPlaying(true);
-    };
-    const handlePause = () => {
-      if (!hasVideoEndedRef.current) {
-        setIsVideoPlaying(false);
-      }
-    };
     const handleEnded = () => {
       hasVideoEndedRef.current = true;
-      setIsVideoPlaying(true);
     };
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -131,8 +119,6 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
 
     video.addEventListener("loadedmetadata", handleCanPlay);
     video.addEventListener("canplay", handleCanPlay);
-    video.addEventListener("playing", handlePlaying);
-    video.addEventListener("pause", handlePause);
     video.addEventListener("ended", handleEnded);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     document.addEventListener("pointerdown", handleUserGesture, { once: true, passive: true });
@@ -141,8 +127,6 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
     return () => {
       video.removeEventListener("loadedmetadata", handleCanPlay);
       video.removeEventListener("canplay", handleCanPlay);
-      video.removeEventListener("playing", handlePlaying);
-      video.removeEventListener("pause", handlePause);
       video.removeEventListener("ended", handleEnded);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       document.removeEventListener("pointerdown", handleUserGesture);
@@ -152,22 +136,17 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
 
   return (
     <section className="col-span-12 relative w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] overflow-hidden h-screen md:h-auto md:min-h-screen flex flex-col justify-between pt-[60px] md:pt-[clamp(4rem,8vw,6rem)] pb-0 border-b border-brand-gray/10 select-none" id="hero-alternative">
-      {/* 1. Background Video */}
-      <div className="hero-video-shell absolute top-0 left-0 w-full h-full overflow-hidden">
+      {/* 1. Background Video with Instant LCP Poster */}
+      <div className="hero-video-shell absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <video
           ref={videoRef}
           autoPlay
           muted
           playsInline
           preload="none"
-          poster={customPosterUrl}
-          onError={(event) => {
-            if (event.currentTarget.poster !== "/hero-mobile-poster-v2.webp") {
-              event.currentTarget.poster = "/hero-mobile-poster-v2.webp";
-            }
-          }}
+          poster={customPosterUrl || "/hero-mobile-poster-v2.webp"}
           disablePictureInPicture
-          className={`w-full h-full object-cover transition-opacity duration-300 ${isVideoPlaying ? "opacity-100" : "opacity-0"}`}
+          className="w-full h-full object-cover"
           aria-hidden="true"
           tabIndex={-1}
         >
@@ -275,6 +254,8 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                   className="flex items-center w-max"
                   style={{
                     animation: 'marquee-scroll-horizontal 14s linear infinite',
+                    willChange: 'transform',
+                    transform: 'translate3d(0, 0, 0)',
                   }}
                 >
                   {marqueeItems.map((id, index) => (

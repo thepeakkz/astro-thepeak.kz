@@ -89,6 +89,8 @@ export default function ClientLogosBlock() {
             className="flex items-center w-max h-full"
             style={{
               animation: "marquee-scroll-horizontal 240s linear infinite",
+              willChange: "transform",
+              transform: "translate3d(0, 0, 0)",
             }}
           >
             {row1.map((item, index) => (
@@ -117,6 +119,8 @@ export default function ClientLogosBlock() {
             style={{
               animationDuration: "200s",
               animationTimingFunction: "linear",
+              willChange: "transform",
+              transform: "translate3d(0, 0, 0)",
             }}
           >
             {row2.map((item, index) => (
@@ -144,6 +148,8 @@ export default function ClientLogosBlock() {
             className="flex items-center w-max h-full"
             style={{
               animation: "marquee-scroll-horizontal 280s linear infinite",
+              willChange: "transform",
+              transform: "translate3d(0, 0, 0)",
             }}
           >
             {row3.map((item, index) => (
@@ -172,6 +178,8 @@ export default function ClientLogosBlock() {
             style={{
               animationDuration: "220s",
               animationTimingFunction: "linear",
+              willChange: "transform",
+              transform: "translate3d(0, 0, 0)",
             }}
           >
             {row4.map((item, index) => (
