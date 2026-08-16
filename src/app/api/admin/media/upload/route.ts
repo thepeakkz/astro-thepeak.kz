@@ -1,6 +1,7 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { requireAdmin } from "@/lib/supabase/auth";
 import { createR2Client, getR2Config, getR2PublicUrl } from "@/lib/r2";
+import { IMMUTABLE_MEDIA_CACHE_CONTROL, optimizeImageBuffer } from "@/lib/image-optimization";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -67,8 +68,17 @@ export async function POST(request: Request) {
     const folder = (formData.get("folder") as string) || "pages";
     const caseSlug = (formData.get("caseSlug") as string) || undefined;
 
+    const sourceBuffer = Buffer.from(await file.arrayBuffer());
+    const optimized = file.type.startsWith("image/")
+      ? await optimizeImageBuffer(sourceBuffer, file.type)
+      : {
+          buffer: sourceBuffer,
+          contentType: file.type,
+          extension: extensionFor(file.type),
+          optimizedBy: "original" as const,
+        };
     const now = new Date();
-    const uniqueName = `${crypto.randomUUID()}-${safeBaseName(file.name)}.${extensionFor(file.type)}`;
+    const uniqueName = `${crypto.randomUUID()}-${safeBaseName(file.name)}.${optimized.extension}`;
     const key = folder === "cases" && caseSlug
       ? `cases/${caseSlug}/${uniqueName}`
       : [
@@ -79,14 +89,14 @@ export async function POST(request: Request) {
           uniqueName,
         ].join("/");
 
-    const buffer = Buffer.from(await file.arrayBuffer());
     const { bucket } = getR2Config();
 
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
-      Body: buffer,
-      ContentType: file.type,
+      Body: optimized.buffer,
+      ContentType: optimized.contentType,
+      CacheControl: IMMUTABLE_MEDIA_CACHE_CONTROL,
     });
 
     await createR2Client().send(command);
@@ -94,8 +104,9 @@ export async function POST(request: Request) {
     const publicUrl = getR2PublicUrl(key);
 
     return Response.json({
-      contentType: file.type,
+      contentType: optimized.contentType,
       key,
+      optimizedBy: optimized.optimizedBy,
       publicUrl,
     });
   } catch (error) {

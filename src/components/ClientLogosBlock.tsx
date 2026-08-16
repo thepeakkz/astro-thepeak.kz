@@ -1,5 +1,30 @@
 "use client";
 
+import Image from "next/image";
+
+function ClientLogo({ ext, id }: { ext: string; id: number }) {
+  return (
+    <div className="relative h-[44px] sm:h-[56px] w-[80%] pointer-events-none">
+      <Image
+        src={`https://media.thepeak.kz/logos/clot-${id}.${ext}`}
+        alt={`Client Logo ${id}`}
+        fill
+        sizes="176px"
+        quality={75}
+        className="object-contain"
+        loading="lazy"
+        decoding="async"
+        onError={(event) => {
+          const fallback = new URL(`/logo/clot-${id}.${ext}`, window.location.origin).href;
+          if (event.currentTarget.src === fallback) return;
+          event.currentTarget.srcset = "";
+          event.currentTarget.src = fallback;
+        }}
+      />
+    </div>
+  );
+}
+
 export default function ClientLogosBlock() {
   const baseRow1 = [
     12, 2, 11, 3, 1, 10, 5, 18, 13, 8, 6, 4, 7, 17, 19, 15, 16, 14, 9,
@@ -15,8 +40,8 @@ export default function ClientLogosBlock() {
       id,
       ext: id === 34 ? "png" : "webp",
     }));
-    // Repeat enough times to fill screen width
-    return [...mapped, ...mapped, ...mapped, ...mapped, ...mapped, ...mapped];
+    // Two identical groups are sufficient for a seamless -50% marquee.
+    return [...mapped, ...mapped];
   }
 
   const row1 = createInfiniteItems(baseRow1);
@@ -71,19 +96,7 @@ export default function ClientLogosBlock() {
                 key={`row1-${index}`}
                 className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-full flex items-center justify-center border-r border-brand-gray/15"
               >
-                <img
-                  src={`https://media.thepeak.kz/logos/clot-${item.id}.${item.ext}`}
-                  alt={`Client Logo ${item.id}`}
-                  className="h-[44px] sm:h-[56px] md:h-[56px] w-auto max-w-[80%] object-contain pointer-events-none"
-                  width={125}
-                  height={56}
-                  onError={(event) => {
-                    const fallback = `/logo/clot-${item.id}.${item.ext}`;
-                    if (event.currentTarget.src !== fallback) {
-                      event.currentTarget.src = fallback;
-                    }
-                  }}
-                />
+                <ClientLogo id={item.id} ext={item.ext} />
               </div>
             ))}
           </div>
@@ -111,19 +124,7 @@ export default function ClientLogosBlock() {
                 key={`row2-${index}`}
                 className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-full flex items-center justify-center border-r border-brand-gray/15"
               >
-                <img
-                  src={`https://media.thepeak.kz/logos/clot-${item.id}.${item.ext}`}
-                  alt={`Client Logo ${item.id}`}
-                  className="h-[44px] sm:h-[56px] md:h-[56px] w-auto max-w-[80%] object-contain pointer-events-none"
-                  width={125}
-                  height={56}
-                  onError={(event) => {
-                    const fallback = `/logo/clot-${item.id}.${item.ext}`;
-                    if (event.currentTarget.src !== fallback) {
-                      event.currentTarget.src = fallback;
-                    }
-                  }}
-                />
+                <ClientLogo id={item.id} ext={item.ext} />
               </div>
             ))}
           </div>
@@ -131,7 +132,7 @@ export default function ClientLogosBlock() {
 
         {/* Row 3 (starts with 38, scrolls left) — hidden on mobile */}
         <div
-          className="relative w-full h-[60px] sm:h-[80px] md:h-[84px] overflow-hidden border-b border-brand-gray/15"
+          className="relative hidden md:block w-full h-[84px] overflow-hidden border-b border-brand-gray/15"
           style={{
             maskImage:
               "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
@@ -150,19 +151,7 @@ export default function ClientLogosBlock() {
                 key={`row3-${index}`}
                 className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-full flex items-center justify-center border-r border-brand-gray/15"
               >
-                <img
-                  src={`https://media.thepeak.kz/logos/clot-${item.id}.${item.ext}`}
-                  alt={`Client Logo ${item.id}`}
-                  className="h-[44px] sm:h-[56px] md:h-[56px] w-auto max-w-[80%] object-contain pointer-events-none"
-                  width={125}
-                  height={56}
-                  onError={(event) => {
-                    const fallback = `/logo/clot-${item.id}.${item.ext}`;
-                    if (event.currentTarget.src !== fallback) {
-                      event.currentTarget.src = fallback;
-                    }
-                  }}
-                />
+                <ClientLogo id={item.id} ext={item.ext} />
               </div>
             ))}
           </div>
@@ -170,7 +159,7 @@ export default function ClientLogosBlock() {
 
         {/* Row 4 (starts with 53, scrolls right) — hidden on mobile */}
         <div
-          className="relative w-full h-[60px] sm:h-[80px] md:h-[84px] overflow-hidden border-b border-brand-gray/15"
+          className="relative hidden md:block w-full h-[84px] overflow-hidden border-b border-brand-gray/15"
           style={{
             maskImage:
               "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
@@ -190,19 +179,7 @@ export default function ClientLogosBlock() {
                 key={`row4-${index}`}
                 className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[220px] h-full flex items-center justify-center border-r border-brand-gray/15"
               >
-                <img
-                  src={`https://media.thepeak.kz/logos/clot-${item.id}.${item.ext}`}
-                  alt={`Client Logo ${item.id}`}
-                  className="h-[44px] sm:h-[56px] md:h-[56px] w-auto max-w-[80%] object-contain pointer-events-none"
-                  width={125}
-                  height={56}
-                  onError={(event) => {
-                    const fallback = `/logo/clot-${item.id}.${item.ext}`;
-                    if (event.currentTarget.src !== fallback) {
-                      event.currentTarget.src = fallback;
-                    }
-                  }}
-                />
+                <ClientLogo id={item.id} ext={item.ext} />
               </div>
             ))}
           </div>

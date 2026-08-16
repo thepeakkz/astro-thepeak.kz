@@ -2,6 +2,8 @@ import { HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+const IMMUTABLE_MEDIA_CACHE_CONTROL = "public, max-age=31536000, immutable";
+
 const projectRoot = process.cwd();
 const execute = process.argv.includes("--execute");
 const sourceRoots = [path.join(projectRoot, "src")];
@@ -199,6 +201,7 @@ async function main() {
       Body: buffer,
       ContentLength: buffer.length,
       ContentType: response.headers.get("content-type") || undefined,
+      CacheControl: IMMUTABLE_MEDIA_CACHE_CONTROL,
     }));
 
     updatedMapping[sourceUrl] = targetPublicUrl;
@@ -228,6 +231,7 @@ async function main() {
         Body: buffer,
         ContentLength: buffer.length,
         ContentType: getContentType(item.localPath),
+        CacheControl: IMMUTABLE_MEDIA_CACHE_CONTROL,
       }));
 
       updatedMapping[item.localPath] = targetPublicUrl;

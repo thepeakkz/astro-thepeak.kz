@@ -3,6 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/supabase/auth";
 import { createR2Client, getR2Config, getR2PublicUrl } from "@/lib/r2";
+import { IMMUTABLE_MEDIA_CACHE_CONTROL } from "@/lib/image-optimization";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -69,6 +70,12 @@ export async function POST(request: Request) {
     }
 
     const { caseSlug, contentType, fileName, folder } = parsed.data;
+    if (contentType.startsWith("image/")) {
+      return Response.json(
+        { error: "Изображения загружаются через WebP/Tinify pipeline." },
+        { status: 409 },
+      );
+    }
     const now = new Date();
     const uniqueName = `${crypto.randomUUID()}-${safeBaseName(fileName)}.${extensionFor(contentType)}`;
     const key = folder === "cases" && caseSlug
@@ -85,11 +92,13 @@ export async function POST(request: Request) {
       Bucket: bucket,
       Key: key,
       ContentType: contentType,
+      CacheControl: IMMUTABLE_MEDIA_CACHE_CONTROL,
     });
     const uploadUrl = await getSignedUrl(createR2Client(), command, { expiresIn: 300 });
 
     return Response.json({
       contentType,
+      cacheControl: IMMUTABLE_MEDIA_CACHE_CONTROL,
       key,
       publicUrl: getR2PublicUrl(key),
       uploadUrl,

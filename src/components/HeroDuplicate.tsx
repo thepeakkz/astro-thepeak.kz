@@ -16,16 +16,33 @@ export type HomeHeroContent = {
   posterUrl?: string;
 };
 
+function videoContentType(url: string | undefined, fallback: "video/mp4" | "video/webm") {
+  if (/\.mp4(?:\?|$)/i.test(url || "")) return "video/mp4";
+  if (/\.webm(?:\?|$)/i.test(url || "")) return "video/webm";
+  return fallback;
+}
+
+function optimizedHeroVideo(url: string | undefined, viewport: "mobile" | "desktop") {
+  const isLegacyDefault = !url || /media\.thepeak\.kz\/hero\/bg(?:-mobile-fast)?\.(?:mp4|webm)(?:\?|$)/i.test(url);
+  if (!isLegacyDefault) return url;
+  return viewport === "mobile" ? "/hero-mobile-v2.mp4" : "/hero-desktop-v2.webm";
+}
+
 export default function HeroDuplicate({ content = {} }: { content?: HomeHeroContent }) {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const hasVideoEndedRef = React.useRef(false);
+  const [shouldLoadVideo, setShouldLoadVideo] = React.useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = React.useState(false);
   const logoIds = [2, 11, 12, 20, 21, 24, 38, 39, 40, 41, 44];
-  // 4 copies to guarantee a seamless, infinite loop on all screen sizes
   const marqueeItems = [...logoIds, ...logoIds, ...logoIds, ...logoIds];
   const desktopTitle = content.title || "Маркетинг, который работает\nот идеи до результата";
   const mobileTitle = content.mobileTitle || "Маркетинг,\nкоторый работает\nот идеи до готового\nрезультата";
   const description = content.description || "Приходите к нам с задачей «сделать не как у всех».\nМы создаём маркетинг, который становится референсом для других.";
+  const customPosterUrl = content.posterUrl && !content.posterUrl.endsWith("/hero/bg-mobile-poster.jpg")
+    ? content.posterUrl
+    : undefined;
+  const mobileVideoUrl = optimizedHeroVideo(content.mobileVideoUrl, "mobile");
+  const desktopVideoUrl = optimizedHeroVideo(content.desktopVideoUrl, "desktop");
 
   const playHeroVideo = React.useCallback(() => {
     const video = videoRef.current;
@@ -58,6 +75,28 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
   }, []);
 
   React.useEffect(() => {
+    const loadVideo = () => setShouldLoadVideo(true);
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const idleId = idleWindow.requestIdleCallback?.(loadVideo, { timeout: 2_000 });
+    const timeoutId = idleId === undefined ? window.setTimeout(loadVideo, 1_500) : undefined;
+
+    window.addEventListener("pointerdown", loadVideo, { once: true, passive: true });
+    window.addEventListener("touchstart", loadVideo, { once: true, passive: true });
+
+    return () => {
+      if (idleId !== undefined) idleWindow.cancelIdleCallback?.(idleId);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+      window.removeEventListener("pointerdown", loadVideo);
+      window.removeEventListener("touchstart", loadVideo);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!shouldLoadVideo) return;
+
     const video = videoRef.current;
 
     if (!video) {
@@ -109,7 +148,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
       document.removeEventListener("pointerdown", handleUserGesture);
       document.removeEventListener("touchstart", handleUserGesture);
     };
-  }, [playHeroVideo]);
+  }, [playHeroVideo, shouldLoadVideo]);
 
   return (
     <section className="col-span-12 relative w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] overflow-hidden h-screen md:h-auto md:min-h-screen flex flex-col justify-between pt-[60px] md:pt-[clamp(4rem,8vw,6rem)] pb-0 border-b border-brand-gray/10 select-none" id="hero-alternative">
@@ -120,11 +159,11 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
           autoPlay
           muted
           playsInline
-          preload="metadata"
-          poster={content.posterUrl || "https://media.thepeak.kz/hero/bg-mobile-poster.jpg"}
+          preload="none"
+          poster={customPosterUrl}
           onError={(event) => {
-            if (event.currentTarget.poster !== "/bg-mobile-poster.jpg") {
-              event.currentTarget.poster = "/bg-mobile-poster.jpg";
+            if (event.currentTarget.poster !== "/hero-mobile-poster-v2.webp") {
+              event.currentTarget.poster = "/hero-mobile-poster-v2.webp";
             }
           }}
           disablePictureInPicture
@@ -132,36 +171,25 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
           aria-hidden="true"
           tabIndex={-1}
         >
-          <source
-            src={content.mobileVideoUrl || "https://media.thepeak.kz/hero/bg-mobile-fast.mp4"}
-            type="video/mp4"
-            media="(max-width: 767px)"
-          />
-          <source
-            src="/bg-mobile-fast.mp4"
-            type="video/mp4"
-            media="(max-width: 767px)"
-          />
-          <source
-            src={content.desktopVideoUrl || "https://media.thepeak.kz/hero/bg.webm"}
-            type="video/webm"
-            media="(min-width: 768px)"
-          />
-          <source
-            src="/bg.webm"
-            type="video/webm"
-            media="(min-width: 768px)"
-          />
-          <source
-            src="https://media.thepeak.kz/hero/bg.mp4"
-            type="video/mp4"
-            media="(min-width: 768px)"
-          />
-          <source
-            src="/bg.mp4"
-            type="video/mp4"
-            media="(min-width: 768px)"
-          />
+          {shouldLoadVideo ? (
+            <>
+              <source
+                src={mobileVideoUrl}
+                type={videoContentType(mobileVideoUrl, "video/mp4")}
+                media="(max-width: 767px)"
+              />
+              <source
+                src={desktopVideoUrl}
+                type={videoContentType(desktopVideoUrl, "video/webm")}
+                media="(min-width: 768px)"
+              />
+              <source
+                src="/hero-desktop-v2.mp4"
+                type="video/mp4"
+                media="(min-width: 768px)"
+              />
+            </>
+          ) : null}
         </video>
       </div>
 

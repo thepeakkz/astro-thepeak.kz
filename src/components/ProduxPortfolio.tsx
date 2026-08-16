@@ -159,7 +159,6 @@ function ProjectCard({
       }}
       initial="initial"
       animate={{
-        filter: isInactive ? "blur(4px)" : "blur(0px)",
         opacity: isInactive ? 0.35 : 1,
         scale: isInactive ? 0.98 : 1,
       }}

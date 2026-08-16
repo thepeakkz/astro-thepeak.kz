@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import type { CaseItem } from "@/data/cases";
 import { formatTypography } from "@/utils/typography";
 import { cn } from "@/lib/utils";
@@ -57,9 +58,12 @@ function LazyCaseVideo({ alt, poster, src, objectPosition }: { alt: string; post
   return (
     <div ref={containerRef} className="relative h-full w-full bg-black overflow-hidden">
       {poster && (
-        <img
+        <Image
           src={poster}
           alt={alt}
+          fill
+          sizes="(max-width: 1023px) 94vw, 23vw"
+          quality={75}
           className={cn(
             "absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ease-out",
             isPlaying && "opacity-0"
@@ -130,7 +134,6 @@ function ProjectCard({
       }}
       initial="initial"
       animate={{
-        filter: isInactive && hasHoverSupport ? "blur(4px)" : "blur(0px)",
         opacity: isInactive && hasHoverSupport ? 0.35 : 1,
         scale: isInactive && hasHoverSupport ? 0.98 : 1,
       }}
@@ -151,9 +154,12 @@ function ProjectCard({
             {isVideo && mediaSrc ? (
               <LazyCaseVideo alt={project.name} poster={project.poster} src={mediaSrc} objectPosition={project.objectPosition} />
             ) : project.image ? (
-              <img
+              <Image
                 src={project.image}
                 alt={project.name}
+                fill
+                sizes="(max-width: 1023px) 94vw, 23vw"
+                quality={75}
                 draggable={false}
                 className="w-full h-full object-cover display-block"
                 style={project.objectPosition ? { objectPosition: project.objectPosition } : undefined}
@@ -167,23 +173,16 @@ function ProjectCard({
         {/* Hover tags in the bottom right of the image */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex w-full flex-wrap items-end justify-end gap-1.5 p-3 max-sm:hidden">
           {project.services.map((tag, idx) => (
-            <motion.div
+            <div
               key={tag}
-              initial={{ y: "1.95vh", opacity: 0, filter: "blur(4px)" }}
-              animate={{
-                y: showHoverEffects ? 0 : "1.95vh",
-                opacity: showHoverEffects ? 1 : 0,
-                filter: showHoverEffects ? "blur(0px)" : "blur(4px)",
-              }}
-              transition={{
-                duration: 0.4,
-                ease: [0.25, 1, 0.5, 1],
-                delay: showHoverEffects ? idx * 0.05 : 0,
-              }}
-              className="max-w-full whitespace-nowrap border border-white/5 bg-black/45 px-2 py-1 font-sans text-[clamp(0.6rem,0.65vw,0.75rem)] font-bold uppercase text-[#F2F2F2] backdrop-blur-md rounded-none select-none"
+              style={{ transitionDelay: showHoverEffects ? `${idx * 50}ms` : "0ms" }}
+              className={cn(
+                "max-w-full translate-y-[1.95vh] whitespace-nowrap border border-white/5 bg-black/45 px-2 py-1 font-sans text-[clamp(0.6rem,0.65vw,0.75rem)] font-bold uppercase text-[#F2F2F2] opacity-0 blur-[4px] backdrop-blur-md rounded-none select-none transition-[transform,opacity,filter] duration-400 ease-out",
+                showHoverEffects && "translate-y-0 opacity-100 blur-0",
+              )}
             >
               {formatTypography(tag)}
-            </motion.div>
+            </div>
           ))}
         </div>
       </Link>
@@ -208,14 +207,9 @@ function ProjectCard({
             />
 
             <h3 className="font-headline text-[clamp(1.25rem,1.35vw,1.75rem)] font-semibold leading-tight text-[#F2F2F2] text-left no-invert">
-              <motion.span
-                initial={{ y: "30%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
-                className="inline-block"
-              >
+              <span className="inline-block">
                 {formatTypography(project.name)}
-              </motion.span>
+              </span>
             </h3>
           </div>
 
@@ -252,41 +246,23 @@ function ProjectCard({
               </motion.div>
 
               {/* Смотреть проект staggered text reveal */}
-              <div className="flex">
-                {"Смотреть проект".split("").map((char, idx) => (
-                  <span key={idx} className="inline-block overflow-hidden">
-                    <motion.span
-                      initial={{ x: "-110%", opacity: 0 }}
-                      animate={{
-                        x: showHoverEffects ? 0 : "-110%",
-                        opacity: showHoverEffects ? 1 : 0,
-                      }}
-                      transition={{
-                        duration: 0.3,
-                        ease: [0.25, 1, 0.5, 1],
-                        delay: showHoverEffects ? idx * 0.02 : 0,
-                      }}
-                      className="text-[#F2F2F2] font-sans text-[clamp(0.7rem,0.8vw,0.9rem)] font-bold leading-none uppercase inline-block"
-                    >
-                      {char === " " ? "\u00A0" : char}
-                    </motion.span>
-                  </span>
-                ))}
-              </div>
+              <span
+                className={cn(
+                  "inline-block -translate-x-2 text-[#F2F2F2] font-sans text-[clamp(0.7rem,0.8vw,0.9rem)] font-bold leading-none uppercase opacity-0 transition-[transform,opacity] duration-300",
+                  showHoverEffects && "translate-x-0 opacity-100",
+                )}
+              >
+                Смотреть проект
+              </span>
             </div>
           </div>
         </div>
 
         {/* Full-width description */}
         <div className="w-full max-w-none text-left font-sans text-[clamp(0.75rem,0.9vw,1rem)] leading-[1.3] text-[#8E8E93]">
-          <motion.span
-            initial={{ y: "20%", opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, ease: [0.215, 0.61, 0.355, 1], delay: 0.1 }}
-            className="inline-block"
-          >
+          <span className="inline-block">
             {formatTypography(project.text)}
-          </motion.span>
+          </span>
         </div>
       </Link>
     </motion.div>
@@ -316,33 +292,17 @@ export default function CasesProduxGrid({ cases: sourceCases, limit, className }
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="swiss-grid !gap-y-[6.5vh] pt-[5vh] lg:!hidden">
+      <div className="swiss-grid !gap-y-[6.5vh] pt-[5vh]">
         {displayCases.map((item) => (
           <ProjectCard
             key={item.href}
             project={item}
-            gridClass="col-span-12"
+            gridClass="col-span-12 lg:col-span-3"
             hoveredProjectId={hoveredProjectId}
             setHoveredProjectId={setHoveredProjectId}
             hasHoverSupport={hasHoverSupport}
           />
         ))}
-      </div>
-
-      {/* Compact four-column desktop grid */}
-      <div className="hidden w-full pt-[5vh] lg:block">
-        <div className="swiss-grid !gap-y-[6.5vh]">
-          {displayCases.map((item) => (
-            <ProjectCard
-              key={item.href}
-              project={item}
-              gridClass="col-span-3"
-              hoveredProjectId={hoveredProjectId}
-              setHoveredProjectId={setHoveredProjectId}
-              hasHoverSupport={hasHoverSupport}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

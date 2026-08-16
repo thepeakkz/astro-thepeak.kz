@@ -11,50 +11,6 @@ video:-ms-fullscreen {
   background-color: #000000 !important;
 }
 
-@font-face {
-  font-family: 'AtAero';
-  src: url('./fonts/AtAero-Regular.0uw80pfpdnq_a.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'AtAero';
-  src: url('./fonts/AtAero-Medium.0amks-hcn-0_k.otf') format('opentype');
-  font-weight: 500;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'AtAero';
-  src: url('./fonts/AtAero-Light.06o2z1-163i.7.otf') format('opentype');
-  font-weight: 300;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'AtAero';
-  src: url('./fonts/AtAero-Retina.0_91iicuqc4p1.otf') format('opentype');
-  font-weight: 600;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'DMMono';
-  src: url('./fonts/DMMono-Regular.0o2e964hvo05l.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'DMMono';
-  src: url('./fonts/DMMono-Medium.125t044ujdbxa.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'DMMono';
-  src: url('./fonts/DMMono-Light.02.9dod98p6.u.ttf') format('truetype');
-  font-weight: 300;
-  font-style: normal;
-}
-
 /* Bento grid span overrides — Tailwind v4 dynamic classes fix */
 .col-span-1 { grid-column: span 1 / span 1; }
 .col-span-2 { grid-column: span 2 / span 2; }
@@ -121,16 +77,12 @@ video:-ms-fullscreen {
   --color-brand-light-gray: #EAF1F4;
   --font-headline: var(--font-inter-display), sans-serif;
   --font-sans: var(--font-inter-display), sans-serif;
-  --font-AtAero: AtAero, sans-serif;
-  --font-DM-mono: DMMono, monospace;
 }
 
 :root {
   --grid-columns: 12;
   --page-margin: clamp(1rem, 3vw, 4rem); 
   --grid-gap: clamp(0.5rem, 1vw, 1.5rem); 
-  --page-transition-duration: 1280ms;
-  --page-transition-easing: cubic-bezier(0.83, 0, 0.17, 1);
   --background: oklch(1 0 0); 
   --foreground: oklch(0.145 0 0); 
   --card: oklch(1 0 0); 
@@ -178,7 +130,7 @@ main.swiss-grid {
 }
 
 .hero-video-shell {
-  background-image: url("/bg-mobile-poster.jpg");
+  background-image: url("/hero-mobile-poster-v2.webp");
   background-position: center;
   background-size: cover;
   background-color: #FD4B32;
@@ -191,79 +143,12 @@ main.swiss-grid {
 
 @media (min-width: 768px) {
   .hero-video-shell {
-    background-image: url("/bg-poster.jpg");
+    background-image: url("/hero-desktop-poster-v2.webp");
   }
 
   .hero-bottom-backdrop {
     --hero-bottom-bg: rgba(232, 239, 242, 0.78);
     --hero-bottom-blur: 24px;
-  }
-}
-
-.page-transition-current {
-  position: relative;
-  z-index: 1;
-  background: #ffffff;
-}
-
-.page-transition-previous {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.page-transition-initial-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background: #FD4B32;
-  pointer-events: none;
-}
-
-.page-transition-fallback-enter,
-.page-transition-initial-home {
-  animation: peak-page-reveal var(--page-transition-duration) var(--page-transition-easing) both;
-  will-change: clip-path;
-}
-
-::view-transition-group(root) {
-  animation-duration: var(--page-transition-duration);
-  animation-timing-function: var(--page-transition-easing);
-}
-
-::view-transition-old(root) {
-  animation: peak-page-hold var(--page-transition-duration) var(--page-transition-easing) both;
-}
-
-::view-transition-new(root) {
-  animation: peak-page-reveal var(--page-transition-duration) var(--page-transition-easing) both;
-  z-index: 2;
-}
-
-@keyframes peak-page-hold {
-  from,
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes peak-page-reveal {
-  from {
-    clip-path: inset(0 0 100% 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(*),
-  ::view-transition-new(*),
-  ::view-transition-group(*) {
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
   }
 }
 

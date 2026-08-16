@@ -59,9 +59,9 @@ export default function RootLayout({
       <body className="relative min-h-screen antialiased font-sans text-[#434343] bg-white selection:bg-[#FD4B32] selection:text-white overflow-x-clip">
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-HCKHMPWG4L"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
@@ -93,7 +93,7 @@ export default function RootLayout({
           `}
         </Script>
         <JsonLd data={[getOrganizationJsonLd(), getWebsiteJsonLd()]} />
-        <Script id="meta-pixel" strategy="afterInteractive">
+        <Script id="meta-pixel" strategy="lazyOnload">
           {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?

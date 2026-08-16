@@ -5,6 +5,7 @@ import { FileText, FileVideo, ImageIcon, LoaderCircle, RefreshCw, Trash2, Upload
 import { formatTypography } from "@/utils/typography";
 
 type SignResponse = {
+  cacheControl?: string;
   contentType?: string;
   error?: string;
   publicUrl?: string;
@@ -17,11 +18,17 @@ export type BatchMediaItem = {
   url: string;
 };
 
-function uploadWithProgress(url: string, file: File, onProgress: (progress: number) => void) {
+function uploadWithProgress(
+  url: string,
+  file: File,
+  onProgress: (progress: number) => void,
+  cacheControl?: string,
+) {
   return new Promise<void>((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open("PUT", url);
     request.setRequestHeader("Content-Type", file.type);
+    if (cacheControl) request.setRequestHeader("Cache-Control", cacheControl);
     request.upload.addEventListener("progress", (event) => {
       if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100));
     });
@@ -117,6 +124,11 @@ export default function MediaUploader({
 
     const type: "image" | "video" = file.type.startsWith("video/") ? "video" : "image";
 
+    if (file.type.startsWith("image/")) {
+      const proxyResult = await uploadViaProxyWithProgress(file, folder, caseSlug, updateProgress);
+      return { mediaType: type, name: file.name, url: proxyResult.publicUrl };
+    }
+
     // 1. Прямой presigned URL
     try {
       const response = await fetch("/api/admin/media/sign", {
@@ -126,7 +138,7 @@ export default function MediaUploader({
       });
       const signed = (await response.json()) as SignResponse;
       if (response.ok && signed.uploadUrl && signed.publicUrl) {
-        await uploadWithProgress(signed.uploadUrl, file, updateProgress);
+        await uploadWithProgress(signed.uploadUrl, file, updateProgress, signed.cacheControl);
         return { url: signed.publicUrl, mediaType: type, name: file.name };
       }
     } catch {
