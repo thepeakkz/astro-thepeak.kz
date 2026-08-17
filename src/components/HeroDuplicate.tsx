@@ -33,7 +33,8 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
   const hasVideoEndedRef = React.useRef(false);
   const [shouldLoadVideo, setShouldLoadVideo] = React.useState(false);
   const logoIds = [2, 11, 12, 20, 21, 24, 38, 39, 40, 41, 44, 60];
-  const marqueeItems = [...logoIds, ...logoIds];
+  const halfLogos = [...logoIds, ...logoIds];
+  const marqueeItems = [...halfLogos, ...halfLogos];
   const desktopTitle = content.title || "Маркетинг, который работает\nот идеи до результата";
   const mobileTitle = content.mobileTitle || "Маркетинг,\nкоторый работает\nот идеи до готового\nрезультата";
   const description = content.description || "Приходите к нам с задачей «сделать не как у всех».\nМы создаём маркетинг, который становится референсом для других.";
@@ -253,7 +254,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                 <div
                   className="flex items-center w-max"
                   style={{
-                    animation: 'marquee-scroll-horizontal 14s linear infinite',
+                    animation: 'marquee-scroll-horizontal 50s linear infinite',
                     willChange: 'transform',
                     transform: 'translate3d(0, 0, 0)',
                   }}
@@ -264,8 +265,8 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                         src={`https://media.thepeak.kz/logos/clot-${id}.webp`}
                         alt="Partner Logo"
                         className="h-full w-auto object-contain hover:opacity-80 transition-opacity duration-300 pointer-events-none"
-                        width={125}
-                        height={58}
+                        loading="eager"
+                        decoding="async"
                         onError={(event) => {
                           const fallback = `/logo/clot-${id}.webp`;
                           if (event.currentTarget.src !== fallback) {

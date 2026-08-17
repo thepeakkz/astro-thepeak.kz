@@ -36,11 +36,15 @@ export default function ClientLogosBlock() {
   const baseRow4 = [53, 54, 55, 56, 57, 58, 59, 60];
 
   function createInfiniteItems(baseArray: number[]) {
-    const mapped = baseArray.map((id) => ({
+    let repeated = [...baseArray];
+    while (repeated.length < 18) {
+      repeated = [...repeated, ...baseArray];
+    }
+    const mapped = repeated.map((id) => ({
       id,
       ext: id === 34 ? "png" : "webp",
     }));
-    // Two identical groups are sufficient for a seamless -50% marquee.
+    // Two identical groups for seamless -50% marquee
     return [...mapped, ...mapped];
   }
 
@@ -67,7 +71,7 @@ export default function ClientLogosBlock() {
           }
         }
         .animate-marquee-reverse {
-          animation: marquee-reverse 60s ease-in-out infinite;
+          animation: marquee-reverse 60s linear infinite;
         }
       `,
         }}
