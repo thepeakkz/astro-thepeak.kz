@@ -33,8 +33,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
   const hasVideoEndedRef = React.useRef(false);
   const [shouldLoadVideo, setShouldLoadVideo] = React.useState(false);
   const logoIds = [60, 2, 11, 12, 20, 21, 24, 38, 39, 40, 41, 44];
-  const halfLogos = [...logoIds, ...logoIds];
-  const marqueeItems = [...halfLogos, ...halfLogos];
+  const trackLogos = [...logoIds, ...logoIds];
   const desktopTitle = content.title || "Маркетинг, который работает\nот идеи до результата";
   const mobileTitle = content.mobileTitle || "Маркетинг,\nкоторый работает\nот идеи до готового\nрезультата";
   const description = content.description || "Приходите к нам с задачей «сделать не как у всех».\nМы создаём маркетинг, который становится референсом для других.";
@@ -251,31 +250,58 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                   WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
                 }}
               >
-                <div
-                  className="flex items-center w-max"
-                  style={{
-                    animation: 'marquee-scroll-horizontal 25s linear infinite',
-                    willChange: 'transform',
-                    transform: 'translate3d(0, 0, 0)',
-                  }}
-                >
-                  {marqueeItems.map((id, index) => (
-                    <div key={index} className="flex-shrink-0 h-[56px] sm:h-[58px] flex items-center justify-center mr-10">
-                      <img
-                        src={`https://media.thepeak.kz/logos/clot-${id}.webp`}
-                        alt="Partner Logo"
-                        className="h-full w-auto object-contain hover:opacity-80 transition-opacity duration-300 pointer-events-none"
-                        loading="eager"
-                        decoding="async"
-                        onError={(event) => {
-                          const fallback = `/logo/clot-${id}.webp`;
-                          if (event.currentTarget.src !== fallback) {
-                            event.currentTarget.src = fallback;
-                          }
-                        }}
-                      />
-                    </div>
-                  ))}
+                <div className="flex w-max items-center">
+                  <div
+                    className="flex shrink-0 items-center gap-10 pr-10"
+                    style={{
+                      animation: 'marquee-track 25s linear infinite',
+                      willChange: 'transform',
+                    }}
+                  >
+                    {trackLogos.map((id, index) => (
+                      <div key={`track1-${index}`} className="flex-shrink-0 h-[56px] sm:h-[58px] flex items-center justify-center">
+                        <img
+                          src={`https://media.thepeak.kz/logos/clot-${id}.webp`}
+                          alt="Partner Logo"
+                          className="h-full w-auto object-contain hover:opacity-80 transition-opacity duration-300 pointer-events-none"
+                          loading="eager"
+                          decoding="async"
+                          onError={(event) => {
+                            const fallback = `/logo/clot-${id}.webp`;
+                            if (event.currentTarget.src !== fallback) {
+                              event.currentTarget.src = fallback;
+                            }
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    className="flex shrink-0 items-center gap-10 pr-10"
+                    style={{
+                      animation: 'marquee-track 25s linear infinite',
+                      willChange: 'transform',
+                    }}
+                    aria-hidden="true"
+                  >
+                    {trackLogos.map((id, index) => (
+                      <div key={`track2-${index}`} className="flex-shrink-0 h-[56px] sm:h-[58px] flex items-center justify-center">
+                        <img
+                          src={`https://media.thepeak.kz/logos/clot-${id}.webp`}
+                          alt="Partner Logo"
+                          className="h-full w-auto object-contain hover:opacity-80 transition-opacity duration-300 pointer-events-none"
+                          loading="eager"
+                          decoding="async"
+                          onError={(event) => {
+                            const fallback = `/logo/clot-${id}.webp`;
+                            if (event.currentTarget.src !== fallback) {
+                              event.currentTarget.src = fallback;
+                            }
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
