@@ -254,7 +254,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                 <div
                   className="flex items-center w-max"
                   style={{
-                    animation: 'marquee-scroll-horizontal 50s linear infinite',
+                    animation: 'marquee-scroll-horizontal 25s linear infinite',
                     willChange: 'transform',
                     transform: 'translate3d(0, 0, 0)',
                   }}
