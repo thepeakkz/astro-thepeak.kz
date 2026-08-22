@@ -23,7 +23,7 @@ function videoContentType(url: string | undefined, fallback: "video/mp4" | "vide
 }
 
 function optimizedHeroVideo(url: string | undefined, viewport: "mobile" | "desktop") {
-  const isLegacyDefault = !url || /media\.thepeak\.kz\/hero\/bg(?:-mobile-fast)?\.(?:mp4|webm)(?:\?|$)/i.test(url);
+  const isLegacyDefault = !url || /(?:^|\/)bg(?:-mobile-fast)?\.(?:mp4|webm)(?:\?|$)/i.test(url);
   if (!isLegacyDefault) return url;
   return viewport === "mobile" ? "/hero-mobile-v2.mp4" : "/hero-desktop-v2.webm";
 }

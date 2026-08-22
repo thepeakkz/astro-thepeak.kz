@@ -1,0 +1,23 @@
+---
+import { GalleryContent } from "@/app/gallery/page";
+import { SHOW_TEMPORARILY_HIDDEN_PAGES } from "@/config/page-visibility";
+import { absoluteUrl, getBreadcrumbJsonLd, pageSeo } from "@/lib/seo";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+import { isNativePageVisible } from "@astro/server/public-data";
+
+if (!SHOW_TEMPORARILY_HIDDEN_PAGES || !(await isNativePageVisible("/gallery"))) return Astro.rewrite("/404");
+const galleryJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ImageGallery",
+  "@id": absoluteUrl("/gallery#gallery"),
+  name: "Галерея ThePeak",
+  description: pageSeo.gallery.description,
+  url: absoluteUrl("/gallery"),
+  inLanguage: "ru-KZ",
+  creator: { "@id": absoluteUrl("/#organization") },
+};
+---
+
+<BaseLayout seo={pageSeo.gallery} jsonLd={[getBreadcrumbJsonLd([{ name: "Главная", path: "/" }, { name: "Галерея", path: "/gallery" }]), galleryJsonLd]}>
+  <GalleryContent client:load />
+</BaseLayout>

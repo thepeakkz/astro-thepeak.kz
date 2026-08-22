@@ -1,0 +1,21 @@
+---
+import HomeIsland from "@astro/components/HomeIsland";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+import { loadHomePage } from "@astro/server/public-data";
+import { getBreadcrumbJsonLd, getServiceJsonLd, pageSeo } from "@/lib/seo";
+
+const { allCases, cmsPage } = await loadHomePage();
+const jsonLd = [
+  getBreadcrumbJsonLd([{ name: "Главная", path: "/" }]),
+  getServiceJsonLd({
+    name: "Маркетинговое агентство в\u00a0Казахстане",
+    description: "Комплексный маркетинг, SMM, digital-стратегия, брендинг, разработка сайтов и\u00a0продакшн для бизнеса в\u00a0Казахстане, Алматы и\u00a0Астане.",
+    path: "/",
+    serviceType: "Маркетинг полного цикла",
+  }),
+];
+---
+
+<BaseLayout seo={pageSeo.home} jsonLd={jsonLd} pageKind="home">
+  <HomeIsland client:load allCases={allCases} blocks={cmsPage?.blocks} />
+</BaseLayout>

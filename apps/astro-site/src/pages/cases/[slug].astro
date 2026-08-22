@@ -1,0 +1,27 @@
+---
+import CaseIsland from "@astro/components/CaseIsland";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+import { loadCase, getPublishedPageByPath } from "@astro/server/public-data";
+import { getCasePageJsonLd, getCaseSeoBySlug, pageSeo } from "@/lib/seo";
+
+const slug = Astro.params.slug || "";
+if (slug === "brief") return Astro.redirect("/admin", 307);
+const data = await loadCase(slug);
+if (!data) return Astro.rewrite("/404");
+
+const staticSeo = getCaseSeoBySlug(slug);
+const cmsPage = staticSeo ? null : await getPublishedPageByPath(`/cases/${slug}`);
+const seo = staticSeo
+  ? { title: staticSeo.title, description: staticSeo.description, path: staticSeo.path, keywords: staticSeo.keywords }
+  : cmsPage
+    ? {
+        title: cmsPage.page.seo_title || `${cmsPage.page.title} — кейс ThePeak`,
+        description: cmsPage.page.seo_description || `Кейс ThePeak: ${cmsPage.page.title}. Задача, решение и\u00a0результаты проекта.`,
+        path: `/cases/${slug}`,
+      }
+    : pageSeo.cases;
+---
+
+<BaseLayout seo={seo} jsonLd={staticSeo ? getCasePageJsonLd(slug) : undefined}>
+  <CaseIsland client:load data={data} slug={slug} />
+</BaseLayout>

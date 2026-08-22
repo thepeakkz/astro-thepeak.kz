@@ -1,0 +1,17 @@
+---
+import SiteDevelopmentClient from "@/app/site-development/SiteDevelopmentClient";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+import { isNativePageVisible } from "@astro/server/public-data";
+
+if (!(await isNativePageVisible("/site-development"))) return Astro.rewrite("/404");
+const seo = {
+  title: "Разработка сайтов под ключ — The Peak",
+  description: "The Peak разрабатывает сайты под ключ: от\u00a0маркетинговой стратегии и\u00a0структуры до\u00a0дизайна, запуска и\u00a0продвижения. Лендинги, корпоративные сайты и\u00a0интернет-магазины.",
+  path: "/site-development",
+  keywords: ["разработка сайтов под ключ", "создание лендинга", "корпоративный сайт", "интернет-магазин"],
+};
+---
+
+<BaseLayout seo={seo} pageKind="site-development">
+  <SiteDevelopmentClient client:load />
+</BaseLayout>

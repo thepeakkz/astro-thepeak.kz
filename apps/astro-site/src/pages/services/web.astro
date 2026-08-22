@@ -1,0 +1,20 @@
+---
+import WebClient from "@/app/services/web/web-client";
+import { getBreadcrumbJsonLd, getServiceJsonLd, pageSeo } from "@/lib/seo";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  seo={pageSeo.web}
+  jsonLd={[
+    getBreadcrumbJsonLd([{ name: "Главная", path: "/" }, { name: "Разработка сайтов", path: "/services/web" }]),
+    getServiceJsonLd({
+      name: "Разработка сайтов в\u00a0Казахстане",
+      description: "Создание лендингов, корпоративных сайтов, промо-сайтов и\u00a0интернет-магазинов для бизнеса в\u00a0Казахстане, Алматы и\u00a0Астане.",
+      path: "/services/web",
+      serviceType: "Разработка сайтов",
+    }),
+  ]}
+>
+  <WebClient client:load />
+</BaseLayout>

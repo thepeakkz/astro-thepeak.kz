@@ -1,0 +1,14 @@
+---
+import SiteDevelopmentMemoClient from "@/app/site-development/memo/SiteDevelopmentMemoClient";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+
+const seo = {
+  title: "Памятка по\u00a0разработке сайта — ThePeak",
+  description: "Памятка ThePeak по\u00a0подготовке, разработке и\u00a0запуску сайта.",
+  path: "/site-development/memo",
+};
+---
+
+<BaseLayout seo={seo}>
+  <SiteDevelopmentMemoClient client:load />
+</BaseLayout>

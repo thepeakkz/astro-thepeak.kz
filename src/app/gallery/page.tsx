@@ -7,6 +7,14 @@ import { absoluteUrl, createSeoMetadata, getBreadcrumbJsonLd, pageSeo } from "@/
 export const metadata: Metadata = createSeoMetadata(pageSeo.gallery);
 
 export default function GalleryPage() {
+  return (
+    <NativePageGate routePath="/gallery">
+      <GalleryContent />
+    </NativePageGate>
+  );
+}
+
+export function GalleryContent() {
   const sampleImages = [
     {
       src: "https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=1200",
@@ -43,8 +51,7 @@ export default function GalleryPage() {
   ]
 
   return (
-    <NativePageGate routePath="/gallery">
-      <div className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] min-h-screen relative bg-black">
+    <div className="col-span-12 w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] min-h-screen relative bg-black">
       <JsonLd
         data={[
           getBreadcrumbJsonLd([
@@ -83,7 +90,6 @@ export default function GalleryPage() {
         <p>Use mouse wheel, arrow keys, or touch to navigate</p>
         <p className=" opacity-60">Auto-play resumes after 3 seconds of inactivity</p>
       </div>
-      </div>
-    </NativePageGate>
+    </div>
   )
 }

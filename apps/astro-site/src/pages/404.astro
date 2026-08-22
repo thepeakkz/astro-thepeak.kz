@@ -1,0 +1,14 @@
+---
+import { Glitchy404 } from "@/components/ui/glitchy-404-1";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+Astro.response.status = 404;
+---
+
+<BaseLayout
+  noindex
+  seo={{ title: "Страница не найдена — ThePeak", description: "Запрошенная страница не найдена.", path: Astro.url.pathname }}
+>
+  <div class="col-span-12 min-h-screen">
+    <Glitchy404 client:load />
+  </div>
+</BaseLayout>

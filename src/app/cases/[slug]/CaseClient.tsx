@@ -314,6 +314,7 @@ export default function CaseClient({ data, slug }: { data: CaseData; slug: strin
                             loop
                             muted
                             playsInline
+                            preload="metadata"
                             className="absolute inset-0 z-0 h-full w-full object-cover opacity-35"
                         />
                     ) : (

@@ -1,14 +1,19 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { ArrowUpRight } from "lucide-react";
-import CasesMasonrySection from "@/components/CasesMasonrySection";
-import ClientLogosBlock from "@/components/ClientLogosBlock";
-import ContactSection from "@/components/ContactSection";
 import HeroDuplicate from "@/components/HeroDuplicate";
-import ServicesAnimate from "@/components/ServicesAnimate";
 import StatsBlock from "@/components/StatsBlock";
-import Team from "@/components/Team";
-import WorkStages from "@/components/WorkStages";
 import HeroScrollAnimation from "@/components/ui/hero-scroll-animation";
+
+// Below-the-fold sections: still server-rendered for SEO/no-CLS, but their
+// client JS (framer-motion, etc.) is split into separate chunks instead of
+// bloating the bundle every visitor has to parse before the hero is interactive.
+const CasesMasonrySection = dynamic(() => import("@/components/CasesMasonrySection"));
+const ClientLogosBlock = dynamic(() => import("@/components/ClientLogosBlock"));
+const ContactSection = dynamic(() => import("@/components/ContactSection"));
+const ServicesAnimate = dynamic(() => import("@/components/ServicesAnimate"));
+const Team = dynamic(() => import("@/components/Team"));
+const WorkStages = dynamic(() => import("@/components/WorkStages"));
 import type { CaseItem } from "@/data/cases";
 import type { CmsEditorBlock } from "@/types/cms";
 import { parseSelectedHrefs } from "@/utils/cms";

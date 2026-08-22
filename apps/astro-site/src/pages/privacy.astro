@@ -1,0 +1,15 @@
+---
+import { PrivacyContent } from "@/app/privacy/page";
+import { getBreadcrumbJsonLd, pageSeo } from "@/lib/seo";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+import { isNativePageVisible } from "@astro/server/public-data";
+
+if (!(await isNativePageVisible("/privacy"))) return Astro.rewrite("/404");
+---
+
+<BaseLayout
+  seo={pageSeo.privacy}
+  jsonLd={getBreadcrumbJsonLd([{ name: "Главная", path: "/" }, { name: "Политика конфиденциальности", path: "/privacy" }])}
+>
+  <PrivacyContent />
+</BaseLayout>

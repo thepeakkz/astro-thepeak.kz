@@ -1,0 +1,13 @@
+---
+import WebDirectionClient from "@/app/web/WebDirectionClient";
+import { SHOW_TEMPORARILY_HIDDEN_PAGES } from "@/config/page-visibility";
+import { pageSeo } from "@/lib/seo";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+import { isNativePageVisible } from "@astro/server/public-data";
+
+if (!SHOW_TEMPORARILY_HIDDEN_PAGES || !(await isNativePageVisible("/web"))) return Astro.rewrite("/404");
+---
+
+<BaseLayout seo={{ ...pageSeo.web, path: "/web" }}>
+  <WebDirectionClient client:load />
+</BaseLayout>

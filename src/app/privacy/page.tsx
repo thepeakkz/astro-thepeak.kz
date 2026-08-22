@@ -9,7 +9,14 @@ export const metadata: Metadata = createSeoMetadata(pageSeo.privacy);
 export default function PrivacyPage() {
   return (
     <NativePageGate routePath="/privacy">
-      <div className="min-h-screen bg-white">
+      <PrivacyContent />
+    </NativePageGate>
+  );
+}
+
+export function PrivacyContent() {
+  return (
+    <div className="min-h-screen bg-white">
       <JsonLd
         data={getBreadcrumbJsonLd([
           { name: "Главная", path: "/" },
@@ -310,8 +317,7 @@ export default function PrivacyPage() {
           </div>
         </div>
       </main>
-      </div>
-    </NativePageGate>
+    </div>
   );
 }
 

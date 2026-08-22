@@ -1,0 +1,12 @@
+---
+import SofyaClient from "@/app/team/sofya/sofya-client";
+import { SHOW_TEMPORARILY_HIDDEN_PAGES } from "@/config/page-visibility";
+import { pageSeo } from "@/lib/seo";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+
+if (!SHOW_TEMPORARILY_HIDDEN_PAGES) return Astro.rewrite("/404");
+---
+
+<BaseLayout seo={pageSeo.sofya}>
+  <SofyaClient client:load />
+</BaseLayout>

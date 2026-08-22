@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { requireAdmin } from "@/lib/supabase/auth";
 import { allCasesData, type CaseItem } from "@/data/cases";
@@ -241,7 +242,7 @@ export async function getPublishedPageBySlug(slug: string) {
 export async function getPublishedPageByPath(routePath: string) {
   if (!hasSupabaseEnv()) return null;
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: page, error: pageError } = await supabase
     .from("pages")
     .select(pageSelect)
@@ -287,7 +288,7 @@ export async function getPublishedPageByPath(routePath: string) {
 export async function getPublishedCaseCards(): Promise<CaseItem[]> {
   if (!hasSupabaseEnv()) return [];
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const [{ data: pages, error: pagesError }, { data: template, error: templateError }] = await Promise.all([
     supabase
       .from("pages")
@@ -348,7 +349,7 @@ export async function getAllCasesList(): Promise<CaseItem[]> {
   const pageIdByRoute = new Map<string, string>();
   if (hasSupabaseEnv()) {
     try {
-      const supabase = await createClient();
+      const supabase = createPublicClient();
       const { data: pages } = await supabase
         .from("pages")
         .select("id,route_path")

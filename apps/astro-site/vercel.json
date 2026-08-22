@@ -1,0 +1,17 @@
+{
+  "rewrites": [
+    { "source": "/admin", "destination": "https://legacy-admin.thepeak.kz/admin" },
+    { "source": "/admin/:path*", "destination": "https://legacy-admin.thepeak.kz/admin/:path*" },
+    { "source": "/api/admin/:path*", "destination": "https://legacy-admin.thepeak.kz/api/admin/:path*" },
+    { "source": "/admin-static/:path*", "destination": "https://legacy-admin.thepeak.kz/admin-static/:path*" }
+  ],
+  "redirects": [
+    { "source": "/service/web", "destination": "/services/web", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/hero-:path*",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}

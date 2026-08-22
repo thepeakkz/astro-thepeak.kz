@@ -1,0 +1,18 @@
+---
+import CmsPageIsland from "@astro/components/CmsPageIsland";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+import { getPublishedPageBySlug } from "@astro/server/public-data";
+
+const slug = Astro.params.slug || "";
+const data = await getPublishedPageBySlug(slug);
+if (!data) return Astro.rewrite("/404");
+const seo = {
+  title: data.page.seo_title || data.page.title,
+  description: data.page.seo_description || `${data.page.title} — ThePeak`,
+  path: `/${data.page.slug}`,
+};
+---
+
+<BaseLayout seo={seo}>
+  <CmsPageIsland client:load blocks={data.blocks} />
+</BaseLayout>

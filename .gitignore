@@ -19,6 +19,12 @@
 /.next/
 /out/
 
+# astro
+/apps/astro-site/.astro/
+/apps/astro-site/.vercel/
+/apps/astro-site/dist/
+/apps/astro-site/node_modules/
+
 # production
 /build
 
@@ -32,6 +38,7 @@
 /public/cases/**/*.m4v
 
 # misc
+.claude/
 .DS_Store
 *.pem
 

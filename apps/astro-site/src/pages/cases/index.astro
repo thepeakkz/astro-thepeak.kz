@@ -1,0 +1,34 @@
+---
+import CasesIsland from "@astro/components/CasesIsland";
+import BaseLayout from "@astro/layouts/BaseLayout.astro";
+import { loadCasesCatalog } from "@astro/server/public-data";
+import { absoluteUrl, getBreadcrumbJsonLd, pageSeo } from "@/lib/seo";
+
+const { blocks, cases } = await loadCasesCatalog();
+const collectionJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": absoluteUrl("/cases#collection"),
+  name: "Кейсы ThePeak",
+  description: pageSeo.cases.description,
+  url: absoluteUrl("/cases"),
+  inLanguage: "ru-KZ",
+  about: ["SMM", "digital-маркетинг", "брендинг", "продакшн", "Казахстан", "Алматы", "Астана"],
+  mainEntity: {
+    "@type": "ItemList",
+    itemListElement: cases.map((caseItem, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: caseItem.name,
+      url: absoluteUrl(caseItem.href),
+    })),
+  },
+};
+---
+
+<BaseLayout
+  seo={pageSeo.cases}
+  jsonLd={[getBreadcrumbJsonLd([{ name: "Главная", path: "/" }, { name: "Кейсы", path: "/cases" }]), collectionJsonLd]}
+>
+  <CasesIsland client:load blocks={blocks} cases={cases} />
+</BaseLayout>
