@@ -15,19 +15,23 @@ declare global {
 
 export default function SmoothScroll() {
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      window.matchMedia("(pointer: coarse)").matches
+    ) {
       return;
     }
 
     const lenis = new Lenis({
       autoRaf: true,
-      duration: scrollDuration,
+      duration: 1.0,
       easing: scrollEasing,
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
       wheelMultiplier: 1,
-      touchMultiplier: 2,
+      touchMultiplier: 1,
+      syncTouch: false,
       stopInertiaOnNavigate: true,
     });
 

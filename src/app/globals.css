@@ -243,59 +243,6 @@ html {
   color: transparent !important;
 }
 
-/* One composited text layer keeps difference blending stable in Safari. */
-.team-card-difference {
-  -webkit-mix-blend-mode: difference;
-  mix-blend-mode: difference;
-  color: #ffffff;
-}
-
-@supports (-webkit-hyphens: none) {
-  .team-card-difference {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-  }
-}
-
-/* Keeps difference blending stable for project card text in Safari & Chrome. */
-.project-card-blend {
-  -webkit-mix-blend-mode: difference !important;
-  mix-blend-mode: difference !important;
-  color: #ffffff !important;
-}
-
-@supports (-webkit-hyphens: none) {
-  .project-card-blend {
-    -webkit-transform: translate3d(0, 0, 0) !important;
-    transform: translate3d(0, 0, 0) !important;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-  }
-}
-
-/* Apply difference blending globally to all headlines, text paragraphs, links, and custom blend elements, excluding no-invert class */
-h1:not(.no-invert), h2:not(.no-invert), h3:not(.no-invert), h4:not(.no-invert), h5:not(.no-invert), h6:not(.no-invert), p:not(.no-invert), nav a:not(.no-invert), a[href^="tel:"]:not(.no-invert), .inverttext {
-  mix-blend-mode: difference !important;
-  isolation: auto !important;
-  color: #ffffff !important;
-  position: relative;
-  z-index: 1;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-}
-
-@supports (-webkit-hyphens: none) {
-  h1:not(.no-invert), h2:not(.no-invert), h3:not(.no-invert), h4:not(.no-invert), h5:not(.no-invert), h6:not(.no-invert), p:not(.no-invert), nav a:not(.no-invert), a[href^="tel:"]:not(.no-invert), .inverttext {
-    -webkit-mix-blend-mode: difference !important;
-    mix-blend-mode: difference !important;
-    text-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.35),
-      0 0 18px rgba(0, 0, 0, 0.18);
-  }
-}
-
 /* Global Typography overrides: headings at 110% line-height, paragraphs at 110% line-height */
 h1, h2, h3, h4, h5, h6 {
   line-height: 1.1 !important;

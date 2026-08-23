@@ -180,20 +180,20 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
       - На средних экранах плавно растет как 4.5vw от ширины окна
       - На 27 дюймовых мониторах упирается в жирные, заметные 5.5rem
     */}
-          <h1 className="font-headline font-semibold text-white text-[clamp(2.5rem,4.5vw,5.5rem)] leading-[0.95] tracking-[-0.03em] mb-8 md:mb-12">
+          <h1 className="font-headline font-semibold text-brand-gray text-[clamp(2.5rem,4.5vw,5.5rem)] leading-[0.95] tracking-[-0.03em] mb-8 md:mb-12">
             {/* Mobile: 4 lines; Desktop: 2 lines */}
             {mobileTitle.split("\n").map((line) => (
-              <span key={line} className="inverttext block md:hidden">{formatTypography(line)}</span>
+              <span key={line} className="block md:hidden">{formatTypography(line)}</span>
             ))}
             {desktopTitle.split("\n").map((line) => (
-              <span key={line} className="inverttext hidden md:block">{formatTypography(line)}</span>
+              <span key={line} className="hidden md:block">{formatTypography(line)}</span>
             ))}
           </h1>
-          <p className="description-text text-white/80 mb-8 md:mb-[4.5rem] text-[clamp(0.95rem,1.1vw,1.25rem)]">
+          <p className="description-text text-brand-gray/80 mb-8 md:mb-[4.5rem] text-[clamp(0.95rem,1.1vw,1.25rem)]">
             {description.split("\n").map((line, index) => (
               <React.Fragment key={`${line}-${index}`}>
                 {index > 0 ? <br /> : null}
-                <span className="inverttext">{formatTypography(line)}</span>
+                <span>{formatTypography(line)}</span>
               </React.Fragment>
             ))}
           </p>

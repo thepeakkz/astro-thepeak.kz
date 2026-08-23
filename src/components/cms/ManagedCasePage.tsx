@@ -52,7 +52,10 @@ export default async function ManagedCasePage({ slug }: { slug: string }) {
     brandbookUrl,
     insta_url: contentText(content, "profileUrl") || fallback?.insta_url,
     heroMedia: heroUrl ? { src: heroUrl, type: heroType } : fallback?.heroMedia,
-    galleryMedia: parseCaseGallery(content.gallery),
+    galleryMedia: (() => {
+      const parsed = parseCaseGallery(content.gallery);
+      return parsed && parsed.length > 0 ? parsed : fallback?.galleryMedia;
+    })(),
   };
 
   return <CaseClient data={data} slug={slug} />;

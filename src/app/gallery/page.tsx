@@ -80,7 +80,7 @@ export function GalleryContent() {
         falloff={{ near: 0.8, far: 14 }}
         className="h-screen w-full rounded-lg overflow-hidden"
       />
-      <div className="h-screen inset-0 pointer-events-none fixed flex items-center justify-center text-center px-3 mix-blend-exclusion text-white">
+      <div className="h-screen inset-0 pointer-events-none fixed flex items-center justify-center text-center px-3 text-white drop-shadow-md">
         <h1 className="font-serif text-3xl md:text-6xl tracking-tight">
           <span className="italic">I create;</span> therefore I am
         </h1>

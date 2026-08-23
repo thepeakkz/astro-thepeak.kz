@@ -709,8 +709,9 @@ export default function SiteDevelopmentClient() {
                   alt=""
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.015]"
                 />
-                <div className="absolute inset-x-3 bottom-3 z-10 flex flex-col text-white mix-blend-difference md:inset-x-5 md:bottom-5">
-                  <h3 className="font-headline text-[clamp(0.95rem,4vw,1.15rem)] font-semibold leading-[1] md:text-[clamp(1.2rem,1.78vw,1.6rem)]">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-[5] pointer-events-none" />
+                <div className="absolute inset-x-3 bottom-3 z-10 flex flex-col text-white md:inset-x-5 md:bottom-5 pointer-events-none">
+                  <h3 className="font-headline text-[clamp(0.95rem,4vw,1.15rem)] font-semibold leading-[1] md:text-[clamp(1.2rem,1.78vw,1.6rem)] text-white">
                     {formatTypography(item.title)}
                   </h3>
                   <p className="mt-3 hidden max-w-xl text-[clamp(0.9rem,1vw,1.05rem)] leading-relaxed text-white/80 md:block">

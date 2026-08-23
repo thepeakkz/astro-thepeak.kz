@@ -15,6 +15,16 @@ import { CONTACTS } from "@/config/contacts";
 export default function Navigation() {
   const [isHovered, setIsHovered] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -35,7 +45,14 @@ export default function Navigation() {
   return (
     <>
       {/* ── Mobile Header Bar: logo + burger aligned on one line ── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-[1000] h-[52px] flex items-center justify-between px-[var(--page-margin)] mix-blend-difference pointer-events-none">
+      <div
+        className={cn(
+          "md:hidden fixed top-0 left-0 right-0 z-[1000] h-[52px] flex items-center justify-between px-[var(--page-margin)] transition-all duration-300 pointer-events-none",
+          scrolled
+            ? "bg-white/92 backdrop-blur-md border-b border-brand-gray/10 shadow-xs"
+            : "bg-transparent"
+        )}
+      >
         <Link
           href="/"
           aria-label="ThePeak Home"
@@ -44,7 +61,7 @@ export default function Navigation() {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 68 20"
-            className="w-[3.5rem] h-auto fill-white hover:fill-brand-red transition-colors duration-300"
+            className="w-[3.5rem] h-auto transition-colors duration-300 fill-brand-gray hover:fill-brand-red"
           >
             <path d="M30.3212 0C26.0152 0 21.7091 0 17.4031 0C17.4031 1.3762 17.4031 2.7523 17.4031 4.1285C21.7091 4.1285 26.0152 4.1285 30.3212 4.1285C30.3212 2.7523 30.3212 1.3762 30.3212 0Z" />
             <path d="M25.6423 7.9358C22.8959 7.9358 20.1495 7.9358 17.4031 7.9358C17.4031 9.3119 17.4031 10.6881 17.4031 12.0643C20.1495 12.0643 22.8959 12.0643 25.6423 12.0643C25.6423 10.6881 25.6423 9.3119 25.6423 7.9358Z" />
@@ -57,7 +74,7 @@ export default function Navigation() {
           </svg>
         </Link>
         <button
-          className="pointer-events-auto w-10 h-10 flex items-center justify-center text-white"
+          className="pointer-events-auto w-10 h-10 flex items-center justify-center transition-colors duration-300 text-brand-gray hover:text-brand-red"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? "Закрыть меню" : "Открыть меню"}
         >
@@ -68,8 +85,15 @@ export default function Navigation() {
           )}
         </button>
       </div>
-      {/* ── Desktop Header (blend layer) ── */}
-      <header className="fixed top-0 left-0 w-full z-[990] pt-2.5 pb-2.5 swiss-grid items-center mix-blend-difference pointer-events-none">
+      {/* ── Desktop Header ── */}
+      <header
+        className={cn(
+          "fixed top-0 left-0 w-full z-[990] pt-2.5 pb-2.5 swiss-grid items-center transition-all duration-300 pointer-events-none",
+          scrolled
+            ? "bg-white/92 backdrop-blur-md border-b border-brand-gray/10 shadow-xs"
+            : "bg-transparent"
+        )}
+      >
         {/* Logo */}
         <Link
           href="/"
@@ -79,7 +103,7 @@ export default function Navigation() {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 68 20"
-            className="w-[clamp(3.5rem,5vw,5rem)] h-auto fill-white hover:fill-brand-red transition-colors duration-300"
+            className="w-[clamp(3.5rem,5vw,5rem)] h-auto transition-colors duration-300 fill-brand-gray hover:fill-brand-red"
           >
             <path d="M30.3212 0C26.0152 0 21.7091 0 17.4031 0C17.4031 1.3762 17.4031 2.7523 17.4031 4.1285C21.7091 4.1285 26.0152 4.1285 30.3212 4.1285C30.3212 2.7523 30.3212 1.3762 30.3212 0Z" />
             <path d="M25.6423 7.9358C22.8959 7.9358 20.1495 7.9358 17.4031 7.9358C17.4031 9.3119 17.4031 10.6881 17.4031 12.0643C20.1495 12.0643 22.8959 12.0643 25.6423 12.0643C25.6423 10.6881 25.6423 9.3119 25.6423 7.9358Z" />
@@ -98,7 +122,7 @@ export default function Navigation() {
             <Link
               key={item.label}
               href={item.href}
-              className="font-sans text-[clamp(0.65rem,0.8vw,0.8rem)] font-medium uppercase tracking-[0.1em] text-white hover:text-brand-red transition-colors duration-300"
+              className="font-sans text-[clamp(0.65rem,0.8vw,0.8rem)] font-medium uppercase tracking-[0.1em] transition-colors duration-300 text-brand-gray hover:text-brand-red"
             >
               {item.label}
             </Link>
@@ -110,7 +134,7 @@ export default function Navigation() {
           <a
             href={CONTACTS.phone.tel}
             className={cn(
-              "font-sans text-[clamp(0.8rem,1vw,0.95rem)] font-bold uppercase tracking-[0.05em] text-white hover:text-brand-gray transition-all duration-300 absolute right-0 whitespace-nowrap cursor-pointer pointer-events-auto",
+              "font-sans text-[clamp(0.8rem,1vw,0.95rem)] font-bold uppercase tracking-[0.05em] transition-all duration-300 absolute right-0 whitespace-nowrap cursor-pointer pointer-events-auto text-brand-gray hover:text-brand-red",
               isHovered
                 ? "opacity-0 scale-95 pointer-events-none"
                 : "opacity-100 scale-100",

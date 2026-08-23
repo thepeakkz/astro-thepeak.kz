@@ -263,7 +263,7 @@ export default function CaseVideoGallery({ items, slug }: CaseVideoGalleryProps)
         <section ref={sectionRef} className="relative border-b border-white/10 px-[var(--page-margin)] py-20 bg-[#0a0a0a]">
             {cursor.visible && (
                 <div
-                    className="pointer-events-none absolute left-0 top-0 z-[100] font-sans text-xs font-bold uppercase tracking-[0.24em] text-white mix-blend-difference will-change-transform"
+                    className="pointer-events-none absolute left-0 top-0 z-[100] font-sans text-xs font-bold uppercase tracking-[0.24em] text-white bg-black/80 backdrop-blur-xs px-3 py-1.5 border border-white/20 will-change-transform"
                     style={{ transform: `translate3d(${cursor.x}px, ${cursor.y}px, 0) translate(-50%, -50%)` }}
                 >
                     Смотреть

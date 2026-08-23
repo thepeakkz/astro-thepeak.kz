@@ -1,24 +1,19 @@
 "use client";
 
-import Image from "next/image";
-
 function ClientLogo({ ext, id }: { ext: string; id: number }) {
   return (
-    <div className="relative h-[44px] sm:h-[56px] w-[80%] pointer-events-none">
-      <Image
+    <div className="relative h-[44px] sm:h-[56px] w-[80%] pointer-events-none flex items-center justify-center">
+      <img
         src={`https://media.thepeak.kz/logos/clot-${id}.${ext}`}
         alt={`Client Logo ${id}`}
-        fill
-        sizes="176px"
-        quality={75}
-        className="object-contain"
         loading="lazy"
         decoding="async"
+        className="max-h-full max-w-full object-contain pointer-events-none"
         onError={(event) => {
-          const fallback = new URL(`/logo/clot-${id}.${ext}`, window.location.origin).href;
-          if (event.currentTarget.src === fallback) return;
-          event.currentTarget.srcset = "";
-          event.currentTarget.src = fallback;
+          const fallback = `/logo/clot-${id}.${ext}`;
+          if (event.currentTarget.src !== fallback) {
+            event.currentTarget.src = fallback;
+          }
         }}
       />
     </div>

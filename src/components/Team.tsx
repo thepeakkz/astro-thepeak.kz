@@ -86,23 +86,25 @@ export default function Team({
                   />
                 </div>
 
-                {/* A single blend layer is more reliable than nested blend modes in Safari. */}
-                <div className="team-card-difference no-invert pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-3.5 sm:p-4 text-white">
-                  <div className="no-invert flex items-start justify-between gap-2 w-full">
-                    <span className="no-invert font-sans text-[clamp(0.72rem,0.68vw,0.8rem)] font-bold uppercase tracking-wider leading-tight">
+                {/* High-contrast gradient overlay for 100% crisp text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/15 z-[5] pointer-events-none" />
+
+                <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-3.5 sm:p-4 text-white">
+                  <div className="flex items-start justify-between gap-2 w-full">
+                    <span className="font-sans text-[clamp(0.72rem,0.68vw,0.8rem)] font-bold uppercase tracking-wider leading-tight text-white/90">
                       {formatTypography(member.role)}
                     </span>
-                    <span className="no-invert font-sans text-[clamp(0.72rem,0.68vw,0.8rem)] font-bold uppercase tracking-wider leading-tight text-white shrink-0 text-right">
+                    <span className="font-sans text-[clamp(0.72rem,0.68vw,0.8rem)] font-bold uppercase tracking-wider leading-tight text-white/80 shrink-0 text-right">
                       {formatTypography(member.city)}
                     </span>
                   </div>
 
-                  <div className="no-invert flex w-full flex-col items-start gap-2">
-                    <h3 className="no-invert font-headline font-semibold text-[clamp(1.15rem,1.5vw,1.45rem)] tracking-wide leading-[1.1] w-full">
+                  <div className="flex w-full flex-col items-start gap-2">
+                    <h3 className="font-headline font-semibold text-[clamp(1.15rem,1.5vw,1.45rem)] tracking-wide leading-[1.1] w-full text-white">
                       {formatTypography(member.name)}
                     </h3>
                     {member.description ? (
-                      <p className="no-invert font-sans !text-[0.875rem] md:!text-[clamp(0.9rem,0.92vw,1rem)] leading-[1.25] font-medium text-white w-full">
+                      <p className="font-sans !text-[0.875rem] md:!text-[clamp(0.9rem,0.92vw,1rem)] leading-[1.25] font-medium text-white/85 w-full">
                         {formatTypography(member.description)}
                       </p>
                     ) : null}

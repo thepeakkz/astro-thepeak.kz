@@ -113,17 +113,17 @@ function CardInner3D({
 
         {/* Top row */}
         <div className="absolute top-0 left-0 right-0 z-20 flex justify-between items-center p-2 md:p-4">
-          <div className="mix-blend-difference select-none pointer-events-none">
+          <div className="select-none pointer-events-none text-white">
             {logo}
           </div>
-          <span className="text-[10px] font-sans font-semibold text-white uppercase tracking-wide select-none mix-blend-difference pointer-events-none">
+          <span className="text-[10px] font-sans font-semibold text-white/90 uppercase tracking-wide select-none pointer-events-none">
             {type}
           </span>
         </div>
 
         {/* Bottom content */}
         <div className="absolute bottom-0 left-0 right-0 z-20 p-2 pb-3 md:p-4 md:pb-6 flex flex-col justify-end">
-          <p className="font-sans font-normal text-[13px] leading-relaxed text-white select-none mix-blend-difference pointer-events-none">
+          <p className="font-sans font-normal text-[13px] leading-relaxed text-white/90 select-none pointer-events-none">
             {text}
           </p>
         </div>

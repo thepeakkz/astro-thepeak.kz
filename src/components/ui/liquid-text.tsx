@@ -62,11 +62,29 @@ const useMorphingText = (texts: string[]) => {
     }
   }, []);
 
+  const isVisibleRef = useRef(false);
+
   useEffect(() => {
+    const el = text1Ref.current?.parentElement;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisibleRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          timeRef.current = new Date();
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(el);
+
     let animationFrameId: number;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+
+      if (!isVisibleRef.current) return;
 
       const newTime = new Date();
       const dt = (newTime.getTime() - timeRef.current.getTime()) / 1000;
@@ -81,6 +99,7 @@ const useMorphingText = (texts: string[]) => {
     animate();
     return () => {
       cancelAnimationFrame(animationFrameId);
+      observer.disconnect();
     };
   }, [doMorph, doCooldown]);
 
