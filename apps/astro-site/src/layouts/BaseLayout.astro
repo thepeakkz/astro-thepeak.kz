@@ -43,6 +43,12 @@ const jsonLdText = JSON.stringify(structuredData).replace(/</g, "\\u003c");
     {seo.keywords?.length ? <meta name="keywords" content={seo.keywords.join(", ")} /> : null}
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="https://static.tildacdn.pro/tild3334-3763-4662-a232-663137633465/favicon.svg" />
+    {pageKind === "home" ? (
+      <>
+        <link rel="preload" as="image" href="/hero-mobile-poster-v2.webp" media="(max-width: 767px)" fetchpriority="high" />
+        <link rel="preload" as="image" href="/hero-desktop-poster-v2.webp" media="(min-width: 768px)" fetchpriority="high" />
+      </>
+    ) : null}
     <meta property="og:title" content={seo.title} />
     <meta property="og:description" content={seo.description} />
     <meta property="og:url" content={canonical} />

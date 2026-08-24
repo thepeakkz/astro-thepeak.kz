@@ -36,7 +36,26 @@ export default defineConfig({
         "server-only": fromHere("./src/compat/server-only.ts"),
       },
     },
+    build: {
+      cssCodeSplit: true,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules/three") || id.includes("node_modules/@react-three")) {
+              return "three-vendor";
+            }
+            if (id.includes("node_modules/@tabler/icons-react") || id.includes("node_modules/lucide-react")) {
+              return "icons-vendor";
+            }
+            if (id.includes("node_modules/framer-motion")) {
+              return "framer-motion-vendor";
+            }
+          },
+        },
+      },
+    },
     server: {
+      port: 3000,
       fs: {
         allow: [fromHere("../..")],
       },

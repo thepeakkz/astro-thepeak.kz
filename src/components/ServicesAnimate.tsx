@@ -347,6 +347,7 @@ const FeaturedServiceContent: React.FC<FeaturedServiceContentProps> = ({
             text="Оставить заявку"
             variant="dark"
             onClick={onRequest}
+            tabIndex={isOverlay ? -1 : undefined}
             className={`pointer-events-auto w-full cursor-pointer sm:w-fit ${
               isOverlay ? "featured-service-button-overlay" : ""
             }`}
@@ -357,6 +358,7 @@ const FeaturedServiceContent: React.FC<FeaturedServiceContentProps> = ({
               text="Кейс"
               variant="dark"
               onClick={onCases}
+              tabIndex={isOverlay ? -1 : undefined}
               className={`pointer-events-auto w-full cursor-pointer sm:w-fit ${
                 isOverlay ? "featured-service-button-overlay" : ""
               }`}

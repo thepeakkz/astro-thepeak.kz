@@ -6,9 +6,12 @@
     "apps/astro-site"
   ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "npm run dev --workspace @thepeak/astro-site",
+    "build": "npm run build --workspace @thepeak/astro-site",
+    "preview": "npm run preview --workspace @thepeak/astro-site",
+    "next:dev": "next dev",
+    "next:build": "next build",
+    "next:start": "next start",
     "lint": "eslint",
     "lint:strict": "eslint --max-warnings=0",
     "typecheck": "tsc --noEmit",

@@ -6,6 +6,8 @@ function ClientLogo({ ext, id }: { ext: string; id: number }) {
       <img
         src={`https://media.thepeak.kz/logos/clot-${id}.${ext}`}
         alt={`Client Logo ${id}`}
+        width="140"
+        height="56"
         loading="lazy"
         decoding="async"
         className="max-h-full max-w-full object-contain pointer-events-none"

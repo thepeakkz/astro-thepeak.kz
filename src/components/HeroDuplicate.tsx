@@ -29,9 +29,6 @@ function optimizedHeroVideo(url: string | undefined, viewport: "mobile" | "deskt
 }
 
 export default function HeroDuplicate({ content = {} }: { content?: HomeHeroContent }) {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-  const hasVideoEndedRef = React.useRef(false);
-  const [shouldLoadVideo, setShouldLoadVideo] = React.useState(false);
   const logoIds = [60, 2, 11, 12, 20, 21, 24, 38, 39, 40, 41, 44];
   const trackLogos = [...logoIds, ...logoIds];
   const desktopTitle = content.title || "Маркетинг, который работает\nот идеи до результата";
@@ -40,136 +37,25 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
   const customPosterUrl = content.posterUrl && !content.posterUrl.endsWith("/hero/bg-mobile-poster.jpg")
     ? content.posterUrl
     : undefined;
-  const mobileVideoUrl = optimizedHeroVideo(content.mobileVideoUrl, "mobile");
-  const desktopVideoUrl = optimizedHeroVideo(content.desktopVideoUrl, "desktop");
-
-  const playHeroVideo = React.useCallback(() => {
-    const video = videoRef.current;
-
-    if (!video) {
-      return;
-    }
-
-    if (hasVideoEndedRef.current) {
-      return;
-    }
-
-    video.muted = true;
-    video.defaultMuted = true;
-    video.autoplay = true;
-    video.loop = false;
-    video.playsInline = true;
-    video.setAttribute("autoplay", "");
-    video.setAttribute("muted", "");
-    video.setAttribute("playsinline", "");
-    video.setAttribute("webkit-playsinline", "");
-
-    const playPromise = video.play();
-
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {});
-    }
-  }, []);
-
-  React.useEffect(() => {
-    const loadVideo = () => setShouldLoadVideo(true);
-    const idleWindow = window as Window & {
-      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
-      cancelIdleCallback?: (handle: number) => void;
-    };
-    const idleId = idleWindow.requestIdleCallback?.(loadVideo, { timeout: 2_000 });
-    const timeoutId = idleId === undefined ? window.setTimeout(loadVideo, 1_500) : undefined;
-
-    window.addEventListener("pointerdown", loadVideo, { once: true, passive: true });
-    window.addEventListener("touchstart", loadVideo, { once: true, passive: true });
-
-    return () => {
-      if (idleId !== undefined) idleWindow.cancelIdleCallback?.(idleId);
-      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
-      window.removeEventListener("pointerdown", loadVideo);
-      window.removeEventListener("touchstart", loadVideo);
-    };
-  }, []);
-
-  React.useEffect(() => {
-    if (!shouldLoadVideo) return;
-
-    const video = videoRef.current;
-
-    if (!video) {
-      return;
-    }
-
-    playHeroVideo();
-
-    const handleCanPlay = () => {
-      playHeroVideo();
-    };
-    const handleEnded = () => {
-      hasVideoEndedRef.current = true;
-    };
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        playHeroVideo();
-      }
-    };
-    const handleUserGesture = () => {
-      playHeroVideo();
-    };
-
-    video.addEventListener("loadedmetadata", handleCanPlay);
-    video.addEventListener("canplay", handleCanPlay);
-    video.addEventListener("ended", handleEnded);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    document.addEventListener("pointerdown", handleUserGesture, { once: true, passive: true });
-    document.addEventListener("touchstart", handleUserGesture, { once: true, passive: true });
-
-    return () => {
-      video.removeEventListener("loadedmetadata", handleCanPlay);
-      video.removeEventListener("canplay", handleCanPlay);
-      video.removeEventListener("ended", handleEnded);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      document.removeEventListener("pointerdown", handleUserGesture);
-      document.removeEventListener("touchstart", handleUserGesture);
-    };
-  }, [playHeroVideo, shouldLoadVideo]);
+  const mobilePoster = customPosterUrl || "/hero-mobile-poster-v2.webp";
+  const desktopPoster = customPosterUrl || "/hero-desktop-poster-v2.webp";
 
   return (
     <section className="col-span-12 relative w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] overflow-hidden h-screen md:h-auto md:min-h-screen flex flex-col justify-between pt-[60px] md:pt-[clamp(4rem,8vw,6rem)] pb-0 border-b border-brand-gray/10 select-none" id="hero-alternative">
-      {/* 1. Background Video with Instant LCP Poster */}
+      {/* 1. Background Static Poster Image (Instant LCP) */}
       <div className="hero-video-shell absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          preload="none"
-          poster={customPosterUrl || "/hero-mobile-poster-v2.webp"}
-          disablePictureInPicture
-          className="w-full h-full object-cover"
-          aria-hidden="true"
-          tabIndex={-1}
-        >
-          {shouldLoadVideo ? (
-            <>
-              <source
-                src={mobileVideoUrl}
-                type={videoContentType(mobileVideoUrl, "video/mp4")}
-                media="(max-width: 767px)"
-              />
-              <source
-                src={desktopVideoUrl}
-                type={videoContentType(desktopVideoUrl, "video/webm")}
-                media="(min-width: 768px)"
-              />
-              <source
-                src="/hero-desktop-v2.mp4"
-                type="video/mp4"
-                media="(min-width: 768px)"
-              />
-            </>
-          ) : null}
-        </video>
+        <picture>
+          <source srcSet={mobilePoster} media="(max-width: 767px)" />
+          <source srcSet={desktopPoster} media="(min-width: 768px)" />
+          <img
+            src={desktopPoster}
+            alt=""
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+            className="w-full h-full object-cover"
+          />
+        </picture>
       </div>
 
       {/* Top Content Row */}
@@ -263,6 +149,8 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                         <img
                           src={`https://media.thepeak.kz/logos/clot-${id}.webp`}
                           alt="Partner Logo"
+                          width="120"
+                          height="58"
                           className="h-full w-auto object-contain hover:opacity-80 transition-opacity duration-300 pointer-events-none"
                           loading="eager"
                           decoding="async"
@@ -289,6 +177,8 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                         <img
                           src={`https://media.thepeak.kz/logos/clot-${id}.webp`}
                           alt="Partner Logo"
+                          width="120"
+                          height="58"
                           className="h-full w-auto object-contain hover:opacity-80 transition-opacity duration-300 pointer-events-none"
                           loading="eager"
                           decoding="async"
