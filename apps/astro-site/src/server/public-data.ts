@@ -11,6 +11,7 @@ import {
 import { getLegacyCaseData } from "@/lib/cms/legacy-cases";
 import { parseStringArray } from "@/lib/utils";
 import type { CaseData } from "@/app/cases/[slug]/CaseClient";
+import type { CmsEditorBlock } from "@/types/cms";
 
 function contentText(content: Record<string, unknown>, key: string) {
   return typeof content[key] === "string" ? content[key] : "";
@@ -38,7 +39,7 @@ export async function loadCasesCatalog() {
       return cmsCase ? { ...caseItem, ...cmsCase, size: caseItem.size } : caseItem;
     }),
   ];
-  const casesGridBlock = cmsPage?.blocks.find((block) => block.template.type === "cases_grid");
+  const casesGridBlock = cmsPage?.blocks.find((block: CmsEditorBlock) => block.template.type === "cases_grid");
   const caseOrder = parseStringArray(casesGridBlock?.content.caseOrder);
   const hiddenSet = new Set(parseStringArray(casesGridBlock?.content.hiddenHrefs) || []);
   const visibleCases = rawCases.filter((item) => !hiddenSet.has(item.href));
@@ -61,7 +62,7 @@ export async function loadCase(slug: string): Promise<CaseData | null> {
   const cmsPage = await getPublishedPageByPath(`/cases/${slug}`);
   if (!cmsPage) return fallback;
 
-  const caseBlock = cmsPage.blocks.find((block) => block.template.type === "case_page");
+  const caseBlock = cmsPage.blocks.find((block: CmsEditorBlock) => block.template.type === "case_page");
   if (!caseBlock) return fallback;
 
   const content = caseBlock.content;
@@ -91,7 +92,7 @@ export async function loadCase(slug: string): Promise<CaseData | null> {
 
 export async function isNativePageVisible(routePath: string) {
   const cmsPage = await getPublishedPageByPath(routePath);
-  return !cmsPage || cmsPage.blocks.some((block) => block.template.type === "native_page");
+  return !cmsPage || cmsPage.blocks.some((block: CmsEditorBlock) => block.template.type === "native_page");
 }
 
 export { getPublishedPageByPath, getPublishedPageBySlug, getPublishedPagesForSitemap, targetCases };
