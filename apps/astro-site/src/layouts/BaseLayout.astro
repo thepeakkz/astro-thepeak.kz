@@ -1,10 +1,10 @@
 ---
-import { ClientRouter } from "astro:transitions";
 import AnalyticsScripts from "@/components/DeferredAnalyticsScripts";
 import GlobalPreloader from "@/components/GlobalPreloader";
 import HeroVideoPreload from "@/components/HeroVideoPreload";
 import { getOrganizationJsonLd, getWebsiteJsonLd, pageSeo, SITE_NAME, SITE_URL } from "@/lib/seo";
 import GlobalRuntime from "@astro/components/GlobalRuntime";
+import ClientRouter from "@astro/components/ClientRouter.astro";
 import "@astro/styles/global.css";
 
 type SeoConfig = {

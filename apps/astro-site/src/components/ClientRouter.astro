@@ -1,0 +1,128 @@
+---
+// Kept local to avoid Astro's compile-metadata path mismatch when the package
+// lives outside this workspace app root in Vercel's monorepo environment.
+type Fallback = "none" | "animate" | "swap";
+
+interface Props {
+  fallback?: Fallback;
+}
+
+const { fallback = "animate" } = Astro.props;
+---
+
+<style is:global>
+  .astro-route-announcer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+    width: 1px;
+    height: 1px;
+  }
+</style>
+<meta name="astro-view-transitions-enabled" content="true" />
+<meta name="astro-view-transitions-fallback" content={fallback} />
+<script>
+  import type { Options } from "astro:transitions/client";
+  import { navigate, supportsViewTransitions } from "astro:transitions/client";
+  // `astro:prefetch` is unavailable unless prefetch is enabled in config.
+  // @ts-ignore Astro's private module is what the built-in router uses.
+  import { init } from "astro/virtual-modules/prefetch.js";
+
+  type Fallback = "none" | "animate" | "swap";
+  let lastClickedElementLeavingWindow: EventTarget | null = null;
+
+  function getFallback(): Fallback {
+    const element = document.querySelector('[name="astro-view-transitions-fallback"]');
+    return (element?.getAttribute("content") as Fallback | null) ?? "animate";
+  }
+
+  function isReloadElement(element: HTMLElement | SVGAElement): boolean {
+    return element.dataset.astroReload !== undefined;
+  }
+
+  const leavesWindow = (event: MouseEvent) =>
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.altKey ||
+    event.shiftKey;
+
+  if (supportsViewTransitions || getFallback() !== "none") {
+    document.addEventListener("click", (event) => {
+      let link: EventTarget | null = event.target;
+      lastClickedElementLeavingWindow = leavesWindow(event) ? link : null;
+
+      if (event.composed) link = event.composedPath()[0];
+      if (link instanceof Element) link = link.closest("a, area");
+      if (
+        !(link instanceof HTMLAnchorElement) &&
+        !(link instanceof SVGAElement) &&
+        !(link instanceof HTMLAreaElement)
+      ) return;
+
+      const linkTarget = link instanceof HTMLElement ? link.target : link.target.baseVal;
+      const href = link instanceof HTMLElement ? link.href : link.href.baseVal;
+      const origin = new URL(href, location.href).origin;
+      if (
+        isReloadElement(link) ||
+        link.hasAttribute("download") ||
+        !link.href ||
+        (linkTarget && linkTarget !== "_self") ||
+        origin !== location.origin ||
+        lastClickedElementLeavingWindow ||
+        event.defaultPrevented
+      ) return;
+
+      event.preventDefault();
+      navigate(href, {
+        history: link.dataset.astroHistory === "replace" ? "replace" : "auto",
+        sourceElement: link,
+      });
+    });
+
+    document.addEventListener("submit", (event) => {
+      const element = event.target;
+      const submitter = event.submitter;
+      const clickedWithKeys = submitter && submitter === lastClickedElementLeavingWindow;
+      lastClickedElementLeavingWindow = null;
+
+      if (
+        !(element instanceof HTMLFormElement) ||
+        event.defaultPrevented ||
+        isReloadElement(element) ||
+        clickedWithKeys
+      ) return;
+
+      const formData = new FormData(element, submitter);
+      const formAction = typeof element.action === "string" ? element.action : element.getAttribute("action");
+      const formMethod = typeof element.method === "string" ? element.method : element.getAttribute("method");
+      let action = submitter?.getAttribute("formaction") ?? formAction ?? location.pathname;
+      const method = submitter?.getAttribute("formmethod") ?? formMethod ?? "get";
+
+      if (method === "dialog" || location.origin !== new URL(action, location.href).origin) return;
+
+      const options: Options = { sourceElement: submitter ?? element };
+      if (method === "get") {
+        const url = new URL(action, location.href);
+        const params = new URLSearchParams();
+        formData.forEach((value, key) => {
+          params.append(key, typeof value === "string" ? value : value.name);
+        });
+        url.search = params.toString();
+        action = url.toString();
+      } else {
+        options.formData = formData;
+      }
+
+      event.preventDefault();
+      navigate(action, options);
+    });
+
+    // @ts-expect-error Injected by Astro's transitions plugin for tree-shaking.
+    if (!__PREFETCH_DISABLED__) init({ prefetchAll: true });
+  }
+</script>

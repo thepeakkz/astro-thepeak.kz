@@ -7,12 +7,6 @@ import { defineConfig } from "astro/config";
 const fromHere = (path) => fileURLToPath(new URL(path, import.meta.url));
 
 export default defineConfig({
-  // Keep workspace dependencies inside Astro's project root. Without this,
-  // Vite can resolve built-in Astro components through two different paths
-  // in monorepo/CI environments and miss their compiled style metadata.
-  root: fromHere("../.."),
-  srcDir: fromHere("./src"),
-  outDir: fromHere("./dist"),
   site: "https://www.thepeak.kz",
   output: "server",
   adapter: vercel(),
@@ -25,9 +19,6 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
-    ssr: {
-      noExternal: ["@astrojs/vercel"],
-    },
     define: {
       "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV || "production"),
     },
