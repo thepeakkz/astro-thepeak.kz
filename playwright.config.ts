@@ -19,7 +19,7 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["iPhone 13"] } },
   ],
   webServer: {
-    command: `npm run dev -- --hostname localhost --port ${testPort}`,
+    command: `npm run dev -- --host localhost --port ${testPort}`,
     env: { PLAYWRIGHT_TEST: "1" },
     url: testBaseURL,
     reuseExistingServer: !process.env.CI,

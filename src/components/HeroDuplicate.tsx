@@ -16,6 +16,7 @@ export type HomeHeroContent = {
   posterUrl?: string;
 };
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 function videoContentType(url: string | undefined, fallback: "video/mp4" | "video/webm") {
   if (/\.mp4(?:\?|$)/i.test(url || "")) return "video/mp4";
   if (/\.webm(?:\?|$)/i.test(url || "")) return "video/webm";
@@ -27,6 +28,7 @@ function optimizedHeroVideo(url: string | undefined, viewport: "mobile" | "deskt
   if (!isLegacyDefault) return url;
   return viewport === "mobile" ? "/hero-mobile-v2.mp4" : "/hero-desktop-v2.webm";
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 export default function HeroDuplicate({ content = {} }: { content?: HomeHeroContent }) {
   const logoIds = [60, 2, 11, 12, 20, 21, 24, 38, 39, 40, 41, 44];
