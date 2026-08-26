@@ -1,30 +1,6 @@
 @import "../../../../src/app/globals.css";
 @source "../../../../src/**/*.{ts,tsx}";
 
-@font-face {
-  font-family: "Inter Display";
-  src: url("../../../../src/app/fonts/InterDisplay-Regular.woff2") format("woff2");
-  font-display: swap;
-  font-style: normal;
-  font-weight: 400;
-}
-
-@font-face {
-  font-family: "Inter Display";
-  src: url("../../../../src/app/fonts/InterDisplay-Medium.woff2") format("woff2");
-  font-display: swap;
-  font-style: normal;
-  font-weight: 500;
-}
-
-@font-face {
-  font-family: "Inter Display";
-  src: url("../../../../src/app/fonts/InterDisplay-SemiBold.woff2") format("woff2");
-  font-display: swap;
-  font-style: normal;
-  font-weight: 600 900;
-}
-
 :root {
-  --font-inter-display: "Inter Display";
+  --font-inter-display: "Inter Tight", sans-serif;
 }

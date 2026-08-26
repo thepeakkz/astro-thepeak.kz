@@ -70,9 +70,9 @@ const jsonLdText = JSON.stringify(structuredData).replace(/</g, "\\u003c");
     <noscript>
       <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=869063512449970&ev=PageView&noscript=1" alt="" />
     </noscript>
-    <GlobalRuntime client:load transition:persist="global-runtime" />
+    <GlobalRuntime client:idle transition:persist="global-runtime" />
     {pageKind === "site-development" ? <GlobalPreloader client:load /> : null}
-    {pageKind === "home" ? <HeroVideoPreload client:load /> : null}
+    {pageKind === "home" ? <HeroVideoPreload client:idle /> : null}
     <main class="swiss-grid gap-y-0">
       <slot />
     </main>

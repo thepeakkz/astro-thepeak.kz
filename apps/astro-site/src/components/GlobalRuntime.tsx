@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import LeadPopup from "@/components/LeadPopup";
-import SmoothScroll from "@/components/SmoothScroll";
 import UtmTracker from "@/components/UtmTracker";
 
 export default function GlobalRuntime() {
@@ -16,7 +15,6 @@ export default function GlobalRuntime() {
     <>
       <UtmTracker />
       <AnalyticsTracker />
-      {enhancementsReady ? <SmoothScroll /> : null}
       {enhancementsReady ? <LeadPopup /> : null}
     </>
   );
