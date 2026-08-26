@@ -6,9 +6,10 @@
     "apps/astro-site"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace @thepeak/astro-site",
-    "build": "npm run build --workspace @thepeak/astro-site",
-    "preview": "npm run preview --workspace @thepeak/astro-site",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "preview": "next start",
     "next:dev": "next dev",
     "next:build": "next build",
     "next:start": "next start",
