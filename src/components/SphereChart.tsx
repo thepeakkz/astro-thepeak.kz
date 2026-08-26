@@ -5,7 +5,7 @@ import * as THREE from "three";
 
 export default function SphereChart() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const isVisibleRef = useRef(false);
+  const isVisibleRef = useRef(true);
 
   useEffect(() => {
     const container = containerRef.current;

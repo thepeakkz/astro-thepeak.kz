@@ -7,7 +7,7 @@ export default function SplineChart() {
   const containerRef = useRef<HTMLDivElement>(null);
   const label2016Ref = useRef<HTMLDivElement>(null);
   const label2026Ref = useRef<HTMLDivElement>(null);
-  const isVisibleRef = useRef(false);
+  const isVisibleRef = useRef(true);
 
   useEffect(() => {
     const container = containerRef.current;

@@ -17,5 +17,5 @@ const jsonLd = [
 ---
 
 <BaseLayout seo={pageSeo.home} jsonLd={jsonLd} pageKind="home">
-  <HomeIsland client:idle allCases={allCases} blocks={cmsPage?.blocks} />
+  <HomeIsland client:load allCases={allCases} blocks={cmsPage?.blocks} />
 </BaseLayout>
