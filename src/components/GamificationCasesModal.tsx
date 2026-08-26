@@ -165,7 +165,6 @@ export default function GamificationCasesModal({ onClose }: GamificationCasesMod
         </header>
 
         <div
-          data-lenis-prevent
           className="grid h-0 min-h-0 flex-1 touch-pan-y overscroll-contain overflow-y-scroll [-webkit-overflow-scrolling:touch] lg:grid-cols-12"
         >
           <div

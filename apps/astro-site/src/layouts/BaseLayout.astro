@@ -33,7 +33,7 @@ const jsonLdText = JSON.stringify(structuredData).replace(/</g, "\\u003c");
 ---
 
 <!doctype html>
-<html lang="ru" class="h-full antialiased" data-scroll-behavior="smooth">
+<html lang="ru" class="h-full antialiased">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -41,6 +41,9 @@ const jsonLdText = JSON.stringify(structuredData).replace(/</g, "\\u003c");
     <title>{seo.title}</title>
     <meta name="description" content={seo.description} />
     {seo.keywords?.length ? <meta name="keywords" content={seo.keywords.join(", ")} /> : null}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="https://static.tildacdn.pro/tild3334-3763-4662-a232-663137633465/favicon.svg" />
     {pageKind === "home" ? (

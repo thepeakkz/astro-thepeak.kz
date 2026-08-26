@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Inbox, MessageCircle, Search, Trash2 } from "lucide-react";
-import { FaWhatsapp } from "react-icons/fa";
+import { Inbox, Search, Trash2 } from "lucide-react";
 import { deleteLeadAction, updateLeadStatusAction } from "@/app/admin/actions";
 import { whatsappUrl } from "@/lib/utils";
 import {
@@ -46,6 +45,14 @@ function formatLeadDate(value: string) {
 function leadChannel(lead: Lead) {
   return lead.attribution?.firstTouch?.source?.trim() || "";
 }
+
+const statusBadgeStyles: Record<LeadStatus, string> = {
+  new: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  in_progress: "bg-blue-50 text-blue-700 border-blue-200",
+  contacted: "bg-purple-50 text-purple-700 border-purple-200",
+  closed: "bg-slate-100 text-slate-700 border-slate-300",
+  junk: "bg-red-50 text-red-700 border-red-200",
+};
 
 export default function CrmLeadsClient({ initialData }: { initialData: LeadListResult }) {
   const [leads, setLeads] = useState(initialData.leads);
@@ -150,7 +157,7 @@ export default function CrmLeadsClient({ initialData }: { initialData: LeadListR
 
   async function handleDelete(lead: Lead) {
     if (busyIds.has(lead.id)) return;
-    if (!window.confirm(`Удалить заявку от\u00a0«${lead.name}»? Это действие нельзя отменить.`)) return;
+    if (!window.confirm(`Удалить заявку от «${lead.name}»? Это действие нельзя отменить.`)) return;
 
     const originalIndex = leads.findIndex((item) => item.id === lead.id);
     setMessage(null);
@@ -220,33 +227,46 @@ export default function CrmLeadsClient({ initialData }: { initialData: LeadListR
 
   return (
     <main className="peak-admin__main">
+      {/* Заголовок страницы */}
       <div className="peak-admin__page-header">
         <div>
-          <h1 className="peak-admin__page-title">Заявки</h1>
-          <p className="peak-admin__page-meta">{newCount} новых из&nbsp;{total} всего</p>
+          <div className="peak-admin__breadcrumb">
+            <span>CMS</span>
+            <span>/</span>
+            <span>CRM</span>
+          </div>
+          <h1 className="peak-admin__page-title">Входящие заявки</h1>
+          <p className="peak-admin__page-meta">
+            {formatTypography(`${newCount} новых лидов · Всего: ${total}`)}
+          </p>
         </div>
       </div>
 
-      <div className="peak-admin__crm-toolbar" aria-label="Фильтры заявок">
-        <div className="peak-admin__search">
-          <Search className="peak-admin__search-icon size-4" aria-hidden="true" />
-          <label className="sr-only" htmlFor="crm-search">Поиск по&nbsp;имени или&nbsp;телефону</label>
+      {/* Тулбар поиска и фильтрации */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
+        <div className="peak-admin__search w-full sm:max-w-xs">
+          <Search className="peak-admin__search-icon size-3.5" aria-hidden="true" />
           <input
             id="crm-search"
-            className="peak-admin__input"
+            className="peak-admin__input !h-9 !text-xs"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Поиск по\u00a0имени или\u00a0телефону"
+            placeholder="Поиск по имени или телефону…"
             autoComplete="off"
           />
         </div>
-        <div className="peak-admin__period-switcher peak-admin__crm-status-filter" role="group" aria-label="Статус заявки">
+
+        {/* Табы фильтра статусов */}
+        <div className="flex items-center gap-1 p-1 bg-slate-100 border border-slate-200 rounded-xl overflow-x-auto">
           {STATUS_FILTERS.map((filter) => (
             <button
               key={filter.value}
               type="button"
-              className={`peak-admin__period-btn ${status === filter.value ? "peak-admin__period-btn--active" : ""}`}
-              aria-pressed={status === filter.value}
+              className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
+                status === filter.value
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
               onClick={() => setStatus(filter.value)}
             >
               {filter.label}
@@ -255,123 +275,177 @@ export default function CrmLeadsClient({ initialData }: { initialData: LeadListR
         </div>
       </div>
 
+      {/* Уведомление */}
       {message && (
         <div
-          className={`peak-admin__notice ${message.type === "error" ? "peak-admin__notice--error" : "peak-admin__notice--success"}`}
+          className={`peak-admin__notice ${
+            message.type === "error" ? "peak-admin__notice--error" : "peak-admin__notice--success"
+          }`}
           role="status"
         >
-          {formatTypography(message.text)}
+          <span>{formatTypography(message.text)}</span>
+          <button
+            type="button"
+            onClick={() => setMessage(null)}
+            className="ml-auto text-current opacity-70 hover:opacity-100"
+            aria-label="Закрыть"
+          >
+            ✕
+          </button>
         </div>
       )}
 
+      {/* Содержимое (Таблица / Пустое состояние) */}
       {loading ? (
-        <div className="peak-admin__crm-loading" role="status">Загружаем заявки…</div>
+        <div className="p-12 text-center text-xs text-slate-500">
+          Загрузка заявок…
+        </div>
       ) : leads.length === 0 ? (
         <div className="peak-admin__empty">
-          <div>
-            <span className="peak-admin__empty-icon">
-              <Inbox className="size-5" aria-hidden="true" />
-            </span>
-            <p className="peak-admin__empty-title">
-              {isFiltered ? "По\u00a0этому фильтру ничего не\u00a0найдено" : "Заявок пока нет"}
-            </p>
-            <p className="peak-admin__empty-copy">
-              {isFiltered ? "Попробуйте изменить фильтр или\u00a0поисковый запрос." : "Новые заявки с\u00a0сайта появятся здесь."}
-            </p>
-          </div>
+          <span className="peak-admin__empty-icon">
+            <Inbox className="size-5" aria-hidden="true" />
+          </span>
+          <p className="peak-admin__empty-title">
+            {isFiltered ? "Ничего не найдено" : "Заявок пока нет"}
+          </p>
+          <p className="peak-admin__empty-copy">
+            {isFiltered
+              ? "Попробуйте изменить статус или поисковый запрос."
+              : "Новые входящие заявки с сайта появятся здесь."}
+          </p>
         </div>
       ) : (
-        <>
-          <div className="peak-admin__case-table peak-admin__crm-table" role="table" aria-label="Заявки">
-            <div className="peak-admin__case-table-head" role="row">
-              <span role="columnheader">Дата</span>
-              <span role="columnheader">Имя</span>
-              <span role="columnheader">Телефон</span>
-              <span role="columnheader">Источник</span>
-              <span role="columnheader">Комментарий</span>
-              <span role="columnheader">Статус</span>
-              <span role="columnheader" className="peak-admin__crm-actions-title">Действия</span>
-            </div>
-            {leads.map((lead) => {
-              const whatsapp = whatsappUrl(lead.phone);
-              const channel = leadChannel(lead);
-              const expanded = expandedIds.has(lead.id);
-              const busy = busyIds.has(lead.id);
+        <div className="peak-admin__table-card">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="py-3.5 px-5">Дата</th>
+                  <th className="py-3.5 px-5">Клиент</th>
+                  <th className="py-3.5 px-5">Телефон</th>
+                  <th className="py-3.5 px-5">Источник</th>
+                  <th className="py-3.5 px-5">Комментарий</th>
+                  <th className="py-3.5 px-5">Статус</th>
+                  <th className="py-3.5 px-5 text-right">Действия</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {leads.map((lead) => {
+                  const whatsapp = whatsappUrl(lead.phone);
+                  const channel = leadChannel(lead);
+                  const expanded = expandedIds.has(lead.id);
+                  const busy = busyIds.has(lead.id);
 
-              return (
-                <article className="peak-admin__case-table-row" role="row" key={lead.id}>
-                  <time className="peak-admin__crm-date" dateTime={lead.created_at} role="cell" data-label="Дата">
-                    {formatLeadDate(lead.created_at)}
-                  </time>
-                  <strong className="peak-admin__crm-name" role="cell" data-label="Имя" title={lead.name}>
-                    {formatTypography(lead.name)}
-                  </strong>
-                  <div className="peak-admin__crm-phone" role="cell" data-label="Телефон">
-                    <a href={`tel:${lead.phone}`} title={`Позвонить: ${lead.phone}`}>{lead.phone}</a>
-                    {lead.contact_method.toLocaleLowerCase("ru") === "whatsapp" && whatsapp ? (
-                      <a href={whatsapp} target="_blank" rel="noopener noreferrer" aria-label={`Написать ${lead.name} в\u00a0WhatsApp`}>
-                        <FaWhatsapp aria-hidden="true" />
-                      </a>
-                    ) : null}
-                  </div>
-                  <div className="peak-admin__crm-source" role="cell" data-label="Источник">
-                    <span title={lead.source}>{formatTypography(lead.source)}</span>
-                    {channel ? <small title={channel}>{channel}</small> : null}
-                  </div>
-                  <div className="peak-admin__crm-comment-cell" role="cell" data-label="Комментарий">
-                    <button
-                      type="button"
-                      className={`peak-admin__crm-comment ${expanded ? "peak-admin__crm-comment--expanded" : ""}`}
-                      title={lead.comment}
-                      aria-expanded={expanded}
-                      onClick={() => toggleComment(lead.id)}
-                    >
-                      <MessageCircle className="size-3.5" aria-hidden="true" />
-                      <span>{formatTypography(lead.comment)}</span>
-                    </button>
-                  </div>
-                  <div className="peak-admin__crm-status" role="cell" data-label="Статус">
-                    <select
-                      className={`peak-admin__select peak-admin__crm-select peak-admin__crm-select--${lead.status}`}
-                      value={lead.status}
-                      disabled={busy}
-                      aria-label={`Статус заявки от\u00a0${lead.name}`}
-                      onChange={(event) => void handleStatusChange(lead, event.target.value as LeadStatus)}
-                    >
-                      {LEAD_STATUSES.map((value) => <option value={value} key={value}>{LEAD_STATUS_LABELS[value]}</option>)}
-                    </select>
-                  </div>
-                  <div className="peak-admin__case-table-actions" role="cell" data-label="Действия">
-                    <button
-                      type="button"
-                      className="peak-admin__icon-button peak-admin__icon-button--danger"
-                      disabled={busy}
-                      onClick={() => void handleDelete(lead)}
-                      aria-label={`Удалить заявку от ${lead.name}`}
-                      title="Удалить заявку"
-                    >
-                      <Trash2 className="size-4" aria-hidden="true" />
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
+                  return (
+                    <tr key={lead.id} className="hover:bg-slate-50 transition-colors">
+                      {/* Дата */}
+                      <td className="py-3.5 px-5 whitespace-nowrap text-slate-500 font-mono text-[11px]">
+                        {formatLeadDate(lead.created_at)}
+                      </td>
+
+                      {/* Имя */}
+                      <td className="py-3.5 px-5 font-semibold text-slate-900 whitespace-nowrap">
+                        {formatTypography(lead.name)}
+                      </td>
+
+                      {/* Телефон (клик открывает WhatsApp или звонок) */}
+                      <td className="py-3.5 px-5 whitespace-nowrap">
+                        <a
+                          href={whatsapp || `tel:${lead.phone}`}
+                          target={whatsapp ? "_blank" : undefined}
+                          rel={whatsapp ? "noopener noreferrer" : undefined}
+                          className="font-mono text-slate-700 hover:text-orange-600 transition-colors underline decoration-slate-300 hover:decoration-orange-500 underline-offset-2"
+                          title={whatsapp ? "Открыть диалог в WhatsApp" : "Позвонить"}
+                        >
+                          {lead.phone}
+                        </a>
+                      </td>
+
+                      {/* Источник */}
+                      <td className="py-3.5 px-5 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="text-slate-800">{formatTypography(lead.source)}</span>
+                          {channel && (
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              {channel}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Комментарий */}
+                      <td className="py-3.5 px-5 max-w-xs">
+                        {lead.comment ? (
+                          <div
+                            onClick={() => toggleComment(lead.id)}
+                            className={`cursor-pointer text-slate-600 hover:text-slate-900 transition-colors ${
+                              expanded ? "" : "truncate"
+                            }`}
+                            title={lead.comment}
+                          >
+                            {formatTypography(lead.comment)}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+
+                      {/* Статус */}
+                      <td className="py-3.5 px-5 whitespace-nowrap">
+                        <select
+                          className={`text-xs font-medium px-2.5 py-1 rounded-md border outline-none bg-white transition-colors cursor-pointer ${
+                            statusBadgeStyles[lead.status]
+                          }`}
+                          value={lead.status}
+                          disabled={busy}
+                          onChange={(e) =>
+                            void handleStatusChange(lead, e.target.value as LeadStatus)
+                          }
+                        >
+                          {LEAD_STATUSES.map((val) => (
+                            <option key={val} value={val} className="bg-white text-slate-800">
+                              {LEAD_STATUS_LABELS[val]}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+
+                      {/* Действия */}
+                      <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => void handleDelete(lead)}
+                          className="peak-admin__icon-button peak-admin__icon-button--danger"
+                          title="Удалить заявку"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
 
-          <div className="peak-admin__crm-footer">
-            <p className="peak-admin__page-meta">Показано {leads.length} из&nbsp;{filteredTotal}</p>
-            {hasMore ? (
+          {/* Футер пагинации */}
+          <div className="flex items-center justify-between p-3.5 border-t border-slate-200 bg-slate-50 text-xs text-slate-500">
+            <span>
+              Показано {leads.length} из {filteredTotal} заявок
+            </span>
+            {hasMore && (
               <button
                 type="button"
-                className="peak-admin__btn peak-admin__btn--secondary"
+                className="peak-admin__button peak-admin__button--outline !h-8 !text-xs"
                 disabled={loadingMore}
                 onClick={() => void handleLoadMore()}
               >
                 {loadingMore ? "Загружаем…" : "Показать ещё"}
               </button>
-            ) : null}
+            )}
           </div>
-        </>
+        </div>
       )}
     </main>
   );

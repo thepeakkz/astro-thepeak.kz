@@ -35,8 +35,8 @@ export default function DeferredAnalyticsScripts() {
 
   return (
     <>
-      <Script src="https://www.googletagmanager.com/gtag/js?id=G-HCKHMPWG4L" strategy="afterInteractive" />
-      <Script id="google-analytics" strategy="afterInteractive">
+      <Script src="https://www.googletagmanager.com/gtag/js?id=G-HCKHMPWG4L" strategy="lazyOnload" />
+      <Script id="google-analytics" strategy="lazyOnload">
         {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -45,7 +45,7 @@ export default function DeferredAnalyticsScripts() {
             gtag('config', 'G-HCKHMPWG4L');
         `}
       </Script>
-      <Script id="google-engagement-event" strategy="afterInteractive">
+      <Script id="google-engagement-event" strategy="lazyOnload">
         {`
             // Helper function to delay opening a URL until a gtag event is sent.
             // Call it in response to an action that should navigate to a URL.
@@ -67,7 +67,7 @@ export default function DeferredAnalyticsScripts() {
             }
         `}
       </Script>
-      <Script id="meta-pixel" strategy="afterInteractive">
+      <Script id="meta-pixel" strategy="lazyOnload">
         {`
           !function(f,b,e,v,n,t,s)
           {if(f.fbq)return;n=f.fbq=function(){n.callMethod?

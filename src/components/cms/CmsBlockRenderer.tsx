@@ -162,8 +162,6 @@ export default function CmsBlockRenderer({
               description: text(block.content, "description"),
               buttonLabel: text(block.content, "buttonLabel"),
               buttonUrl: text(block.content, "buttonUrl"),
-              desktopVideoUrl: text(block.content, "desktopVideoUrl"),
-              mobileVideoUrl: text(block.content, "mobileVideoUrl"),
               posterUrl: text(block.content, "posterUrl"),
             }}
           />

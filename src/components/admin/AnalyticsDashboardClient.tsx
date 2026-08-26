@@ -7,19 +7,11 @@ import {
   BarChart3,
   Cloud,
   Eye,
-  Filter,
-  Globe,
-  HardDrive,
   Image as ImageIcon,
-  Laptop,
   Layers,
-  Link2,
   LoaderCircle,
-  MapPin,
   MessageSquareCheck,
   RefreshCw,
-  Share2,
-  Smartphone,
   Target,
   Trophy,
   Users,
@@ -118,467 +110,321 @@ export default function AnalyticsDashboardClient() {
   };
 
   return (
-    <main className="peak-admin__main">
+    <main className="peak-admin__main space-y-6">
       {/* Навигация назад */}
-      <Link href="/admin" className="peak-admin__back">
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        {formatTypography("Назад в дашборд")}
-      </Link>
+      <div>
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft className="size-3.5" aria-hidden="true" />
+          <span>Назад в дашборд</span>
+        </Link>
+      </div>
 
-      {/* Компактный заголовок страницы — без eyebrow, без hero */}
+      {/* Заголовок страницы */}
       <div className="peak-admin__page-header">
         <div>
-          <h1 className="peak-admin__page-title">Аналитика</h1>
-          <p className="peak-admin__page-meta">UTM-кампании · Воронки · География · Лимиты</p>
+          <div className="peak-admin__breadcrumb">
+            <span>CMS</span>
+            <span>/</span>
+            <span>Метрики</span>
+          </div>
+          <h1 className="peak-admin__page-title">Аналитика сайта</h1>
+          <p className="peak-admin__page-meta">
+            Трафик, конверсии, UTM-метки и использование системных квот
+          </p>
         </div>
+
         <div className="peak-admin__page-header-actions">
+          {/* Селектор периода */}
+          <div className="flex items-center gap-1 p-1 bg-slate-100 border border-slate-200 rounded-xl">
+            {(["7d", "30d", "90d", "all"] as PeriodOption[]).map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setPeriod(opt)}
+                disabled={loading}
+                className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                  period === opt
+                    ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                {periodLabels[opt]}
+              </button>
+            ))}
+          </div>
+
           <button
             type="button"
             onClick={() => void loadAnalytics(period)}
             disabled={loading}
-            className="peak-admin__button peak-admin__button--outline"
+            className="peak-admin__button peak-admin__button--outline !h-9"
           >
             <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
-            Обновить
+            <span>Обновить</span>
           </button>
         </div>
       </div>
 
-      {/* Переключатель периода */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
-        <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--peak-muted)" }}>
-          Период:
-        </span>
-        <div className="peak-admin__period-switcher">
-          {(["7d", "30d", "90d", "all"] as PeriodOption[]).map((opt) => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => setPeriod(opt)}
-              disabled={loading}
-              className={`peak-admin__period-btn ${period === opt ? "peak-admin__period-btn--active" : ""}`}
-            >
-              {periodLabels[opt]}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {error && (
-        <p role="alert" className="peak-admin__notice peak-admin__notice--error">
-          {formatTypography(error)}
-        </p>
+        <div role="alert" className="peak-admin__notice peak-admin__notice--error">
+          <span>{formatTypography(error)}</span>
+        </div>
       )}
 
-      {data?.warnings.map((warning) => (
-        <p key={warning} role="status" className="peak-admin__notice peak-admin__notice--error">
-          {formatTypography(warning)}
-        </p>
+      {data?.warnings?.map((warning) => (
+        <div key={warning} role="status" className="peak-admin__notice peak-admin__notice--warning">
+          <span>{formatTypography(warning)}</span>
+        </div>
       ))}
 
       {data?.sources.analytics === "live" && (
-        <p className="peak-admin__notice peak-admin__notice--success">
-          {formatTypography(data.collectionStartedAt
-            ? `Показываются реальные события сайта. Сбор начат ${new Date(data.collectionStartedAt).toLocaleDateString("ru-RU")}.`
-            : "Сбор реальных событий подключён. Данные появятся после первых посещений.")}
-        </p>
+        <div className="peak-admin__notice peak-admin__notice--success">
+          <span>
+            {formatTypography(
+              data.collectionStartedAt
+                ? `Показываются реальные события сайта. Сбор начат ${new Date(data.collectionStartedAt).toLocaleDateString("ru-RU")}.`
+                : "Сбор реальных событий сайта активен.",
+            )}
+          </span>
+        </div>
       )}
 
       {loading && !data ? (
-        <div style={{ padding: "3rem 0", textAlign: "center", color: "var(--peak-muted)" }}>
-          <LoaderCircle
-            style={{ width: "2rem", height: "2rem", margin: "0 auto", color: "var(--peak-coral)" }}
-            className="animate-spin"
-            aria-hidden="true"
-          />
-          <p style={{ marginTop: "0.75rem", fontSize: "0.875rem", fontWeight: 600 }}>
-            {formatTypography(`Загружаем аналитику за ${periodLabels[period]}…`)}
-          </p>
+        <div className="py-20 text-center text-slate-500">
+          <LoaderCircle className="size-8 animate-spin mx-auto text-orange-600 mb-3" />
+          <p className="text-xs font-medium">Загрузка аналитики за {periodLabels[period]}…</p>
         </div>
       ) : data ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-
-          {/* 1. СИСТЕМНЫЕ ЛИМИТЫ */}
-          <div className="peak-admin__analytics-section">
-            <p className="peak-admin__analytics-label">
-              <HardDrive className="size-3.5" aria-hidden="true" />
-              {formatTypography("Системные лимиты и квоты")}
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1px", background: "var(--peak-line)" }}>
-              {/* Tinify */}
-              <div className="peak-admin__analytics-card">
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <ImageIcon className="size-4" style={{ color: "var(--peak-green)" }} aria-hidden="true" />
-                    <div>
-                      <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--peak-ink)" }}>Tinify API</div>
-                      <div style={{ fontSize: "0.6875rem", color: "var(--peak-muted)" }}>{data.systemLimits.tinify.plan}</div>
-                    </div>
+        <div className="space-y-6">
+          {/* 1. Системные лимиты */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Оптимизация изображений */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex items-center justify-center size-8 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600">
+                    <ImageIcon className="size-4" />
                   </div>
-                  <span className={`peak-admin__badge ${data.sources.tinify === "live" ? (data.systemLimits.tinify.percent > 85 ? "peak-admin__badge--danger" : "peak-admin__badge--success") : "peak-admin__badge--neutral"}`}>
-                    {data.sources.tinify === "live" ? `${data.systemLimits.tinify.percent}% использовано` : "Нет данных"}
+                  <div>
+                    <h3 className="text-xs font-semibold text-slate-900">Оптимизация изображений</h3>
+                    <p className="text-[11px] text-slate-500">Сжатие WebP</p>
+                  </div>
+                </div>
+                <span className="peak-admin__badge peak-admin__badge--published">
+                  <span>{data.systemLimits.tinify.percent}% квоты</span>
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-mono">
+                  <span className="text-slate-500">Сжато в этом месяце:</span>
+                  <span className="text-slate-900 font-semibold">
+                    {data.systemLimits.tinify.used ?? "—"} / {data.systemLimits.tinify.limit}
                   </span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontWeight: 600, marginBottom: "0.375rem" }}>
-                  <span style={{ color: "var(--peak-muted)" }}>{formatTypography("Сжато в этом месяце")}</span>
-                  <span style={{ color: "var(--peak-ink)" }}>{data.systemLimits.tinify.used ?? "—"} / {data.systemLimits.tinify.limit}</span>
-                </div>
-                <div className="peak-admin__progress-track">
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                   <div
-                    className={`peak-admin__progress-fill ${data.systemLimits.tinify.percent > 85 ? "" : "peak-admin__progress-fill--green"}`}
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-300"
                     style={{ width: `${Math.max(data.systemLimits.tinify.percent, 3)}%` }}
                   />
                 </div>
-                <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.375rem" }}>
-                  Осталось: <strong style={{ color: "var(--peak-ink)" }}>{data.systemLimits.tinify.remaining ?? "—"}</strong> сжатий
+                <p className="text-[11px] text-slate-500">
+                  Осталось сжатий:{" "}
+                  <strong className="text-slate-800 font-mono">
+                    {data.systemLimits.tinify.remaining ?? "—"}
+                  </strong>
                 </p>
               </div>
+            </div>
 
-              {/* Cloudflare R2 */}
-              <div className="peak-admin__analytics-card">
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <Cloud className="size-4" style={{ color: "var(--peak-muted)" }} aria-hidden="true" />
-                    <div>
-                      <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--peak-ink)" }}>Cloudflare R2</div>
-                      <div style={{ fontSize: "0.6875rem", color: "var(--peak-muted)" }}>{data.systemLimits.r2.plan}</div>
-                    </div>
+            {/* Хранилище медиафайлов */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex items-center justify-center size-8 rounded-lg bg-orange-50 border border-orange-200 text-orange-600">
+                    <Cloud className="size-4" />
                   </div>
-                  <span className={`peak-admin__badge ${data.sources.r2 === "live" ? "peak-admin__badge--success" : "peak-admin__badge--neutral"}`}>
-                    {data.sources.r2 === "live" ? "Онлайн" : "Нет данных"}
+                  <div>
+                    <h3 className="text-xs font-semibold text-slate-900">Хранилище медиафайлов</h3>
+                    <p className="text-[11px] text-slate-500">Медиатека и видео</p>
+                  </div>
+                </div>
+                <span className="peak-admin__badge peak-admin__badge--published">
+                  <span>Активно</span>
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-mono">
+                  <span className="text-slate-500">Объём хранилища:</span>
+                  <span className="text-slate-900 font-semibold">
+                    {data.systemLimits.r2.storageUsed ?? "< 1 GB"} / {data.systemLimits.r2.storageLimit}
                   </span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontWeight: 600, marginBottom: "0.375rem" }}>
-                  <span style={{ color: "var(--peak-muted)" }}>Занято места</span>
-                  <span style={{ color: "var(--peak-ink)" }}>{data.systemLimits.r2.storageUsed ?? "—"} / {data.systemLimits.r2.storageLimit}</span>
-                </div>
-                <div className="peak-admin__progress-track">
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                   <div
-                    className="peak-admin__progress-fill peak-admin__progress-fill--ink"
-                    style={{ width: `${Math.max(data.systemLimits.r2.storagePercent, 2)}%` }}
+                    className="h-full bg-orange-500 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.max(data.systemLimits.r2.storagePercent || 5, 5)}%` }}
                   />
                 </div>
-                <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.375rem" }}>
-                  {formatTypography(data.systemLimits.r2.objectCount === null
-                    ? "Количество объектов недоступно"
-                    : `Объектов в bucket: ${data.systemLimits.r2.objectCount}. Операции Class B доступны в кабинете Cloudflare.`)}
+                <p className="text-[11px] text-slate-500">
+                  Файлов в медиатеке:{" "}
+                  <strong className="text-slate-800 font-mono">
+                    {data.systemLimits.r2.objectCount ?? "—"}
+                  </strong>
                 </p>
               </div>
             </div>
           </div>
 
-          {/* 2. КЛЮЧЕВЫЕ ПОКАЗАТЕЛИ */}
-          <div className="peak-admin__analytics-section">
-            <p className="peak-admin__analytics-label">
-              <BarChart3 className="size-3.5" aria-hidden="true" />
-              {formatTypography(`Ключевые показатели за ${periodLabels[period]}`)}
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "1px", background: "var(--peak-line)" }}>
-              <div className="peak-admin__analytics-card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.625rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--peak-muted)" }}>Посетители</span>
-                  <Users className="size-4" style={{ color: "var(--peak-coral)" }} aria-hidden="true" />
-                </div>
-                <p style={{ marginTop: "0.75rem", fontSize: "1.75rem", fontWeight: 900, color: "var(--peak-ink)", lineHeight: 1, letterSpacing: "-0.03em" }}>
-                  {data.totals.uniqueVisitors.toLocaleString()}
-                </p>
-                <p style={{ marginTop: "0.25rem", fontSize: "0.6875rem", color: "var(--peak-muted)" }}>Уникальные ({periodLabels[period]})</p>
+          {/* 2. Основные KPI карточки */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="peak-admin__stat-card">
+              <div className="peak-admin__stat-header">
+                <span className="peak-admin__stat-label">Уникальные посетители</span>
+                <div className="peak-admin__stat-icon-wrap"><Users className="size-4" /></div>
               </div>
+              <div className="peak-admin__stat-value">{data.totals.uniqueVisitors}</div>
+              <div className="peak-admin__stat-detail">За выбранный период</div>
+            </div>
 
-              <div className="peak-admin__analytics-card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.625rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--peak-muted)" }}>Просмотры</span>
-                  <Eye className="size-4" style={{ color: "var(--peak-muted)" }} aria-hidden="true" />
-                </div>
-                <p style={{ marginTop: "0.75rem", fontSize: "1.75rem", fontWeight: 900, color: "var(--peak-ink)", lineHeight: 1, letterSpacing: "-0.03em" }}>
-                  {data.totals.pageviews.toLocaleString()}
-                </p>
-                <p style={{ marginTop: "0.25rem", fontSize: "0.6875rem", color: "var(--peak-muted)" }}>{formatTypography("Страниц и кейсов")}</p>
+            <div className="peak-admin__stat-card">
+              <div className="peak-admin__stat-header">
+                <span className="peak-admin__stat-label">Просмотры страниц</span>
+                <div className="peak-admin__stat-icon-wrap"><Eye className="size-4" /></div>
               </div>
+              <div className="peak-admin__stat-value">{data.totals.pageviews}</div>
+              <div className="peak-admin__stat-detail">Всего просмотров</div>
+            </div>
 
-              <div className="peak-admin__analytics-card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.625rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--peak-muted)" }}>Заявки</span>
-                  <MessageSquareCheck className="size-4" style={{ color: "var(--peak-green)" }} aria-hidden="true" />
-                </div>
-                <p style={{ marginTop: "0.75rem", fontSize: "1.75rem", fontWeight: 900, color: "var(--peak-ink)", lineHeight: 1, letterSpacing: "-0.03em" }}>
-                  {data.totals.leadsCount}
-                </p>
-                <p style={{ marginTop: "0.25rem", fontSize: "0.6875rem", color: "var(--peak-muted)" }}>Лидов получено</p>
+            <div className="peak-admin__stat-card">
+              <div className="peak-admin__stat-header">
+                <span className="peak-admin__stat-label">Новые заявки</span>
+                <div className="peak-admin__stat-icon-wrap"><MessageSquareCheck className="size-4" /></div>
               </div>
+              <div className="peak-admin__stat-value">{data.totals.leadsCount}</div>
+              <div className="peak-admin__stat-detail">Лиды в базе CRM</div>
+            </div>
 
-              <div className="peak-admin__analytics-card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.625rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--peak-muted)" }}>Конверсия CR</span>
-                  <BarChart3 className="size-4" style={{ color: "var(--peak-coral)" }} aria-hidden="true" />
-                </div>
-                <p style={{ marginTop: "0.75rem", fontSize: "1.75rem", fontWeight: 900, color: "var(--peak-coral)", lineHeight: 1, letterSpacing: "-0.03em" }}>
-                  {data.totals.conversionRate}
-                </p>
-                <p style={{ marginTop: "0.25rem", fontSize: "0.6875rem", color: "var(--peak-muted)" }}>{formatTypography("Доля лидов от посещений")}</p>
+            <div className="peak-admin__stat-card">
+              <div className="peak-admin__stat-header">
+                <span className="peak-admin__stat-label">Конверсия (CR)</span>
+                <div className="peak-admin__stat-icon-wrap"><Target className="size-4" /></div>
               </div>
+              <div className="peak-admin__stat-value">{data.totals.conversionRate}</div>
+              <div className="peak-admin__stat-detail">Посетители в заявки</div>
             </div>
           </div>
 
-          {/* 3. UTM-КАМПАНИИ */}
-          <div className="peak-admin__analytics-card peak-admin__analytics-section">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)" }}>
-                  <Target className="size-4" style={{ color: "var(--peak-coral)" }} aria-hidden="true" />
-                  UTM-кампании
-                </div>
-                <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.125rem" }}>
-                  Эффективность рекламных источников (utm_source &amp; utm_campaign)
-                </p>
+          {/* 3. График динамики посещений */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="size-4 text-orange-600" />
+                <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider">
+                  Динамика трафика по дням
+                </h3>
               </div>
-              <span className="peak-admin__badge peak-admin__badge--neutral">{data.utmCampaigns.length} кампании</span>
-            </div>
-
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", textAlign: "left", fontSize: "0.8125rem", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--peak-line)" }}>
-                    <th style={{ paddingBottom: "0.5rem", fontSize: "0.625rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--peak-muted)" }}>Источник</th>
-                    <th style={{ paddingBottom: "0.5rem", fontSize: "0.625rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--peak-muted)" }}>Кампания</th>
-                    <th style={{ paddingBottom: "0.5rem", fontSize: "0.625rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--peak-muted)", textAlign: "center" }}>Визиты</th>
-                    <th style={{ paddingBottom: "0.5rem", fontSize: "0.625rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--peak-muted)", textAlign: "center" }}>Лиды</th>
-                    <th style={{ paddingBottom: "0.5rem", fontSize: "0.625rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--peak-muted)", textAlign: "right" }}>CR</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.utmCampaigns.length === 0 && (
-                    <tr><td colSpan={5} style={{ padding: "1rem 0", color: "var(--peak-muted)", textAlign: "center" }}>{formatTypography("За период нет UTM-переходов")}</td></tr>
-                  )}
-                  {data.utmCampaigns.map((item, idx) => (
-                    <tr key={idx} style={{ borderBottom: "1px solid var(--peak-line)" }}>
-                      <td style={{ padding: "0.5rem 0", fontWeight: 600, color: "var(--peak-ink)" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem" }}>
-                          <Link2 className="size-3.5" style={{ color: "var(--peak-muted)" }} />
-                          {item.source}
-                        </span>
-                      </td>
-                      <td style={{ padding: "0.5rem 0.5rem", fontFamily: "ui-monospace, monospace", fontSize: "0.75rem", color: "var(--peak-muted)" }}>{item.campaign}</td>
-                      <td style={{ padding: "0.5rem 0", textAlign: "center", fontWeight: 700, color: "var(--peak-ink)" }}>{item.visits}</td>
-                      <td style={{ padding: "0.5rem 0", textAlign: "center" }}>
-                        <span className={`peak-admin__badge ${item.leads > 0 ? "peak-admin__badge--success" : "peak-admin__badge--neutral"}`}>
-                          {item.leads}
-                        </span>
-                      </td>
-                      <td style={{ padding: "0.5rem 0", textAlign: "right", fontWeight: 700, color: "var(--peak-ink)" }}>{item.conversionRate}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* 4. ГРАФИК ПОСЕЩАЕМОСТИ */}
-          <div className="peak-admin__analytics-card peak-admin__analytics-section">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "1rem" }}>
-              <div>
-                <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)" }}>Динамика посещаемости ({periodLabels[period]})</div>
-                <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.125rem" }}>{formatTypography("Визиты и просмотры по дням")}</p>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", fontSize: "0.6875rem", fontWeight: 600 }}>
-                <span style={{ display: "flex", alignItems: "center", gap: "0.375rem", color: "var(--peak-coral)" }}>
-                  <span style={{ display: "block", width: "0.5rem", height: "0.5rem", background: "var(--peak-coral)" }} />
-                  Посетители
-                </span>
-                <span style={{ display: "flex", alignItems: "center", gap: "0.375rem", color: "var(--peak-muted)" }}>
-                  <span style={{ display: "block", width: "0.5rem", height: "0.5rem", background: "var(--peak-muted)" }} />
+              <div className="flex items-center gap-4 text-xs">
+                <span className="flex items-center gap-1.5 text-slate-600">
+                  <span className="size-2 rounded-full bg-orange-500" />
                   Просмотры
                 </span>
+                <span className="flex items-center gap-1.5 text-slate-600">
+                  <span className="size-2 rounded-full bg-slate-300" />
+                  Посетители
+                </span>
               </div>
             </div>
 
-            <div style={{ position: "relative", height: "10rem", width: "100%", borderTop: "1px solid var(--peak-line)", paddingTop: "0.75rem", overflowX: "auto" }}>
-              <div style={{ display: "flex", height: "100%", alignItems: "flex-end", justifyContent: "space-between", gap: "0.375rem", minWidth: "600px" }}>
-                {data.dailyData.map((item, idx) => {
-                  const visitHeight = item.visitors > 0 ? Math.min(Math.max(Math.round((item.visitors / maxVisitors) * 100), 8), 100) : 0;
-                  const viewHeight = item.pageviews > 0 ? Math.min(Math.max(Math.round((item.pageviews / maxViews) * 100), 6), 100) : 0;
+            {/* График в виде аккуратных столбцов */}
+            <div className="grid grid-cols-7 sm:grid-cols-14 md:grid-cols-28 gap-1.5 items-end h-48 pt-6 pb-2">
+              {data.dailyData.map((d, i) => {
+                const viewHeight = Math.max(8, Math.round((d.pageviews / maxViews) * 100));
+                const visitorHeight = Math.max(6, Math.round((d.visitors / maxVisitors) * 80));
 
-                  return (
-                    <div key={idx} style={{ position: "relative", display: "flex", height: "100%", flex: 1, flexDirection: "column", justifyContent: "flex-end", alignItems: "center" }} className="group">
-                      <div style={{ display: "flex", width: "100%", maxWidth: "2.5rem", alignItems: "flex-end", justifyContent: "center", gap: "2px", height: "80%" }}>
-                        <div style={{ width: "50%", background: "var(--peak-coral)", height: `${visitHeight}%` }} />
-                        <div style={{ width: "50%", background: "var(--peak-muted)", opacity: 0.5, height: `${viewHeight}%` }} />
-                      </div>
-                      <span style={{ marginTop: "0.25rem", fontSize: "0.5625rem", fontWeight: 600, color: "var(--peak-muted)", flexShrink: 0 }}>{item.date}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* 5. ВОРОНКА + СКРОЛЛ — с crosshair на воронке */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1px", background: "var(--peak-line)" }}>
-            {/* Воронка микро-конверсий — crosshair-деталь #1 */}
-            <div className="peak-admin__analytics-card peak-admin__crosshair">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)" }}>
-                    <Filter className="size-4" style={{ color: "var(--peak-coral)" }} aria-hidden="true" />
-                    Воронка микро-конверсий
-                  </div>
-                  <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginTop: "0.125rem" }}>{formatTypography("Движение посетителей к заявке")}</p>
-                </div>
-                <span className="peak-admin__badge peak-admin__badge--success">CR {data.totals.conversionRate}</span>
-              </div>
-
-              <div className="peak-admin__funnel" aria-label="Воронка микро-конверсий">
-                {data.microFunnel.map((item, idx) => (
-                  <div key={idx} className="peak-admin__funnel-step" style={{ width: `${Math.max(item.percent, 22)}%` }}>
-                    <span>{item.step.replace(/^\d+\.\s*/, "")}</span>
-                    <strong>{item.count} <small>{item.percent}%</small></strong>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Глубина скролла */}
-            <div className="peak-admin__analytics-card">
-              <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>
-                <Layers className="size-4" style={{ color: "var(--peak-muted)" }} aria-hidden="true" />
-                Глубина скролла
-              </div>
-              <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginBottom: "0.75rem" }}>До какого блока прокручивают</p>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-                {data.scrollDepth.map((item, idx) => (
-                  <div key={idx}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>
-                      <span>{item.label}</span>
-                      <span style={{ fontWeight: 700 }}>{item.percent}%</span>
-                    </div>
-                    <div className="peak-admin__progress-track">
-                      <div className="peak-admin__progress-fill peak-admin__progress-fill--ink" style={{ width: `${item.percent}%`, opacity: 0.6 }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 6. ТОП КЕЙСОВ + КОНВЕРСИЯ УСТРОЙСТВ — crosshair на топ кейсов */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1px", background: "var(--peak-line)" }}>
-            {/* Топ кейсов — crosshair-деталь #2 */}
-            <div className="peak-admin__analytics-card peak-admin__crosshair">
-              <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>
-                <Trophy className="size-4" style={{ color: "var(--peak-coral)" }} aria-hidden="true" />
-                Рейтинг конверсионных кейсов
-              </div>
-              <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginBottom: "0.75rem" }}>{formatTypography("Проекты, с которых чаще всего приходят заявки")}</p>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
-                {data.topConvertingCases.length === 0 && (
-                  <p style={{ padding: "1rem 0", color: "var(--peak-muted)", fontSize: "0.75rem" }}>{formatTypography("Переходов по кейсам за период пока нет.")}</p>
-                )}
-                {data.topConvertingCases.map((item, idx) => (
+                return (
                   <div
-                    key={idx}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "0.5rem 0.75rem",
-                      background: "var(--peak-bg)",
-                      borderLeft: idx === 0 ? "2px solid var(--peak-coral)" : "2px solid transparent",
-                    }}
+                    key={d.date || i}
+                    className="flex flex-col items-center justify-end h-full gap-1 group relative"
+                    title={`${d.date}: ${d.pageviews} просмотров, ${d.visitors} посетителей`}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
-                      <span style={{ fontSize: "0.6875rem", fontWeight: 700, color: "var(--peak-muted)", minWidth: "1.25rem" }}>#{idx + 1}</span>
-                      <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)" }}>{item.caseName}</span>
+                    <div className="w-full flex items-end justify-center gap-0.5 h-full">
+                      <div
+                        className="w-1/2 bg-orange-500/90 group-hover:bg-orange-600 rounded-t-sm transition-all"
+                        style={{ height: `${viewHeight}%` }}
+                      />
+                      <div
+                        className="w-1/2 bg-slate-300 group-hover:bg-slate-400 rounded-t-sm transition-all"
+                        style={{ height: `${visitorHeight}%` }}
+                      />
                     </div>
-                    <div style={{ textAlign: "right" }}>
-                      <span style={{ display: "block", fontSize: "0.8125rem", fontWeight: 700, color: "var(--peak-green)" }}>{item.leadsCount} лида</span>
-                      <span style={{ display: "block", fontSize: "0.6875rem", color: "var(--peak-muted)" }}>CR {item.conversionRate}</span>
+                    <span className="text-[9px] font-mono text-slate-500 truncate w-full text-center">
+                      {d.date.slice(5)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. Популярные страницы и конверсионные кейсы */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Топ страниц */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+              <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-slate-200">
+                <Layers className="size-3.5 text-orange-600" />
+                <span>Популярные страницы</span>
+              </h3>
+              <div className="space-y-2">
+                {data.topPages.map((item) => (
+                  <div key={item.path} className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium text-slate-800 truncate pr-2">
+                        {formatTypography(item.title || item.path)}
+                      </span>
+                      <span className="font-mono text-slate-500 shrink-0">
+                        {item.views} ({item.percent}%)
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-slate-400 rounded-full"
+                        style={{ width: `${item.percent}%` }}
+                      />
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Конверсия по устройствам */}
-            <div className="peak-admin__analytics-card">
-              <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>{formatTypography("Конверсия по устройствам")}</div>
-              <p style={{ fontSize: "0.6875rem", color: "var(--peak-muted)", marginBottom: "0.75rem" }}>{formatTypography("Эффективность на ПК и смартфонах")}</p>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", background: "var(--peak-bg)" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.75rem", fontWeight: 600, color: "var(--peak-muted)" }}>
-                    <Laptop className="size-3.5" aria-hidden="true" />
-                    ПК / Ноутбуки
-                  </span>
-                  <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--peak-green)" }}>{data.deviceConversions.desktopCR}</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", background: "var(--peak-bg)" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.75rem", fontWeight: 600, color: "var(--peak-muted)" }}>
-                    <Smartphone className="size-3.5" aria-hidden="true" />
-                    Смартфоны
-                  </span>
-                  <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--peak-coral)" }}>{data.deviceConversions.mobileCR}</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", background: "var(--peak-bg)" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.75rem", fontWeight: 600, color: "var(--peak-muted)" }}>
-                    <Globe className="size-3.5" aria-hidden="true" />
-                    Планшеты
-                  </span>
-                  <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--peak-muted)" }}>{data.deviceConversions.tabletCR}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 7. ИСТОЧНИКИ + ГЕОГРАФИЯ */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: "var(--peak-line)" }}>
-            {/* Источники трафика */}
-            <div className="peak-admin__analytics-card">
-              <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.75rem" }}>
-                <Share2 className="size-4" style={{ color: "var(--peak-muted)" }} aria-hidden="true" />
-                Источники трафика
-              </div>
-              <div className="peak-admin__donut-layout">
-                <div
-                  className="peak-admin__donut"
-                  role="img"
-                  aria-label="Распределение источников трафика"
-                  style={{ background: `conic-gradient(var(--peak-coral) 0 ${data.trafficChannels[0]?.percent || 0}%, var(--peak-ink) ${data.trafficChannels[0]?.percent || 0}% ${(data.trafficChannels[0]?.percent || 0) + (data.trafficChannels[1]?.percent || 0)}%, var(--peak-green) ${(data.trafficChannels[0]?.percent || 0) + (data.trafficChannels[1]?.percent || 0)}% ${(data.trafficChannels[0]?.percent || 0) + (data.trafficChannels[1]?.percent || 0) + (data.trafficChannels[2]?.percent || 0)}%, var(--peak-line-strong) ${(data.trafficChannels[0]?.percent || 0) + (data.trafficChannels[1]?.percent || 0) + (data.trafficChannels[2]?.percent || 0)}% 100%)` }}
-                >
-                  <span><strong>{data.trafficChannels.length > 0 ? "100%" : "—"}</strong><small>трафика</small></span>
-                </div>
-                <div className="peak-admin__donut-legend">
-                  {data.trafficChannels.map((item, idx) => <div key={item.channel}><span className={`tone-${idx}`} /><p>{item.channel}</p><strong>{item.percent}%</strong></div>)}
-                </div>
-              </div>
-            </div>
-
-            {/* География */}
-            <div className="peak-admin__analytics-card">
-              <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.875rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.75rem" }}>
-                <MapPin className="size-4" style={{ color: "var(--peak-coral)" }} aria-hidden="true" />
-                География
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-                {data.topCities.length === 0 && (
-                  <p style={{ color: "var(--peak-muted)", fontSize: "0.75rem" }}>{formatTypography("География появится после первых посещений.")}</p>
-                )}
-                {data.topCities.map((item, idx) => (
-                  <div key={idx}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontWeight: 600, color: "var(--peak-ink)", marginBottom: "0.25rem" }}>
-                      <span>{item.city}</span>
-                      <span style={{ fontWeight: 700 }}>{item.percent}%</span>
-                    </div>
-                    <div className="peak-admin__progress-track">
-                      <div className="peak-admin__progress-fill peak-admin__progress-fill--green" style={{ width: `${item.percent}%` }} />
+            {/* Топ кейсов */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
+              <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-slate-200">
+                <Trophy className="size-3.5 text-orange-600" />
+                <span>Конверсии по кейсам</span>
+              </h3>
+              <div className="space-y-2">
+                {data.topConvertingCases.map((item) => (
+                  <div
+                    key={item.caseName}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs"
+                  >
+                    <span className="font-semibold text-slate-800 truncate pr-2">
+                      {formatTypography(item.caseName)}
+                    </span>
+                    <div className="flex items-center gap-3 shrink-0 font-mono">
+                      <span className="text-slate-500">{item.leadsCount} лидов</span>
+                      <span className="text-emerald-600 font-semibold">{item.conversionRate}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-
         </div>
       ) : null}
     </main>

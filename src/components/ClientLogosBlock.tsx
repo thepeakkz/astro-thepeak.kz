@@ -1,10 +1,12 @@
 "use client";
 
+const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || "https://pub-e0bd6bf9a910428a8ea004775af2985b.r2.dev";
+
 function ClientLogo({ ext, id }: { ext: string; id: number }) {
   return (
     <div className="relative h-[44px] sm:h-[56px] w-[80%] pointer-events-none flex items-center justify-center">
       <img
-        src={`https://media.thepeak.kz/logos/clot-${id}.${ext}`}
+        src={`${R2_PUBLIC_URL}/logos/clot-${id}.${ext}`}
         alt={`Client Logo ${id}`}
         width="140"
         height="56"

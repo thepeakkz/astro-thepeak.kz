@@ -7,7 +7,7 @@ import { getPublishedCaseCards, getPublishedPageByPath } from "@/lib/cms/data";
 import { absoluteUrl, createSeoMetadata, getBreadcrumbJsonLd, pageSeo } from "@/lib/seo";
 
 export const metadata: Metadata = createSeoMetadata(pageSeo.cases);
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function CasesCatalogPage() {
   const [cmsPage, cmsCaseCards] = await Promise.all([

@@ -43,7 +43,7 @@ function CaseThumbnail({ item }: { item: CaseItem }) {
     return <video src={video} className="size-full object-cover" muted playsInline preload="metadata" />;
   }
   return (
-    <div className="peak-admin__media-placeholder size-full">
+    <div className="flex items-center justify-center size-full bg-slate-100 text-[10px] text-slate-500">
       Нет медиа
     </div>
   );
@@ -65,42 +65,81 @@ function SortableHomeCaseRow({
   total: number;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: href });
-  const project = (
-    <>
-      <span className="peak-admin__case-table-thumb"><CaseThumbnail item={item} /></span>
-      <span className="peak-admin__case-table-name">{formatTypography(item.name)}</span>
-    </>
-  );
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 1,
+  };
 
   return (
     <article
       ref={setNodeRef}
-      role="row"
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`peak-admin__case-table-row ${isDragging ? "peak-admin__case-table-row--dragging" : ""}`}
+      style={style}
+      className={`flex items-center justify-between p-3 bg-white hover:bg-slate-50 transition-colors ${
+        isDragging ? "opacity-60 shadow-lg bg-orange-50/50" : ""
+      }`}
     >
-      <div role="cell" className="peak-admin__case-table-index">
-        <button type="button" className="peak-admin__case-drag-handle" aria-label={`Изменить позицию кейса ${item.name}`} {...attributes} {...listeners}>
-          <GripVertical className="size-4" aria-hidden="true" />
-          <span>{index + 1}</span>
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <button
+          type="button"
+          className="cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-slate-700"
+          aria-label={`Изменить позицию кейса ${item.name}`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-3.5" />
         </button>
+        <span className="text-[10px] font-mono text-slate-400 w-4 text-center">{index + 1}</span>
+
+        <div className="size-9 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
+          <CaseThumbnail item={item} />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          {item.adminEditUrl ? (
+            <Link
+              href={item.adminEditUrl}
+              className="text-xs font-semibold text-slate-800 hover:text-slate-900 truncate block"
+              title="Редактировать кейс"
+            >
+              {formatTypography(item.name)}
+            </Link>
+          ) : (
+            <span className="text-xs font-semibold text-slate-800 truncate block">
+              {formatTypography(item.name)}
+            </span>
+          )}
+          <span className="text-[11px] text-slate-500 truncate block">{formatTypography(item.type)}</span>
+        </div>
       </div>
-      {item.adminEditUrl ? (
-        <Link href={item.adminEditUrl} role="cell" className="peak-admin__case-table-project" title="Редактировать кейс">{project}</Link>
-      ) : (
-        <div role="cell" className="peak-admin__case-table-project">{project}</div>
-      )}
-      <div role="cell" className="peak-admin__case-table-category" title={item.type}>{formatTypography(item.type)}</div>
-      <div role="cell" className="peak-admin__case-table-address" title={href}>{href}</div>
-      <div role="cell" className="peak-admin__case-table-actions">
-        <button type="button" className="peak-admin__table-action peak-admin__case-arrow" onClick={() => onMove(-1)} disabled={index === 0} aria-label="Переместить кейс выше">
-          <ArrowUp className="size-4" aria-hidden="true" />
+
+      <div className="flex items-center gap-1.5 shrink-0">
+        <button
+          type="button"
+          className="peak-admin__icon-button !size-7"
+          onClick={() => onMove(-1)}
+          disabled={index === 0}
+          aria-label="Переместить выше"
+        >
+          <ArrowUp className="size-3" />
         </button>
-        <button type="button" className="peak-admin__table-action peak-admin__case-arrow" onClick={() => onMove(1)} disabled={index === total - 1} aria-label="Переместить кейс ниже">
-          <ArrowDown className="size-4" aria-hidden="true" />
+        <button
+          type="button"
+          className="peak-admin__icon-button !size-7"
+          onClick={() => onMove(1)}
+          disabled={index === total - 1}
+          aria-label="Переместить ниже"
+        >
+          <ArrowDown className="size-3" />
         </button>
-        <button type="button" className="peak-admin__table-action peak-admin__table-action--danger" onClick={onRemove} aria-label="Исключить кейс" title="Исключить из главной">
-          <Trash2 className="size-4" aria-hidden="true" />
+        <button
+          type="button"
+          className="peak-admin__icon-button peak-admin__icon-button--danger !size-7"
+          onClick={onRemove}
+          aria-label="Исключить из главной"
+          title="Исключить из главной"
+        >
+          <Trash2 className="size-3" />
         </button>
       </div>
     </article>
@@ -121,8 +160,6 @@ export const defaultHomeCasesOrder = [
   "/cases/velmar",
   "/cases/racoon",
 ];
-
-
 
 export default function HomeCasesEditor({
   initialAvailableCases,
@@ -230,69 +267,71 @@ export default function HomeCasesEditor({
   }
 
   return (
-    <section className="peak-admin__case-media" aria-labelledby="home-cases-title">
-      <div className="peak-admin__case-media-heading">
+    <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h2 id="home-cases-title" className="peak-admin__section-title !mt-0">Кейсы на главной странице</h2>
-          <p className="peak-admin__section-description">
-            {formatTypography(`${selectedCasesList.length} из ${availableCases.length} кейсов выбраны · Меняйте порядок перетаскиванием`)}
+          <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
+            Кейсы на главной странице
+          </h3>
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            {formatTypography(`${selectedCasesList.length} из ${availableCases.length} кейсов выбрано · Перетаскивайте для изменения порядка`)}
           </p>
         </div>
         <button
           type="button"
-          className="peak-admin__button peak-admin__button--outline shrink-0 text-xs"
+          className="peak-admin__button peak-admin__button--outline !h-7 !text-xs !px-2.5"
           onClick={resetToDefault}
         >
-          <RefreshCw className="size-3.5" aria-hidden="true" />
-          Сбросить по умолчанию
+          <RefreshCw className="size-3" />
+          <span>Сбросить</span>
         </button>
       </div>
 
       {loading ? (
-        <p className="peak-admin__protected">Загружаем список кейсов…</p>
+        <div className="p-8 text-center text-xs text-slate-500">Загрузка кейсов…</div>
       ) : (
-        <>
-          {error && <p role="alert" className="peak-admin__notice peak-admin__notice--error">{formatTypography(error)}</p>}
-
-          {selectedCasesList.length > 0 ? (
-            <div className="peak-admin__case-table" role="table" aria-label="Кейсы на главной странице">
-              <div className="peak-admin__case-table-head" role="row">
-                <div role="columnheader">#</div>
-                <div role="columnheader">Проект</div>
-                <div role="columnheader">Категория</div>
-                <div role="columnheader">Адрес</div>
-                <div role="columnheader" className="text-right">Действия</div>
-              </div>
-              <DndContext id="home-cases-editor" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={selectedHrefs} strategy={verticalListSortingStrategy}>
-                  <div role="rowgroup">
-                    {selectedCasesList.map(({ href, item }, index) => (
-                      <SortableHomeCaseRow
-                        key={href}
-                        href={href}
-                        index={index}
-                        item={item}
-                        onMove={(direction) => moveItem(index, direction)}
-                        onRemove={() => removeItem(href)}
-                        total={selectedCasesList.length}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
+        <div className="space-y-4">
+          {error && (
+            <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl">
+              {formatTypography(error)}
             </div>
-          ) : (
-            <p className="peak-admin__protected">На главную страницу не выбрано ни одного кейса.</p>
           )}
 
+          {selectedCasesList.length > 0 ? (
+            <DndContext id="home-cases-editor" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={selectedHrefs} strategy={verticalListSortingStrategy}>
+                <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white shadow-xs">
+                  {selectedCasesList.map(({ href, item }, index) => (
+                    <SortableHomeCaseRow
+                      key={href}
+                      href={href}
+                      index={index}
+                      item={item}
+                      onMove={(direction) => moveItem(index, direction)}
+                      onRemove={() => removeItem(href)}
+                      total={selectedCasesList.length}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-xl">
+              На главную страницу не выбрано ни одного кейса.
+            </div>
+          )}
+
+          {/* Выбор для добавления */}
           {unselectedCasesList.length > 0 && (
-            <div className="peak-admin__case-media-add">
-              <h3 className="peak-admin__settings-title mb-2">Добавить кейс на главную</h3>
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <span className="text-xs font-semibold text-slate-700 block">
+                Добавить кейс на главную
+              </span>
+              <div className="flex flex-wrap items-center gap-2.5">
                 <select
                   value={selectedToAdd}
                   onChange={(e) => setSelectedToAdd(e.target.value)}
-                  className="peak-admin__select max-w-md"
+                  className="peak-admin__select !h-8 !text-xs flex-1 min-w-[200px]"
                 >
                   <option value="">-- Выберите кейс из доступных --</option>
                   {unselectedCasesList.map((c) => (
@@ -305,15 +344,15 @@ export default function HomeCasesEditor({
                   type="button"
                   onClick={addCase}
                   disabled={!selectedToAdd}
-                  className="peak-admin__button peak-admin__button--primary shrink-0 text-xs"
+                  className="peak-admin__button peak-admin__button--primary !h-8 !text-xs"
                 >
-                  <Plus className="size-4" aria-hidden="true" />
-                  Добавить кейс
+                  <Plus className="size-3.5" />
+                  <span>Добавить</span>
                 </button>
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
     </section>
   );

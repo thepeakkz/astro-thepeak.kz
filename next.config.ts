@@ -25,6 +25,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: '*.r2.dev',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'res.cloudinary.com',
         port: '',
         pathname: '/**',
@@ -44,9 +50,6 @@ const nextConfig: NextConfig = {
     const immutableHeroAssets = [
       '/hero-mobile-poster-v2.webp',
       '/hero-desktop-poster-v2.webp',
-      '/hero-mobile-v2.mp4',
-      '/hero-desktop-v2.webm',
-      '/hero-desktop-v2.mp4',
     ];
 
     return immutableHeroAssets.map((source) => ({

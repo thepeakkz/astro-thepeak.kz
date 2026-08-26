@@ -31,7 +31,7 @@ export default function TrashDashboardClient({ initialPages }: { initialPages: C
   function handlePermanentDelete(page: CmsTrashPage) {
     if (
       !window.confirm(
-        `ВНИМАНИЕ! Вы действительно хотите безвозвратно удалить страницу «${page.title}»? Это действие нельзя отменить.`,
+        `ВНИМАНИЕ! Вы действительно хотите безвозвратно удалить «${page.title}»? Это действие нельзя отменить.`,
       )
     ) {
       return;
@@ -52,19 +52,32 @@ export default function TrashDashboardClient({ initialPages }: { initialPages: C
   return (
     <main className="peak-admin__main">
       {/* Навигация назад */}
-      <Link href="/admin" className="peak-admin__back">
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        Все страницы
-      </Link>
+      <div className="mb-4">
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft className="size-3.5" aria-hidden="true" />
+          <span>Все страницы</span>
+        </Link>
+      </div>
 
-      {/* Компактный заголовок страницы */}
+      {/* Заголовок страницы */}
       <div className="peak-admin__page-header">
         <div>
+          <div className="peak-admin__breadcrumb">
+            <span>CMS</span>
+            <span>/</span>
+            <span>Корзина</span>
+          </div>
           <h1 className="peak-admin__page-title">Корзина</h1>
-          <p className="peak-admin__page-meta">{pages.length > 0 ? `${pages.length} удалённых страниц` : "Пусто"}</p>
+          <p className="peak-admin__page-meta">
+            {pages.length > 0 ? `${pages.length} удалённых материалов` : "Корзина пуста"}
+          </p>
         </div>
       </div>
 
+      {/* Уведомление */}
       {message && (
         <div
           className={`peak-admin__notice ${
@@ -72,68 +85,86 @@ export default function TrashDashboardClient({ initialPages }: { initialPages: C
           }`}
           role="status"
         >
-          {message.text}
+          <span>{formatTypography(message.text)}</span>
+          <button
+            type="button"
+            onClick={() => setMessage(null)}
+            className="ml-auto text-current opacity-70 hover:opacity-100"
+            aria-label="Закрыть"
+          >
+            ✕
+          </button>
         </div>
       )}
 
       {pages.length === 0 ? (
         <div className="peak-admin__empty">
-          <div>
-            <span className="peak-admin__empty-icon">
-              <Trash2 className="size-5" aria-hidden="true" />
-            </span>
-            <p className="peak-admin__empty-title">Корзина пуста</p>
-            <p className="peak-admin__empty-copy">
-              Удалённые страницы появятся здесь. Отсюда их всегда можно восстановить.
-            </p>
-          </div>
+          <span className="peak-admin__empty-icon">
+            <Trash2 className="size-5" aria-hidden="true" />
+          </span>
+          <p className="peak-admin__empty-title">Корзина пуста</p>
+          <p className="peak-admin__empty-copy">
+            Удалённые страницы и кейсы появятся здесь. Отсюда их всегда можно восстановить.
+          </p>
         </div>
       ) : (
-        <div className="peak-admin__hairline" role="list" aria-label="Удалённые страницы">
-          {pages.map((page) => (
-            <article
-              key={page.id}
-              role="listitem"
-              className="peak-admin__hairline-row"
-              style={{ cursor: "default" }}
-            >
-              <div className="min-w-0 flex-1">
-                <p className="peak-admin__hairline-status peak-admin__hairline-status--draft">
-                  {page.page_kind === "case" ? "Кейс" : "Страница"} · удалено{" "}
-                  {page.deleted_at
-                    ? new Date(page.deleted_at).toLocaleDateString("ru-RU")
-                    : "—"}
-                </p>
-                <h2 className="peak-admin__hairline-title truncate">
-                  {formatTypography(page.title)}
-                </h2>
-                <p className="peak-admin__hairline-route truncate">{page.slug}</p>
-              </div>
-              <div className="peak-admin__hairline-actions">
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => handleRestore(page)}
-                  className="peak-admin__btn peak-admin__btn--secondary"
-                  title="Восстановить страницу"
-                >
-                  <RotateCcw className="size-3.5" aria-hidden="true" />
-                  Восстановить
-                </button>
+        <div className="peak-admin__table-card" role="list" aria-label="Удалённые страницы">
+          <div className="divide-y divide-slate-100">
+            {pages.map((page) => (
+              <article
+                key={page.id}
+                role="listitem"
+                className="peak-admin__table-row !cursor-default flex items-center justify-between p-4"
+              >
+                <div className="min-w-0 flex-1 pr-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="peak-admin__badge peak-admin__badge--draft">
+                      {page.page_kind === "case" ? "Кейс" : "Страница"}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      Удалено:{" "}
+                      {page.deleted_at
+                        ? new Date(page.deleted_at).toLocaleDateString("ru-RU", {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "—"}
+                    </span>
+                  </div>
+                  <h2 className="text-sm font-semibold text-slate-800 truncate">
+                    {formatTypography(page.title)}
+                  </h2>
+                  <p className="text-xs font-mono text-slate-500 truncate mt-0.5">{page.slug}</p>
+                </div>
 
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => handlePermanentDelete(page)}
-                  className="peak-admin__btn peak-admin__btn--danger"
-                  title="Удалить навсегда"
-                >
-                  <Trash2 className="size-3.5" aria-hidden="true" />
-                  Удалить навсегда
-                </button>
-              </div>
-            </article>
-          ))}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => handleRestore(page)}
+                    className="peak-admin__button peak-admin__button--outline !h-8 !text-xs"
+                    title="Восстановить страницу"
+                  >
+                    <RotateCcw className="size-3.5" aria-hidden="true" />
+                    <span>Восстановить</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => handlePermanentDelete(page)}
+                    className="peak-admin__button peak-admin__button--danger !h-8 !text-xs"
+                    title="Удалить навсегда"
+                  >
+                    <Trash2 className="size-3.5" aria-hidden="true" />
+                    <span>Удалить навсегда</span>
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       )}
     </main>

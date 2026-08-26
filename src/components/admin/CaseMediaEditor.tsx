@@ -21,18 +21,15 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   FileVideo,
   GripVertical,
-  ImageIcon,
   Images,
-  ImageUp,
   LayoutGrid,
   List,
-  RefreshCw,
   Settings,
   Trash2,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import MediaUploader from "@/components/admin/MediaUploader";
 import {
   parseCaseGallery,
@@ -82,39 +79,79 @@ function SortableMediaItem({
       <article
         ref={setNodeRef}
         style={style}
-        className={`peak-admin__media-row ${isDragging ? "is-dragging" : ""}`}
+        className={`flex items-center justify-between p-3 bg-white hover:bg-slate-50 transition-colors ${
+          isDragging ? "opacity-60 shadow-lg bg-orange-50/50" : ""
+        }`}
       >
-        <div className="peak-admin__media-row-main">
-          <div className="peak-admin__media-row-info">
-            <button
-              type="button"
-              {...attributes}
-              {...listeners}
-              className="peak-admin__media-drag"
-              aria-label={`Перетащить медиа ${index + 1}`}
-            >
-              <GripVertical className="size-4" />
-            </button>
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-slate-700"
+            aria-label={`Перетащить медиа ${index + 1}`}
+          >
+            <GripVertical className="size-3.5" />
+          </button>
 
-            <button type="button" className="peak-admin__media-thumb" onClick={onOpenSettings} aria-label={`Настроить медиа ${index + 1}`}>
-              {isVideo ? (
-                <video src={item.src} preload="metadata" muted />
-              ) : (
-                <img src={item.src} alt={name} />
+          <button
+            type="button"
+            className="relative size-10 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200"
+            onClick={onOpenSettings}
+          >
+            {isVideo ? (
+              <video src={item.src} preload="metadata" muted className="size-full object-cover" />
+            ) : (
+              <img src={item.src} alt={name} className="size-full object-cover" />
+            )}
+            {isVideo && (
+              <span className="absolute bottom-0.5 right-0.5 size-3.5 bg-black/70 rounded flex items-center justify-center text-orange-400">
+                <FileVideo className="size-2.5" />
+              </span>
+            )}
+          </button>
+
+          <div className="min-w-0 flex-1 cursor-pointer" onClick={onOpenSettings}>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono text-slate-400">#{index + 1}</span>
+              <strong className="text-xs font-semibold text-slate-800 truncate block" title={name}>
+                {name}
+              </strong>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
+              <span>{isVideo ? "Видео" : "Изображение"}</span>
+              {isVideo && (
+                <span
+                  className={`px-1.5 py-0.2 rounded text-[10px] ${
+                    item.posterSrc
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      : "bg-amber-50 text-amber-700 border border-amber-200"
+                  }`}
+                >
+                  {item.posterSrc ? "WebP обложка" : "Нужна обложка"}
+                </span>
               )}
-              {isVideo && <span><FileVideo className="size-3" /></span>}
-            </button>
-
-            <div className="peak-admin__media-row-copy" onClick={onOpenSettings}>
-              <div><span>#{index + 1}</span><strong title={name}>{name}</strong></div>
-              <p>{isVideo ? <FileVideo className="size-3" /> : <ImageIcon className="size-3" />}{isVideo ? "Видео" : "Фото"}{isVideo && <em className={item.posterSrc ? "is-ready" : ""}>{item.posterSrc ? "WebP готов" : "Нужна обложка"}</em>}</p>
             </div>
           </div>
+        </div>
 
-          <div className="peak-admin__media-row-actions">
-            <button type="button" onClick={onOpenSettings} className="peak-admin__button peak-admin__button--outline"><Settings className="size-3.5" />Настроить</button>
-            <button type="button" onClick={onDelete} className="peak-admin__icon-button peak-admin__icon-button--danger" aria-label="Удалить файл"><Trash2 className="size-4" /></button>
-          </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="peak-admin__button peak-admin__button--outline !h-7 !text-xs !px-2.5"
+          >
+            <Settings className="size-3" />
+            <span>Настроить</span>
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="peak-admin__icon-button peak-admin__icon-button--danger !size-7"
+            aria-label="Удалить файл"
+          >
+            <Trash2 className="size-3" />
+          </button>
         </div>
       </article>
     );
@@ -124,31 +161,45 @@ function SortableMediaItem({
     <article
       ref={setNodeRef}
       style={style}
-      className={`peak-admin__media-card ${isDragging ? "is-dragging" : ""}`}
+      className={`group relative flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs transition-all ${
+        isDragging ? "opacity-60 shadow-lg border-orange-500" : "hover:border-slate-300"
+      }`}
     >
-      <div className="peak-admin__media-card-tools">
+      <div className="flex items-center justify-between p-2 bg-slate-50 border-b border-slate-200">
         <button
           type="button"
           {...attributes}
           {...listeners}
-          className="peak-admin__media-card-handle"
+          className="cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-slate-700"
           aria-label={`Перетащить медиа ${index + 1}`}
         >
-          <GripVertical className="size-4" />
+          <GripVertical className="size-3.5" />
         </button>
-        <span>#{index + 1}</span>
-        <button type="button" onClick={onDelete} className="peak-admin__media-card-delete" title="Удалить"><Trash2 className="size-3.5" /></button>
+        <span className="text-[10px] font-mono text-slate-500">#{index + 1}</span>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="p-1 text-slate-400 hover:text-red-600 rounded"
+          title="Удалить"
+        >
+          <Trash2 className="size-3" />
+        </button>
       </div>
 
-      <button type="button" className="peak-admin__media-card-preview" style={{ aspectRatio: isVideo ? "9 / 16" : "1 / 1" }} onClick={onOpenSettings}>
+      <div
+        className="relative bg-slate-100 cursor-pointer aspect-video overflow-hidden"
+        onClick={onOpenSettings}
+      >
         {isVideo ? (
-          <video src={item.src} poster={item.posterSrc} preload="metadata" />
+          <video src={item.src} poster={item.posterSrc} preload="metadata" className="size-full object-cover" />
         ) : (
-          <img src={item.src} alt={name} />
+          <img src={item.src} alt={name} className="size-full object-cover" />
         )}
-        <span className="peak-admin__media-card-overlay"><strong>{name}</strong><small><Settings className="size-3.5" /> Настроить</small></span>
-        {isVideo && <em>{item.posterSrc ? "WebP готов" : "Без обложки"}</em>}
-      </button>
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-xs text-white">
+          <Settings className="size-3.5" />
+          <span>Настроить</span>
+        </div>
+      </div>
     </article>
   );
 }
@@ -169,7 +220,6 @@ export default function CaseMediaEditor({
   const [error, setError] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const reduceMotion = useReducedMotion();
   const selectedItem = expandedIndex === null ? null : items[expandedIndex];
 
   const sensors = useSensors(
@@ -217,20 +267,6 @@ export default function CaseMediaEditor({
     onChange(serializeCaseGallery(nextItems));
   }
 
-  function updateItem(index: number, url: string, type: "image" | "video") {
-    if (!url) {
-      commit(items.filter((_, itemIndex) => itemIndex !== index));
-      if (expandedIndex === index) setExpandedIndex(null);
-      return;
-    }
-
-    commit(
-      items.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, src: url, type, name: assetName(url, index) } : item,
-      ),
-    );
-  }
-
   function updateItemPoster(index: number, posterUrl: string) {
     commit(
       items.map((item, itemIndex) =>
@@ -249,173 +285,198 @@ export default function CaseMediaEditor({
     if (oldIndex !== -1 && newIndex !== -1) {
       const reordered = arrayMove(items, oldIndex, newIndex);
       commit(reordered);
-      if (expandedIndex === oldIndex) setExpandedIndex(newIndex);
     }
   }
 
+  function deleteItem(index: number) {
+    commit(items.filter((_, itemIndex) => itemIndex !== index));
+    if (expandedIndex === index) setExpandedIndex(null);
+  }
+
   return (
-    <section className="peak-admin__case-media" aria-labelledby="case-media-title">
-      <div className="peak-admin__case-media-heading flex flex-wrap items-center justify-between gap-4 mb-4">
-        <div className="flex items-start gap-3">
-          <span className="peak-admin__media-field-icon">
-            <Images className="size-5" aria-hidden="true" />
-          </span>
-          <div>
-            <h2 id="case-media-title" className="peak-admin__section-title !mt-0">
-              Медиа кейса ({items.length})
-            </h2>
-            <p className="peak-admin__section-description">
-              {formatTypography("Перетаскивайте за иконку слева для изменения порядка. Кликните по строке для настройки файла и WebP обложки.")}
-            </p>
-          </div>
+    <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
+      {error && (
+        <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl">
+          {formatTypography(error)}
+        </div>
+      )}
+      <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div>
+          <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+            <Images className="size-3.5 text-orange-600" />
+            <span>Медиатека кейса</span>
+          </h3>
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            {formatTypography(`${items.length} файлов · Drag & Drop для изменения порядка`)}
+          </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="peak-admin__view-switcher">
-            <button
-              type="button"
-              onClick={() => setViewMode("list")}
-              className={viewMode === "list" ? "is-active" : ""}
-              title="Вид: Список (Компактный)"
-              aria-label="Режим отображения: список"
-            >
-              <List className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("grid")}
-              className={viewMode === "grid" ? "is-active" : ""}
-              title="Вид: WYSIWYG Сетка"
-              aria-label="Режим отображения: плитка"
-            >
-              <LayoutGrid className="size-4" />
-            </button>
-          </div>
-
-          {hasSavedGallery && (
-            <button
-              type="button"
-              className="peak-admin__button peak-admin__button--outline shrink-0 text-xs"
-              onClick={() => onChange("")}
-            >
-              <RefreshCw className="size-3.5" aria-hidden="true" />
-              {formatTypography("Загрузить из хранилища")}
-            </button>
-          )}
+        <div className="flex items-center gap-1 p-0.5 bg-slate-100 border border-slate-200 rounded-lg">
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            className={`p-1 rounded-md transition-colors ${
+              viewMode === "list" ? "bg-white text-slate-900 shadow-xs border border-slate-200" : "text-slate-500"
+            }`}
+          >
+            <List className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("grid")}
+            className={`p-1 rounded-md transition-colors ${
+              viewMode === "grid" ? "bg-white text-slate-900 shadow-xs border border-slate-200" : "text-slate-500"
+            }`}
+          >
+            <LayoutGrid className="size-3.5" />
+          </button>
         </div>
       </div>
 
       {loading ? (
-        <p className="peak-admin__protected">Загружаем текущие медиа…</p>
+        <div className="p-8 text-center text-xs text-slate-500">Загрузка медиатеки…</div>
       ) : (
-        <>
-          {error && (
-            <p role="alert" className="peak-admin__notice peak-admin__notice--error">
-              {formatTypography(error)}
-            </p>
-          )}
-
+        <div className="space-y-4">
           {items.length > 0 ? (
-            <DndContext id={`case-media-${slug}`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext
+              id={`case-gallery-${slug}`}
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
               <SortableContext
                 items={items.map((_, idx) => `media-item-${idx}`)}
                 strategy={viewMode === "grid" ? rectSortingStrategy : verticalListSortingStrategy}
               >
-                {viewMode === "grid" ? (
-                  <div className="peak-admin__media-grid">
-                    {items.map((item, index) => (
-                      <SortableMediaItem
-                        key={`media-item-${index}`}
-                        id={`media-item-${index}`}
-                        index={index}
-                        item={item}
-                        onDelete={() => commit(items.filter((_, idx) => idx !== index))}
-                        onOpenSettings={() => setExpandedIndex(index)}
-                        viewMode="grid"
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="peak-admin__media-list">
-                    {items.map((item, index) => (
-                      <SortableMediaItem
-                        key={`media-item-${index}`}
-                        id={`media-item-${index}`}
-                        index={index}
-                        item={item}
-                        onDelete={() => commit(items.filter((_, idx) => idx !== index))}
-                        onOpenSettings={() => setExpandedIndex(index)}
-                        viewMode="list"
-                      />
-                    ))}
-                  </div>
-                )}
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-2 sm:grid-cols-3 gap-3"
+                      : "border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white"
+                  }
+                >
+                  {items.map((item, index) => (
+                    <SortableMediaItem
+                      key={`media-item-${index}`}
+                      id={`media-item-${index}`}
+                      index={index}
+                      item={item}
+                      onDelete={() => deleteItem(index)}
+                      onOpenSettings={() => setExpandedIndex(index)}
+                      viewMode={viewMode}
+                    />
+                  ))}
+                </div>
               </SortableContext>
             </DndContext>
           ) : (
-            <p className="peak-admin__protected">В галерее пока нет файлов.</p>
+            <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 border border-dashed border-slate-200 rounded-xl">
+              В галерее пока нет файлов. Загрузите фото или видео ниже.
+            </div>
           )}
 
-          <div className="peak-admin__case-media-add">
-            <h3 className="peak-admin__settings-title flex items-center gap-2">
-              <ImageUp className="size-4" style={{ color: "var(--peak-coral)" }} />
-              {formatTypography("Добавить медиафайл в галерею")}
-            </h3>
-            <p className="peak-admin__section-description mb-3">
-              {formatTypography("Выберите фото или видео. После загрузки файл автоматически появится в списке.")}
-            </p>
+          {/* Дропзона загрузки новых файлов */}
+          <div className="pt-2">
             <MediaUploader
-              caseSlug={slug}
-              folder="cases"
-              multiple={true}
               value=""
-              onChange={(url, type) => {
-                if (!url) return;
-                commit([...items, { src: url, type, name: assetName(url, items.length) }]);
+              multiple
+              folder="cases"
+              caseSlug={slug}
+              onBatchChange={(newBatch) => {
+                const mapped: CaseGalleryItem[] = newBatch.map((f, i) => ({
+                  src: f.url,
+                  type: f.mediaType,
+                  name: f.name || assetName(f.url, items.length + i),
+                }));
+                commit([...items, ...mapped]);
               }}
-              onBatchChange={(batch) => {
-                if (batch.length === 0) return;
-                const nextItems = [
-                  ...items,
-                  ...batch.map((b, idx) => ({
-                    src: b.url,
-                    type: b.mediaType,
-                    name: b.name || assetName(b.url, items.length + idx),
-                  })),
-                ];
-                commit(nextItems);
+              onChange={(url, mediaType) => {
+                if (!url) return;
+                commit([...items, { src: url, type: mediaType, name: assetName(url, items.length) }]);
               }}
             />
           </div>
-        </>
+        </div>
       )}
 
+      {/* Модальное окно настройки медиафайла / постера — Light */}
       <AnimatePresence>
         {selectedItem && expandedIndex !== null && (
-          <motion.div className="peak-admin__media-drawer-backdrop" role="presentation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.15 }} onMouseDown={(event) => { if (event.currentTarget === event.target) setExpandedIndex(null); }}>
-            <motion.aside
+          <div className="peak-admin__modal-backdrop" role="presentation">
+            <motion.div
               role="dialog"
               aria-modal="true"
-              aria-labelledby="media-settings-title"
-              className="peak-admin__media-drawer"
-              initial={reduceMotion ? false : { x: "100%" }}
-              animate={{ x: 0 }}
-              exit={reduceMotion ? { opacity: 0 } : { x: "100%" }}
-              transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="peak-admin__modal-card !max-w-lg bg-white"
+              initial={{ opacity: 0, scale: 0.96, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: -10 }}
+              transition={{ duration: 0.15 }}
             >
-              <div className="peak-admin__media-drawer-head">
-                <div><p>Медиа #{expandedIndex + 1}</p><h3 id="media-settings-title">{selectedItem.name || assetName(selectedItem.src, expandedIndex)}</h3></div>
-                <button type="button" onClick={() => setExpandedIndex(null)} aria-label="Закрыть настройки"><X className="size-5" /></button>
+              <div className="peak-admin__modal-header">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-900">
+                    Настройка медиа #{expandedIndex + 1}
+                  </h3>
+                  <p className="text-xs text-slate-500 truncate max-w-xs mt-0.5">
+                    {selectedItem.name || assetName(selectedItem.src, expandedIndex)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpandedIndex(null)}
+                  className="peak-admin__icon-button"
+                >
+                  <X className="size-4" />
+                </button>
               </div>
-              <div className="peak-admin__media-drawer-preview">
-                {selectedItem.type === "video" ? <video src={selectedItem.src} poster={selectedItem.posterSrc} muted controls playsInline /> : <img src={selectedItem.src} alt="" />}
+
+              <div className="peak-admin__modal-body space-y-4">
+                {/* Превью файла */}
+                <div className="rounded-xl overflow-hidden bg-slate-100 border border-slate-200 max-h-[220px] flex items-center justify-center">
+                  {selectedItem.type === "video" ? (
+                    <video
+                      src={selectedItem.src}
+                      poster={selectedItem.posterSrc}
+                      controls
+                      playsInline
+                      className="size-full max-h-[220px] object-contain"
+                    />
+                  ) : (
+                    <img src={selectedItem.src} alt="" className="size-full max-h-[220px] object-contain" />
+                  )}
+                </div>
+
+                {/* Если видео — загрузчик постера */}
+                {selectedItem.type === "video" && (
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <label className="block text-xs font-semibold text-slate-800">
+                      WebP Обложка (Постер) для видео
+                    </label>
+                    <p className="text-[11px] text-slate-500">
+                      Отображается до запуска видео для мгновенной загрузки страницы.
+                    </p>
+                    <MediaUploader
+                      value={selectedItem.posterSrc || ""}
+                      accept="image/*"
+                      folder="cases"
+                      caseSlug={slug}
+                      onChange={(posterUrl) => updateItemPoster(expandedIndex, posterUrl)}
+                    />
+                  </div>
+                )}
               </div>
-              <div className="peak-admin__media-drawer-body">
-                <section><h4>Основной файл</h4><p>{formatTypography("Замените файл, сохранив его позицию в галерее.")}</p><MediaUploader caseSlug={slug} folder="cases" mediaType={selectedItem.type} value={selectedItem.src} onChange={(url, type) => updateItem(expandedIndex, url, type)} /></section>
-                {selectedItem.type === "video" && <section><div className="peak-admin__media-drawer-section-head"><div><h4>WebP-обложка</h4><p>{formatTypography("Постер показывается до запуска видео.")}</p></div>{selectedItem.posterSrc && <button type="button" onClick={() => updateItemPoster(expandedIndex, "")}>Удалить</button>}</div><MediaUploader accept="image/webp,image/*" caseSlug={slug} folder="cases" mediaType="image" value={selectedItem.posterSrc || ""} onChange={(posterUrl) => updateItemPoster(expandedIndex, posterUrl)} /></section>}
+
+              <div className="peak-admin__modal-footer">
+                <button
+                  type="button"
+                  onClick={() => setExpandedIndex(null)}
+                  className="peak-admin__button peak-admin__button--primary"
+                >
+                  Готово
+                </button>
               </div>
-            </motion.aside>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </section>

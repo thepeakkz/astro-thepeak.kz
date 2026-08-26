@@ -5,30 +5,16 @@ import { Button01 } from "@/components/ui/nextjsshop-button";
 import StatsBlock from "./StatsBlock";
 import { formatTypography } from "@/utils/typography";
 
+const R2_PUBLIC_URL = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || "https://pub-e0bd6bf9a910428a8ea004775af2985b.r2.dev";
+
 export type HomeHeroContent = {
   title?: string;
   mobileTitle?: string;
   description?: string;
   buttonLabel?: string;
   buttonUrl?: string;
-  desktopVideoUrl?: string;
-  mobileVideoUrl?: string;
   posterUrl?: string;
 };
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-function videoContentType(url: string | undefined, fallback: "video/mp4" | "video/webm") {
-  if (/\.mp4(?:\?|$)/i.test(url || "")) return "video/mp4";
-  if (/\.webm(?:\?|$)/i.test(url || "")) return "video/webm";
-  return fallback;
-}
-
-function optimizedHeroVideo(url: string | undefined, viewport: "mobile" | "desktop") {
-  const isLegacyDefault = !url || /(?:^|\/)bg(?:-mobile-fast)?\.(?:mp4|webm)(?:\?|$)/i.test(url);
-  if (!isLegacyDefault) return url;
-  return viewport === "mobile" ? "/hero-mobile-v2.mp4" : "/hero-desktop-v2.webm";
-}
-/* eslint-enable @typescript-eslint/no-unused-vars */
 
 export default function HeroDuplicate({ content = {} }: { content?: HomeHeroContent }) {
   const logoIds = [60, 2, 11, 12, 20, 21, 24, 38, 39, 40, 41, 44];
@@ -44,7 +30,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
 
   return (
     <section className="col-span-12 relative w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] overflow-hidden h-screen md:h-auto md:min-h-screen flex flex-col justify-between pt-[60px] md:pt-[clamp(4rem,8vw,6rem)] pb-0 border-b border-brand-gray/10 select-none" id="hero-alternative">
-      {/* 1. Background Static Poster Image (Instant LCP) */}
+      {/* Background Media: Static images for Desktop & Mobile */}
       <div className="hero-video-shell absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <picture>
           <source srcSet={mobilePoster} media="(max-width: 767px)" />
@@ -149,7 +135,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                     {trackLogos.map((id, index) => (
                       <div key={`track1-${index}`} className="flex-shrink-0 h-[56px] sm:h-[58px] flex items-center justify-center">
                         <img
-                          src={`https://media.thepeak.kz/logos/clot-${id}.webp`}
+                          src={`${R2_PUBLIC_URL}/logos/clot-${id}.webp`}
                           alt="Partner Logo"
                           width="120"
                           height="58"
@@ -177,7 +163,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                     {trackLogos.map((id, index) => (
                       <div key={`track2-${index}`} className="flex-shrink-0 h-[56px] sm:h-[58px] flex items-center justify-center">
                         <img
-                          src={`https://media.thepeak.kz/logos/clot-${id}.webp`}
+                          src={`${R2_PUBLIC_URL}/logos/clot-${id}.webp`}
                           alt="Partner Logo"
                           width="120"
                           height="58"

@@ -75,8 +75,8 @@ video:-ms-fullscreen {
   --color-brand-gray: #434343;
   --color-brand-bg: #E8EFF2;
   --color-brand-light-gray: #EAF1F4;
-  --font-headline: var(--font-inter-display), sans-serif;
-  --font-sans: var(--font-inter-display), sans-serif;
+  --font-headline: var(--font-inter-display), "Inter Tight", sans-serif;
+  --font-sans: var(--font-inter-display), "Inter Tight", sans-serif;
 }
 
 :root {
@@ -133,7 +133,7 @@ main.swiss-grid {
   background-image: url("/hero-mobile-poster-v2.webp");
   background-position: center;
   background-size: cover;
-  background-color: #FD4B32;
+  background-color: #dee4e9;
 }
 
 .hero-bottom-backdrop {
@@ -152,9 +152,7 @@ main.swiss-grid {
   }
 }
 
-/* Smooth Scrolling utilities */
 html {
-  scroll-behavior: smooth;
   height: 100%;
 }
 
@@ -256,7 +254,7 @@ button,
 input,
 select,
 textarea {
-  font-family: var(--font-inter-display), sans-serif;
+  font-family: var(--font-inter-display), "Inter Tight", sans-serif;
   font-style: normal;
   font-weight: 500;
   font-size: clamp(1rem, 1vw, 1.1rem);
@@ -266,7 +264,7 @@ textarea {
 
 p,
 .description-text {
-  font-family: var(--font-inter-display), sans-serif;
+  font-family: var(--font-inter-display), "Inter Tight", sans-serif;
   font-style: normal;
   font-weight: 500;
   font-size: clamp(1rem, 1vw, 1.1rem);

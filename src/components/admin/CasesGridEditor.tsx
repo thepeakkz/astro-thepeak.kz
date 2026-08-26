@@ -43,7 +43,7 @@ function CaseThumbnail({ item }: { item: CaseItem }) {
     return <video src={video} className="size-full object-cover" muted playsInline preload="metadata" />;
   }
   return (
-    <div className="peak-admin__media-placeholder size-full">
+    <div className="flex items-center justify-center size-full bg-slate-100 text-[10px] text-slate-500">
       Нет медиа
     </div>
   );
@@ -65,78 +65,92 @@ function SortableCaseRow({
   total: number;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.href });
-  const project = (
-    <>
-      <span className="peak-admin__case-table-thumb">
-        <CaseThumbnail item={item} />
-      </span>
-      <span className="peak-admin__case-table-name-wrap">
-        <span className="peak-admin__case-table-name">{formatTypography(item.name)}</span>
-        {isHidden && <span className="peak-admin__case-table-state">Скрыт</span>}
-      </span>
-    </>
-  );
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 1,
+  };
 
   return (
     <article
       ref={setNodeRef}
-      role="row"
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`peak-admin__case-table-row ${isHidden ? "peak-admin__case-table-row--hidden" : ""} ${isDragging ? "peak-admin__case-table-row--dragging" : ""}`}
+      style={style}
+      className={`flex items-center justify-between p-3 bg-white hover:bg-slate-50 transition-colors ${
+        isHidden ? "opacity-50" : ""
+      } ${isDragging ? "opacity-60 shadow-lg bg-orange-50/50" : ""}`}
     >
-      <div role="cell" className="peak-admin__case-table-index">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
         <button
           type="button"
-          className="peak-admin__case-drag-handle"
+          className="cursor-grab active:cursor-grabbing p-1 text-slate-400 hover:text-slate-700"
           aria-label={`Изменить позицию кейса ${item.name}`}
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="size-4" aria-hidden="true" />
-          <span>{index + 1}</span>
+          <GripVertical className="size-3.5" />
         </button>
+        <span className="text-[10px] font-mono text-slate-400 w-4 text-center">{index + 1}</span>
+
+        <div className="size-9 rounded-lg bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
+          <CaseThumbnail item={item} />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            {item.adminEditUrl ? (
+              <Link
+                href={item.adminEditUrl}
+                className="text-xs font-semibold text-slate-800 hover:text-slate-900 truncate block"
+                title="Редактировать кейс"
+              >
+                {formatTypography(item.name)}
+              </Link>
+            ) : (
+              <span className="text-xs font-semibold text-slate-800 truncate block">
+                {formatTypography(item.name)}
+              </span>
+            )}
+            {isHidden && (
+              <span className="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 text-slate-600 border border-slate-200">
+                Скрыт
+              </span>
+            )}
+          </div>
+          <span className="text-[11px] text-slate-500 truncate block">{formatTypography(item.type)}</span>
+        </div>
       </div>
 
-      {item.adminEditUrl ? (
-        <Link href={item.adminEditUrl} role="cell" className="peak-admin__case-table-project" title="Редактировать кейс">
-          {project}
-        </Link>
-      ) : (
-        <div role="cell" className="peak-admin__case-table-project">{project}</div>
-      )}
-
-      <div role="cell" className="peak-admin__case-table-category" title={item.type}>
-        {formatTypography(item.type)}
-      </div>
-      <div role="cell" className="peak-admin__case-table-address" title={item.href}>{item.href}</div>
-
-      <div role="cell" className="peak-admin__case-table-actions">
+      <div className="flex items-center gap-1.5 shrink-0">
         <button
           type="button"
-          className="peak-admin__table-action"
+          className="peak-admin__icon-button !size-7"
           onClick={onToggleHidden}
-          aria-label={isHidden ? "Показать кейс на сайте" : "Скрыть кейс на сайте"}
-          title={isHidden ? "Показать на сайте" : "Скрыть на сайте"}
+          aria-label={isHidden ? "Показать кейс" : "Скрыть кейс"}
+          title={isHidden ? "Показать кейс" : "Скрыть кейс"}
         >
-          {isHidden ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
+          {isHidden ? (
+            <EyeOff className="size-3.5 text-slate-400" />
+          ) : (
+            <Eye className="size-3.5 text-emerald-600" />
+          )}
         </button>
         <button
           type="button"
-          className="peak-admin__table-action peak-admin__case-arrow"
+          className="peak-admin__icon-button !size-7"
           onClick={() => onMove(-1)}
           disabled={index === 0}
-          aria-label="Переместить кейс выше"
+          aria-label="Переместить выше"
         >
-          <ArrowUp className="size-4" aria-hidden="true" />
+          <ArrowUp className="size-3" />
         </button>
         <button
           type="button"
-          className="peak-admin__table-action peak-admin__case-arrow"
+          className="peak-admin__icon-button !size-7"
           onClick={() => onMove(1)}
           disabled={index === total - 1}
-          aria-label="Переместить кейс ниже"
+          aria-label="Переместить ниже"
         >
-          <ArrowDown className="size-4" aria-hidden="true" />
+          <ArrowDown className="size-3" />
         </button>
       </div>
     </article>
@@ -248,60 +262,58 @@ export default function CasesGridEditor({
   const visibleCount = orderedHrefs.filter((href) => !hiddenSet.has(href)).length;
 
   return (
-    <section className="peak-admin__case-media" aria-labelledby="cases-grid-title">
-      <div className="peak-admin__case-media-heading">
+    <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h2 id="cases-grid-title" className="peak-admin__section-title !mt-0">Порядок и видимость кейсов</h2>
-          <p className="peak-admin__section-description">
-            {formatTypography(`${visibleCount} из ${orderedHrefs.length} кейсов отображаются · Меняйте порядок перетаскиванием`)}
+          <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wider">
+            Порядок и видимость кейсов в каталоге
+          </h3>
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            {formatTypography(`${visibleCount} из ${orderedHrefs.length} кейсов отображаются на сайте`)}
           </p>
         </div>
         <button
           type="button"
-          className="peak-admin__button peak-admin__button--outline shrink-0 text-xs"
+          className="peak-admin__button peak-admin__button--outline !h-7 !text-xs !px-2.5"
           onClick={resetAll}
         >
-          <RefreshCw className="size-3.5" aria-hidden="true" />
-          Сбросить порядок
+          <RefreshCw className="size-3" />
+          <span>Сбросить порядок</span>
         </button>
       </div>
 
       {loading ? (
-        <p className="peak-admin__protected">Загружаем список кейсов…</p>
+        <div className="p-8 text-center text-xs text-slate-500">Загрузка кейсов…</div>
       ) : (
-        <>
-          {error && <p role="alert" className="peak-admin__notice peak-admin__notice--error">{formatTypography(error)}</p>}
-          <div className="peak-admin__case-table" role="table" aria-label="Порядок и видимость кейсов">
-            <div className="peak-admin__case-table-head" role="row">
-              <div role="columnheader">#</div>
-              <div role="columnheader">Проект</div>
-              <div role="columnheader">Категория</div>
-              <div role="columnheader">Адрес</div>
-              <div role="columnheader" className="text-right">Действия</div>
+        <div className="space-y-4">
+          {error && (
+            <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl">
+              {formatTypography(error)}
             </div>
-            <DndContext id={`cases-grid-${block.id}`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={orderedHrefs} strategy={verticalListSortingStrategy}>
-                <div role="rowgroup">
-                  {orderedHrefs.map((href, index) => {
-                    const item = casesByHref.get(href);
-                    if (!item) return null;
-                    return (
-                      <SortableCaseRow
-                        key={href}
-                        index={index}
-                        isHidden={hiddenSet.has(href)}
-                        item={item}
-                        onMove={(direction) => moveItem(index, direction)}
-                        onToggleHidden={() => toggleHidden(href)}
-                        total={orderedHrefs.length}
-                      />
-                    );
-                  })}
-                </div>
-              </SortableContext>
-            </DndContext>
-          </div>
-        </>
+          )}
+
+          <DndContext id={`cases-grid-${block.id}`} sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={orderedHrefs} strategy={verticalListSortingStrategy}>
+              <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white shadow-xs">
+                {orderedHrefs.map((href, index) => {
+                  const item = casesByHref.get(href);
+                  if (!item) return null;
+                  return (
+                    <SortableCaseRow
+                      key={href}
+                      index={index}
+                      isHidden={hiddenSet.has(href)}
+                      item={item}
+                      onMove={(direction) => moveItem(index, direction)}
+                      onToggleHidden={() => toggleHidden(href)}
+                      total={orderedHrefs.length}
+                    />
+                  );
+                })}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </div>
       )}
     </section>
   );
