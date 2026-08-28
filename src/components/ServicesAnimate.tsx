@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { useAnimate } from "framer-motion";
+import { motion, useAnimate, useScroll, useTransform } from "framer-motion";
 import { MorphingText } from "@/components/ui/liquid-text";
 import { formatTypography } from "@/utils/typography";
 import PhoneInput from "@/components/ui/PhoneInput";
@@ -392,6 +392,74 @@ const FeaturedServiceContent: React.FC<FeaturedServiceContentProps> = ({
   );
 };
 
+interface FeaturedServiceCardProps {
+  service: FeaturedServiceItem;
+  index: number;
+  total: number;
+  onRequest: () => void;
+  onCases?: () => void;
+}
+
+const FeaturedServiceCard: React.FC<FeaturedServiceCardProps> = ({
+  service,
+  index,
+  total,
+  onRequest,
+  onCases,
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"],
+  });
+
+  const isLast = index === total - 1;
+  const scale = useTransform(scrollYProgress, [0, 1], [1, isLast ? 1 : 0.9]);
+  const imageFirst = index % 2 === 0;
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative min-h-[clamp(38rem,100svh,52rem)] md:min-h-[clamp(32rem,100svh,56rem)]"
+    >
+      <motion.article
+        data-featured-service={service.title}
+        style={{
+          scale,
+          zIndex: index + 10,
+          transformOrigin: "center 20%",
+        }}
+        className="group sticky top-0 grid min-h-[clamp(38rem,100svh,52rem)] grid-cols-1 overflow-hidden bg-[#080808] [transform:translateZ(0)] md:min-h-[clamp(32rem,100svh,56rem)] md:grid-cols-12 w-full"
+      >
+        <div
+          className={`relative order-2 min-h-[22rem] overflow-hidden md:col-span-7 md:min-h-0 ${
+            imageFirst ? "md:order-1" : "md:order-2"
+          }`}
+        >
+          <Image
+            src={service.image}
+            alt={service.imageAlt}
+            fill
+            sizes="(max-width: 767px) 100vw, 58vw"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.025]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+          <span className="absolute right-5 top-5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80 md:left-7 md:right-auto md:top-7">
+            {String(index + 1).padStart(2, "0")} / 03
+          </span>
+        </div>
+
+        <FeaturedServiceContent
+          service={service}
+          imageFirst={imageFirst}
+          onRequest={onRequest}
+          onCases={onCases}
+        />
+      </motion.article>
+    </div>
+  );
+};
+
 export default function ServicesAnimate() {
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
   const [isGamificationCasesOpen, setIsGamificationCasesOpen] = useState(false);
@@ -400,7 +468,7 @@ export default function ServicesAnimate() {
     contact: "",
     contactMethod: "WhatsApp",
     message: "",
-          privacyConsent: true,
+    privacyConsent: true,
   });
   const [modalStatus, setModalStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
@@ -520,47 +588,20 @@ export default function ServicesAnimate() {
 
       <div className="swiss-grid mt-[clamp(4.5rem,9vw,9rem)]">
         <div className="col-span-12">
-          {featuredServicesData.map((service, index) => {
-            const imageFirst = index % 2 === 0;
-
-            return (
-              <article
-                key={service.title}
-                data-featured-service={service.title}
-                style={{ zIndex: index + 10 }}
-                className="group sticky top-0 grid min-h-[clamp(38rem,100svh,52rem)] grid-cols-1 overflow-hidden bg-[#080808] [transform:translateZ(0)] md:min-h-[clamp(32rem,100svh,56rem)] md:grid-cols-12"
-              >
-                <div
-                  className={`relative order-2 min-h-[22rem] overflow-hidden md:col-span-7 md:min-h-0 ${
-                    imageFirst ? "md:order-1" : "md:order-2"
-                  }`}
-                >
-                  <Image
-                    src={service.image}
-                    alt={service.imageAlt}
-                    fill
-                    sizes="(max-width: 767px) 100vw, 58vw"
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.025]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-                  <span className="absolute right-5 top-5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80 md:left-7 md:right-auto md:top-7">
-                    {String(index + 1).padStart(2, "0")} / 03
-                  </span>
-                </div>
-
-                <FeaturedServiceContent
-                  service={service}
-                  imageFirst={imageFirst}
-                  onRequest={() => openServiceModal(service)}
-                  onCases={
-                    GAMIFICATION_CASES_ENABLED && service.hasCases
-                      ? () => setIsGamificationCasesOpen(true)
-                      : undefined
-                  }
-                />
-              </article>
-            );
-          })}
+          {featuredServicesData.map((service, index) => (
+            <FeaturedServiceCard
+              key={service.title}
+              service={service}
+              index={index}
+              total={featuredServicesData.length}
+              onRequest={() => openServiceModal(service)}
+              onCases={
+                GAMIFICATION_CASES_ENABLED && service.hasCases
+                  ? () => setIsGamificationCasesOpen(true)
+                  : undefined
+              }
+            />
+          ))}
         </div>
       </div>
 
