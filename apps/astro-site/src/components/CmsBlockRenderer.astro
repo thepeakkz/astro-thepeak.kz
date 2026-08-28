@@ -35,17 +35,19 @@ const defaultBlocks: CmsRenderBlock[] = [
 
 const { blocks = defaultBlocks, caseItems } = Astro.props;
 
-function text(content: Record<string, unknown>, key: string) {
+function text(content: Record<string, unknown>, key: string): string | undefined {
   const value = content[key];
-  return typeof value === "string" ? formatTypography(value) : "";
+  return typeof value === "string" && value.trim().length > 0 ? formatTypography(value) : undefined;
 }
 
-function safeMediaUrl(value: string) {
+function safeMediaUrl(value?: string) {
+  if (!value) return "";
   if (value.startsWith("/") || value.startsWith("https://")) return value;
   return "";
 }
 
-function safeLink(value: string) {
+function safeLink(value?: string) {
+  if (!value) return "#";
   if (value.startsWith("/") || value.startsWith("#") || /^(https:|mailto:|tel:)/.test(value)) return value;
   return "#";
 }
@@ -58,14 +60,17 @@ function safeLink(value: string) {
         const backgroundUrl = safeMediaUrl(text(block.content, "backgroundUrl"));
         const btnLabel = text(block.content, "buttonLabel");
         const btnUrl = safeLink(text(block.content, "buttonUrl"));
+        const eyebrow = text(block.content, "eyebrow");
+        const title = text(block.content, "title") || "";
+        const description = text(block.content, "description");
         return (
           <section class="peak-cms peak-cms--hero">
             {backgroundUrl && <img src={backgroundUrl} alt="" class="peak-cms__hero-media" />}
             <div class="peak-cms__hero-overlay" />
             <div class="peak-cms__hero-content">
-              {text(block.content, "eyebrow") && <p class="peak-cms__eyebrow">{text(block.content, "eyebrow")}</p>}
-              <h1 class="peak-cms__display">{text(block.content, "title")}</h1>
-              {text(block.content, "description") && <p class="peak-cms__lead">{text(block.content, "description")}</p>}
+              {eyebrow && <p class="peak-cms__eyebrow">{eyebrow}</p>}
+              <h1 class="peak-cms__display">{title}</h1>
+              {description && <p class="peak-cms__lead">{description}</p>}
               {btnLabel && (
                 <div class="peak-cms__hero-action">
                   <a href={btnUrl} class="peak-cms__action peak-cms__action--inverse">
@@ -83,11 +88,13 @@ function safeLink(value: string) {
 
       case "text": {
         const centered = text(block.content, "align") === "center";
+        const heading = text(block.content, "heading");
+        const body = text(block.content, "body") || "";
         return (
           <section class="peak-cms peak-cms--text">
             <div class={`peak-cms__inner peak-cms__text-layout${centered ? " peak-cms__text-layout--centered" : ""}`}>
-              {text(block.content, "heading") && <h2 class="peak-cms__section-title">{text(block.content, "heading")}</h2>}
-              <p class="peak-cms__body">{text(block.content, "body")}</p>
+              {heading && <h2 class="peak-cms__section-title">{heading}</h2>}
+              <p class="peak-cms__body">{body}</p>
             </div>
           </section>
         );
@@ -97,6 +104,8 @@ function safeLink(value: string) {
         const url = safeMediaUrl(text(block.content, "mediaUrl"));
         if (!url) return null;
         const video = text(block.content, "mediaType") === "video" || /\.(mp4|mov|m4v|webm)(?:\?|$)/i.test(url);
+        const caption = text(block.content, "caption");
+        const alt = text(block.content, "alt") || "";
         return (
           <figure class="peak-cms peak-cms--media">
             <div class="peak-cms__inner">
@@ -104,10 +113,10 @@ function safeLink(value: string) {
                 {video ? (
                   <video src={url} controls playsinline preload="metadata" class="peak-cms__media" />
                 ) : (
-                  <img src={url} alt={text(block.content, "alt")} class="peak-cms__media" loading="lazy" decoding="async" />
+                  <img src={url} alt={alt} class="peak-cms__media" loading="lazy" decoding="async" />
                 )}
               </div>
-              {text(block.content, "caption") && <figcaption class="peak-cms__caption">{text(block.content, "caption")}</figcaption>}
+              {caption && <figcaption class="peak-cms__caption">{caption}</figcaption>}
             </div>
           </figure>
         );
@@ -116,12 +125,14 @@ function safeLink(value: string) {
       case "cta": {
         const ctaBtnLabel = text(block.content, "buttonLabel");
         const ctaBtnUrl = safeLink(text(block.content, "buttonUrl"));
+        const title = text(block.content, "title") || "";
+        const description = text(block.content, "description");
         return (
           <section class="peak-cms peak-cms--cta">
             <div class="peak-cms__inner">
-              <h2 class="peak-cms__cta-title">{text(block.content, "title")}</h2>
+              <h2 class="peak-cms__cta-title">{title}</h2>
               <div class="peak-cms__cta-footer">
-                {text(block.content, "description") && <p class="peak-cms__cta-description">{text(block.content, "description")}</p>}
+                {description && <p class="peak-cms__cta-description">{description}</p>}
                 {ctaBtnLabel && (
                   <a href={ctaBtnUrl} class="peak-cms__action peak-cms__action--inverse">
                     {ctaBtnLabel}
@@ -153,7 +164,7 @@ function safeLink(value: string) {
       case "home_stats":
         return (
           <div class="col-span-12 block w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] border-b border-brand-gray/10 md:hidden">
-            <StatsBlock client:visible />
+            <StatsBlock />
           </div>
         );
 
@@ -185,23 +196,29 @@ function safeLink(value: string) {
         );
       }
 
-      case "home_team":
+      case "home_team": {
+        const heading = text(block.content, "heading");
+        const description = text(block.content, "description");
         return (
           <Team
             client:visible
-            heading={text(block.content, "heading")}
-            description={text(block.content, "description")}
+            heading={heading}
+            description={description}
           />
         );
+      }
 
-      case "home_contact":
+      case "home_contact": {
+        const title = text(block.content, "title");
+        const description = text(block.content, "description");
         return (
           <ContactSection
             client:visible
-            title={text(block.content, "title")}
-            description={text(block.content, "description")}
+            title={title}
+            description={description}
           />
         );
+      }
 
       default:
         return null;

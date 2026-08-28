@@ -29,7 +29,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
   const desktopPoster = customPosterUrl || "/hero-desktop-poster-v2.webp";
 
   return (
-    <section className="col-span-12 relative w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] overflow-hidden h-screen md:h-auto md:min-h-screen flex flex-col justify-between pt-[60px] md:pt-[clamp(4rem,8vw,6rem)] pb-0 border-b border-brand-gray/10 select-none" id="hero-alternative">
+    <section className="col-span-12 relative w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] overflow-hidden h-screen md:h-auto md:min-h-screen flex flex-col justify-between pt-[70px] md:pt-[clamp(5.5rem,7vw,7.5rem)] pb-0 border-b border-brand-gray/10 select-none" id="hero-alternative">
       {/* Background Media: Static images for Desktop & Mobile */}
       <div className="hero-video-shell absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <picture>
@@ -47,7 +47,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
       </div>
 
       {/* Top Content Row */}
-      <div className="swiss-grid w-full relative flex-grow flex items-start md:items-center">
+      <div className="swiss-grid w-full relative flex-grow flex items-start pt-2 md:pt-4">
         <div className="col-span-12 text-left">
           {/* Разгоняем clamp:
       - На мобилках стартует с 2.5rem

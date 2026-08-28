@@ -18,10 +18,6 @@ import PrivacyConsentCheckbox from "@/components/PrivacyConsentCheckbox";
 import { Button01 } from "@/components/ui/nextjsshop-button";
 import { MorphingText } from "@/components/ui/liquid-text";
 
-// Dynamic charts
-const RingChart = dynamic(() => import("@/components/RingChart"), { ssr: false });
-const SplineChart = dynamic(() => import("@/components/SplineChart"), { ssr: false });
-const SphereChart = dynamic(() => import("@/components/SphereChart"), { ssr: false });
 
 const GRAIN_STYLE: React.CSSProperties = {
   backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
@@ -416,10 +412,7 @@ export default function WebDirectionClient() {
         >
           <div className="swiss-grid w-full items-stretch gap-y-12">
             {/* Stat 1 */}
-            <div className="col-span-12 md:col-span-4 flex flex-col md:flex-row items-center gap-6 border-b md:border-b-0 pb-8 md:pb-0">
-              <div className="w-24 h-24 shrink-0 relative">
-                {inView && <RingChart />}
-              </div>
+            <div className="col-span-12 md:col-span-4 flex flex-col items-start gap-3 border-b md:border-b-0 pb-8 md:pb-0">
               <div className="flex flex-col text-left justify-center">
                 <span className="text-[#FD4B32] font-headline font-bold text-xl tracking-wider mb-1">
                   {formatTypography("Клиенты рекомендуют")}
@@ -433,10 +426,7 @@ export default function WebDirectionClient() {
             </div>
 
             {/* Stat 2 */}
-            <div className="col-span-12 md:col-span-4 flex flex-col md:flex-row items-center gap-6 border-b md:border-b-0 pb-8 md:pb-0 md:border-l md:border-r border-white/10 md:px-6">
-              <div className="w-24 h-16 shrink-0 relative">
-                {inView && <SplineChart />}
-              </div>
+            <div className="col-span-12 md:col-span-4 flex flex-col items-start gap-3 border-b md:border-b-0 pb-8 md:pb-0 md:border-l md:border-r border-white/10 md:px-6">
               <div className="flex flex-col text-left justify-center">
                 <span className="text-[#FD4B32] font-headline font-bold text-xl tracking-wider mb-1">
                   {formatTypography("8+ лет")}
@@ -448,10 +438,7 @@ export default function WebDirectionClient() {
             </div>
 
             {/* Stat 3 */}
-            <div className="col-span-12 md:col-span-4 flex flex-col md:flex-row items-center gap-6">
-              <div className="w-24 h-24 shrink-0 relative">
-                {inView && <SphereChart />}
-              </div>
+            <div className="col-span-12 md:col-span-4 flex flex-col items-start gap-3">
               <div className="flex flex-col text-left justify-center">
                 <span className="text-[#FD4B32] font-headline font-bold text-xl tracking-wider mb-1">
                   {formatTypography("Более 100 проектов")}

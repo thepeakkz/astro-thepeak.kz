@@ -20,22 +20,24 @@ import { parseSelectedHrefs } from "@/utils/cms";
 import { formatTypography } from "@/utils/typography";
 import "./peak-cms-theme.css";
 
-function text(content: Record<string, unknown>, key: string) {
+function text(content: Record<string, unknown>, key: string): string | undefined {
   const value = content[key];
-  return typeof value === "string" ? formatTypography(value) : "";
+  return typeof value === "string" && value.trim().length > 0 ? formatTypography(value) : undefined;
 }
 
-function safeMediaUrl(value: string) {
+function safeMediaUrl(value?: string) {
+  if (!value) return "";
   if (value.startsWith("/") || value.startsWith("https://")) return value;
   return "";
 }
 
-function safeLink(value: string) {
+function safeLink(value?: string) {
+  if (!value) return "#";
   if (value.startsWith("/") || value.startsWith("#") || /^(https:|mailto:|tel:)/.test(value)) return value;
   return "#";
 }
 
-function ActionLink({ href, label, inverse = false }: { href: string; label: string; inverse?: boolean }) {
+function ActionLink({ href, label, inverse = false }: { href?: string; label?: string; inverse?: boolean }) {
   if (!label) return null;
   const safeHref = safeLink(href);
   const className = `peak-cms__action${inverse ? " peak-cms__action--inverse" : ""}`;
