@@ -1,5 +1,6 @@
 ---
-import CmsPageIsland from "@astro/components/CmsPageIsland";
+import Navigation from "@/components/Navigation";
+import CmsBlockRenderer from "@astro/components/CmsBlockRenderer.astro";
 import BaseLayout from "@astro/layouts/BaseLayout.astro";
 import { getPublishedPageBySlug } from "@astro/server/public-data";
 
@@ -14,5 +15,6 @@ const seo = {
 ---
 
 <BaseLayout seo={seo}>
-  <CmsPageIsland client:load blocks={data.blocks} />
+  <Navigation client:idle />
+  <CmsBlockRenderer blocks={data.blocks} />
 </BaseLayout>

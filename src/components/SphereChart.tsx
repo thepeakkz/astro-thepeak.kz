@@ -25,7 +25,7 @@ export default function SphereChart() {
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
@@ -167,8 +167,8 @@ export default function SphereChart() {
     window.addEventListener("mousemove", handleMouseMove);
 
     // Anim configuration
-    const duration = 3600;
-    const introDuration = 1800;
+    const duration = 2400;
+    const introDuration = 1400;
     let startTime: number | null = null;
     let animationFrameId: number;
 
@@ -191,20 +191,22 @@ export default function SphereChart() {
 
       // Fibonacci sphere nodes entrance animation
       const progress = Math.min(elapsed / duration, 1);
-      const timelineProgress = easeOutCubic(progress);
-      const activeLimit = timelineProgress * count;
+      if (progress <= 1) {
+        const timelineProgress = easeOutCubic(progress);
+        const activeLimit = timelineProgress * count;
 
-      for (let i = 0; i < count; i++) {
-        const nodeMesh = nodes[i];
-        if (i < activeLimit) {
-          nodeMesh.material = activeMaterial;
-          const age = activeLimit - i;
-          const scaleFactor = Math.min(Math.max(age * 1.5, 0), 1);
-          const springScale = 1.0 + Math.sin(scaleFactor * Math.PI) * 0.45;
-          nodeMesh.scale.set(springScale, springScale, springScale);
-        } else {
-          nodeMesh.material = trackMaterial;
-          nodeMesh.scale.set(1.0, 1.0, 1.0);
+        for (let i = 0; i < count; i++) {
+          const nodeMesh = nodes[i];
+          if (i < activeLimit) {
+            nodeMesh.material = activeMaterial;
+            const age = activeLimit - i;
+            const scaleFactor = Math.min(Math.max(age * 1.5, 0), 1);
+            const springScale = 1.0 + Math.sin(scaleFactor * Math.PI) * 0.45;
+            nodeMesh.scale.set(springScale, springScale, springScale);
+          } else {
+            nodeMesh.material = trackMaterial;
+            nodeMesh.scale.set(1.0, 1.0, 1.0);
+          }
         }
       }
 

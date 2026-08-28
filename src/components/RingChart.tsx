@@ -25,7 +25,7 @@ export default function RingChart() {
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
@@ -70,18 +70,22 @@ export default function RingChart() {
 
     activeMaterial.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = { value: 0 };
+      shader.uniforms.uProgress = { value: 0 };
       activeMaterial.userData.shader = shader;
       shader.vertexShader = "varying vec3 vLocalPosition;\n" + shader.vertexShader;
       shader.vertexShader = shader.vertexShader.replace(
         "#include <begin_vertex>",
         "#include <begin_vertex>\nvLocalPosition = vec3(position);"
       );
-      shader.fragmentShader = "varying vec3 vLocalPosition;\nuniform float uTime;\nvec3 vDynamicColor;\n" + shader.fragmentShader;
+      shader.fragmentShader = "varying vec3 vLocalPosition;\nuniform float uTime;\nuniform float uProgress;\nvec3 vDynamicColor;\n" + shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader.replace(
         "#include <color_fragment>",
         `
         #include <color_fragment>
         float angle = atan(vLocalPosition.y, vLocalPosition.x);
+        if (angle < 0.0) angle += 6.28318530718;
+        if (angle > uProgress * 6.28318530718 * 0.83 + 0.001) discard;
+
         float wave1 = sin(angle * 2.5 + uTime * 1.5) * 0.5 + 0.5;
         float wave2 = cos(angle * 4.0 - uTime * 2.0) * 0.5 + 0.5;
         float blend = clamp(wave1 * 0.6 + wave2 * 0.4, 0.0, 1.0);
@@ -150,8 +154,9 @@ export default function RingChart() {
     trackMesh.position.z = -0.05;
     mainGroup.add(trackMesh);
 
-    // Active progress ring mesh
-    const activeMesh = new THREE.Mesh(createRingGeometry(0.001), activeMaterial);
+    // Active progress ring mesh (created once, revealed via shader progress)
+    const activeGeometry = createRingGeometry(0.83);
+    const activeMesh = new THREE.Mesh(activeGeometry, activeMaterial);
     mainGroup.add(activeMesh);
 
     // Glass cylinder background prism
@@ -174,9 +179,8 @@ export default function RingChart() {
     window.addEventListener("mousemove", handleMouseMove);
 
     // Anim configuration
-    const targetPercent = 83;
-    const duration = 3600;
-    const introDuration = 1800;
+    const duration = 2400;
+    const introDuration = 1400;
     let startTime: number | null = null;
     let animationFrameId: number;
 
@@ -197,13 +201,9 @@ export default function RingChart() {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
 
-      // Ring extrusion growth
+      // Ring shader progress
       const progress = Math.min(elapsed / duration, 1);
-      const currentPercent = easeOutCubic(progress) * targetPercent;
-      if (progress <= 1) {
-        activeMesh.geometry.dispose();
-        activeMesh.geometry = createRingGeometry(currentPercent / 100);
-      }
+      const currentProgress = easeOutCubic(progress);
 
       // Entrance scaling
       const introProgress = Math.min(elapsed / introDuration, 1);
@@ -211,9 +211,10 @@ export default function RingChart() {
       mainGroup.scale.set(introScale, introScale, introScale);
       mainGroup.rotation.z = (1.0 - easeOutCubic(introProgress)) * -0.6;
 
-      // Update shader uniform time
+      // Update shader uniforms
       if (activeMaterial.userData.shader) {
         activeMaterial.userData.shader.uniforms.uTime.value = timestamp * 0.001;
+        activeMaterial.userData.shader.uniforms.uProgress.value = currentProgress;
       }
 
       // Mouse rotation positioning

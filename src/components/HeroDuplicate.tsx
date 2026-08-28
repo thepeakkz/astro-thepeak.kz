@@ -36,7 +36,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
           <source srcSet={mobilePoster} media="(max-width: 767px)" />
           <source srcSet={desktopPoster} media="(min-width: 768px)" />
           <img
-            src={desktopPoster}
+            src={mobilePoster}
             alt=""
             loading="eager"
             decoding="async"
@@ -140,7 +140,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                           width="120"
                           height="58"
                           className="h-full w-auto object-contain hover:opacity-80 transition-opacity duration-300 pointer-events-none"
-                          loading="eager"
+                          loading="lazy"
                           decoding="async"
                           onError={(event) => {
                             const fallback = `/logo/clot-${id}.webp`;
@@ -168,7 +168,7 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
                           width="120"
                           height="58"
                           className="h-full w-auto object-contain hover:opacity-80 transition-opacity duration-300 pointer-events-none"
-                          loading="eager"
+                          loading="lazy"
                           decoding="async"
                           onError={(event) => {
                             const fallback = `/logo/clot-${id}.webp`;

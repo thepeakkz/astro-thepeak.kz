@@ -1,0 +1,210 @@
+---
+import HeroDuplicate from "@/components/HeroDuplicate";
+import StatsBlock from "@/components/StatsBlock";
+import ClientLogosBlock from "@/components/ClientLogosBlock";
+import ServicesAnimate from "@/components/ServicesAnimate";
+import WorkStages from "@/components/WorkStages";
+import CasesMasonrySection from "@/components/CasesMasonrySection";
+import Team from "@/components/Team";
+import ContactSection from "@/components/ContactSection";
+import type { CaseItem } from "@/data/cases";
+import { parseSelectedHrefs } from "@/utils/cms";
+import { formatTypography } from "@/utils/typography";
+import "@/components/cms/peak-cms-theme.css";
+
+export type CmsRenderBlock = {
+  id: string;
+  content: Record<string, unknown>;
+  template: { type: string };
+};
+
+interface Props {
+  blocks?: CmsRenderBlock[];
+  caseItems?: CaseItem[];
+}
+
+const defaultBlocks: CmsRenderBlock[] = [
+  { id: "default-home-hero", template: { type: "home_hero" }, content: {} },
+  { id: "default-home-stats", template: { type: "home_stats" }, content: {} },
+  { id: "default-home-clients", template: { type: "home_clients" }, content: {} },
+  { id: "default-home-services", template: { type: "home_services" }, content: {} },
+  { id: "default-home-work-cases", template: { type: "home_work_cases" }, content: {} },
+  { id: "default-home-team", template: { type: "home_team" }, content: {} },
+  { id: "default-home-contact", template: { type: "home_contact" }, content: {} },
+];
+
+const { blocks = defaultBlocks, caseItems } = Astro.props;
+
+function text(content: Record<string, unknown>, key: string) {
+  const value = content[key];
+  return typeof value === "string" ? formatTypography(value) : "";
+}
+
+function safeMediaUrl(value: string) {
+  if (value.startsWith("/") || value.startsWith("https://")) return value;
+  return "";
+}
+
+function safeLink(value: string) {
+  if (value.startsWith("/") || value.startsWith("#") || /^(https:|mailto:|tel:)/.test(value)) return value;
+  return "#";
+}
+---
+
+{
+  blocks.map((block) => {
+    switch (block.template.type) {
+      case "hero": {
+        const backgroundUrl = safeMediaUrl(text(block.content, "backgroundUrl"));
+        const btnLabel = text(block.content, "buttonLabel");
+        const btnUrl = safeLink(text(block.content, "buttonUrl"));
+        return (
+          <section class="peak-cms peak-cms--hero">
+            {backgroundUrl && <img src={backgroundUrl} alt="" class="peak-cms__hero-media" />}
+            <div class="peak-cms__hero-overlay" />
+            <div class="peak-cms__hero-content">
+              {text(block.content, "eyebrow") && <p class="peak-cms__eyebrow">{text(block.content, "eyebrow")}</p>}
+              <h1 class="peak-cms__display">{text(block.content, "title")}</h1>
+              {text(block.content, "description") && <p class="peak-cms__lead">{text(block.content, "description")}</p>}
+              {btnLabel && (
+                <div class="peak-cms__hero-action">
+                  <a href={btnUrl} class="peak-cms__action peak-cms__action--inverse">
+                    {btnLabel}
+                    <svg class="peak-cms__action-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                    </svg>
+                  </a>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      }
+
+      case "text": {
+        const centered = text(block.content, "align") === "center";
+        return (
+          <section class="peak-cms peak-cms--text">
+            <div class={`peak-cms__inner peak-cms__text-layout${centered ? " peak-cms__text-layout--centered" : ""}`}>
+              {text(block.content, "heading") && <h2 class="peak-cms__section-title">{text(block.content, "heading")}</h2>}
+              <p class="peak-cms__body">{text(block.content, "body")}</p>
+            </div>
+          </section>
+        );
+      }
+
+      case "media": {
+        const url = safeMediaUrl(text(block.content, "mediaUrl"));
+        if (!url) return null;
+        const video = text(block.content, "mediaType") === "video" || /\.(mp4|mov|m4v|webm)(?:\?|$)/i.test(url);
+        return (
+          <figure class="peak-cms peak-cms--media">
+            <div class="peak-cms__inner">
+              <div class="peak-cms__media-shell">
+                {video ? (
+                  <video src={url} controls playsinline preload="metadata" class="peak-cms__media" />
+                ) : (
+                  <img src={url} alt={text(block.content, "alt")} class="peak-cms__media" loading="lazy" decoding="async" />
+                )}
+              </div>
+              {text(block.content, "caption") && <figcaption class="peak-cms__caption">{text(block.content, "caption")}</figcaption>}
+            </div>
+          </figure>
+        );
+      }
+
+      case "cta": {
+        const ctaBtnLabel = text(block.content, "buttonLabel");
+        const ctaBtnUrl = safeLink(text(block.content, "buttonUrl"));
+        return (
+          <section class="peak-cms peak-cms--cta">
+            <div class="peak-cms__inner">
+              <h2 class="peak-cms__cta-title">{text(block.content, "title")}</h2>
+              <div class="peak-cms__cta-footer">
+                {text(block.content, "description") && <p class="peak-cms__cta-description">{text(block.content, "description")}</p>}
+                {ctaBtnLabel && (
+                  <a href={ctaBtnUrl} class="peak-cms__action peak-cms__action--inverse">
+                    {ctaBtnLabel}
+                    <svg class="peak-cms__action-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                    </svg>
+                  </a>
+                )}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      case "home_hero":
+        return (
+          <HeroDuplicate
+            content={{
+              title: text(block.content, "title"),
+              mobileTitle: text(block.content, "mobileTitle"),
+              description: text(block.content, "description"),
+              buttonLabel: text(block.content, "buttonLabel"),
+              buttonUrl: text(block.content, "buttonUrl"),
+              posterUrl: text(block.content, "posterUrl"),
+            }}
+          />
+        );
+
+      case "home_stats":
+        return (
+          <div class="col-span-12 block w-[calc(100%+2*var(--page-margin))] -ml-[var(--page-margin)] border-b border-brand-gray/10 md:hidden">
+            <StatsBlock client:visible />
+          </div>
+        );
+
+      case "home_clients":
+        return <ClientLogosBlock />;
+
+      case "home_services":
+        return <ServicesAnimate client:visible />;
+
+      case "home_work_cases": {
+        const savedHrefs = parseSelectedHrefs(block.content.selectedHrefs);
+        const customCases =
+          savedHrefs && caseItems
+            ? savedHrefs.flatMap((href) => {
+                const item = caseItems.find((c) => c.href === href);
+                return item ? [item] : [];
+              })
+            : undefined;
+
+        return (
+          <div class="relative isolate col-span-12 w-full bg-black before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:bg-black before:content-['']">
+            <div data-hero-scroll-section="cover" class="relative z-0">
+              <WorkStages client:visible />
+            </div>
+            <div data-hero-scroll-section="second" class="relative z-10">
+              <CasesMasonrySection client:visible customCases={customCases} />
+            </div>
+          </div>
+        );
+      }
+
+      case "home_team":
+        return (
+          <Team
+            client:visible
+            heading={text(block.content, "heading")}
+            description={text(block.content, "description")}
+          />
+        );
+
+      case "home_contact":
+        return (
+          <ContactSection
+            client:visible
+            title={text(block.content, "title")}
+            description={text(block.content, "description")}
+          />
+        );
+
+      default:
+        return null;
+    }
+  })
+}

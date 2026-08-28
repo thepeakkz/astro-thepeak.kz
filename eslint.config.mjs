@@ -24,6 +24,8 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     ".vercel/**",
+    ".astro/**",
+    "scripts/**",
     "out/**",
     "build/**",
     "dist/**",

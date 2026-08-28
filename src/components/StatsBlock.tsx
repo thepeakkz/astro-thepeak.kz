@@ -21,8 +21,8 @@ export default function StatsBlock() {
         }
       },
       {
-        rootMargin: "200px", // Trigger loading slightly before it enters viewport
-        threshold: 0.01,
+        rootMargin: "50px", // Trigger loading when close to viewport
+        threshold: 0.05,
       }
     );
 

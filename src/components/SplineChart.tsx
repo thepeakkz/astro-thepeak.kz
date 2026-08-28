@@ -27,7 +27,7 @@ export default function SplineChart() {
     
     // Renderer
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
@@ -72,17 +72,20 @@ export default function SplineChart() {
 
     activeMaterial.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = { value: 0 };
+      shader.uniforms.uProgress = { value: 0 };
       activeMaterial.userData.shader = shader;
-      shader.vertexShader = "varying vec3 vLocalPosition;\n" + shader.vertexShader;
+      shader.vertexShader = "varying vec2 vUv;\nvarying vec3 vLocalPosition;\n" + shader.vertexShader;
       shader.vertexShader = shader.vertexShader.replace(
         "#include <begin_vertex>",
-        "#include <begin_vertex>\nvLocalPosition = vec3(position);"
+        "#include <begin_vertex>\nvLocalPosition = vec3(position);\nvUv = uv;"
       );
-      shader.fragmentShader = "varying vec3 vLocalPosition;\nuniform float uTime;\nvec3 vDynamicColor;\n" + shader.fragmentShader;
+      shader.fragmentShader = "varying vec2 vUv;\nvarying vec3 vLocalPosition;\nuniform float uTime;\nuniform float uProgress;\nvec3 vDynamicColor;\n" + shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader.replace(
         "#include <color_fragment>",
         `
         #include <color_fragment>
+        if (vUv.x > uProgress + 0.001) discard;
+
         float angle = atan(vLocalPosition.y, vLocalPosition.x);
         float wave1 = sin(angle * 2.5 + uTime * 1.5) * 0.5 + 0.5;
         float wave2 = cos(angle * 4.0 - uTime * 2.0) * 0.5 + 0.5;
@@ -136,8 +139,9 @@ export default function SplineChart() {
     trackMesh.position.z = -0.02;
     mainGroup.add(trackMesh);
 
-    // Active growth tube
-    const activeMesh = new THREE.Mesh(new THREE.BufferGeometry(), activeMaterial);
+    // Active growth tube (created once, revealed via shader progress)
+    const activeGeometry = new THREE.TubeGeometry(curve, 100, 0.08, 5, false);
+    const activeMesh = new THREE.Mesh(activeGeometry, activeMaterial);
     mainGroup.add(activeMesh);
 
     // Sphere/Dodecahedron nodes
@@ -164,8 +168,8 @@ export default function SplineChart() {
     window.addEventListener("mousemove", handleMouseMove);
 
     // Animation variables
-    const duration = 3600;
-    const introDuration = 1800;
+    const duration = 2400;
+    const introDuration = 1400;
     let startTime: number | null = null;
     let animationFrameId: number;
 
@@ -188,28 +192,11 @@ export default function SplineChart() {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
 
-      // 1. Dynamic active curve extrusion
+      // 1. Dynamic active curve extrusion via shader progress
       const progress = Math.min(elapsed / duration, 1);
       const timelineProgress = easeOutCubic(progress);
+
       if (progress <= 1) {
-        const subPoints: THREE.Vector3[] = [];
-        const subSegments = 100;
-        const limit = Math.ceil(timelineProgress * subSegments);
-        
-        for (let j = 0; j <= limit; j++) {
-          const t = (j / subSegments) * timelineProgress;
-          subPoints.push(curve.getPointAt(t));
-        }
-
-        if (subPoints.length < 2) {
-          subPoints.push(points[0].clone());
-          subPoints.push(points[0].clone().addScalar(0.001));
-        }
-
-        const subCurve = new THREE.CatmullRomCurve3(subPoints);
-        activeMesh.geometry.dispose();
-        activeMesh.geometry = new THREE.TubeGeometry(subCurve, 64, 0.08, 5, false);
-
         // Nodes animation scale & material changes
         const activeSegmentsTarget = timelineProgress * segmentsCount;
         for (let i = 0; i < points.length; i++) {
@@ -232,9 +219,10 @@ export default function SplineChart() {
       mainGroup.scale.set(introScale, introScale, introScale);
       mainGroup.rotation.z = (1.0 - easeOutCubic(introProgress)) * -0.6;
 
-      // Update shader uniform time
+      // Update shader uniforms
       if (activeMaterial.userData.shader) {
         activeMaterial.userData.shader.uniforms.uTime.value = timestamp * 0.001;
+        activeMaterial.userData.shader.uniforms.uProgress.value = timelineProgress;
       }
 
       // 3. Mouse rotation interpolation

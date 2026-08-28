@@ -1,5 +1,6 @@
 ---
-import HomeIsland from "@astro/components/HomeIsland";
+import Navigation from "@/components/Navigation";
+import CmsBlockRenderer from "@astro/components/CmsBlockRenderer.astro";
 import BaseLayout from "@astro/layouts/BaseLayout.astro";
 import { loadHomePage } from "@astro/server/public-data";
 import { getBreadcrumbJsonLd, getServiceJsonLd, pageSeo } from "@/lib/seo";
@@ -17,5 +18,6 @@ const jsonLd = [
 ---
 
 <BaseLayout seo={pageSeo.home} jsonLd={jsonLd} pageKind="home">
-  <HomeIsland client:load allCases={allCases} blocks={cmsPage?.blocks} />
+  <Navigation client:idle />
+  <CmsBlockRenderer blocks={cmsPage?.blocks} caseItems={allCases} />
 </BaseLayout>

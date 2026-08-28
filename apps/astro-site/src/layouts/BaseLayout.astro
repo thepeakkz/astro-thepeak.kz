@@ -5,6 +5,7 @@ import GlobalPreloader from "@/components/GlobalPreloader";
 import HeroVideoPreload from "@/components/HeroVideoPreload";
 import { getOrganizationJsonLd, getWebsiteJsonLd, pageSeo, SITE_NAME, SITE_URL } from "@/lib/seo";
 import GlobalRuntime from "@astro/components/GlobalRuntime";
+import GridOverlay from "@astro/components/GridOverlay.astro";
 import "@astro/styles/global.css";
 
 type SeoConfig = {
@@ -43,7 +44,15 @@ const jsonLdText = JSON.stringify(structuredData).replace(/</g, "\\u003c");
     {seo.keywords?.length ? <meta name="keywords" content={seo.keywords.join(", ")} /> : null}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" />
+    <link rel="stylesheet" id="inter-tight-font" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" media="print" />
+    <script is:inline>
+      const fl = document.getElementById("inter-tight-font");
+      if (fl) fl.media = "all";
+    </script>
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" />
+    </noscript>
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="https://static.tildacdn.pro/tild3334-3763-4662-a232-663137633465/favicon.svg" />
     {pageKind === "home" ? (
@@ -76,5 +85,6 @@ const jsonLdText = JSON.stringify(structuredData).replace(/</g, "\\u003c");
     <main class="swiss-grid gap-y-0">
       <slot />
     </main>
+    {import.meta.env.DEV && <GridOverlay />}
   </body>
 </html>
