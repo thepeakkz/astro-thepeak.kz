@@ -9,6 +9,23 @@ import {
   isUuid,
 } from "@/lib/analytics";
 
+const TELEGRAM_LEADS_GROUP_ID = "-5366887362";
+
+function normalizeEnvironmentValue(value: string | undefined, key: string) {
+  let normalized = value?.trim() || "";
+  const assignmentPrefix = `${key}=`;
+
+  if (normalized.startsWith(assignmentPrefix)) {
+    normalized = normalized.slice(assignmentPrefix.length).trim();
+  }
+
+  const hasMatchingQuotes =
+    (normalized.startsWith('"') && normalized.endsWith('"')) ||
+    (normalized.startsWith("'") && normalized.endsWith("'"));
+
+  return hasMatchingQuotes ? normalized.slice(1, -1).trim() : normalized;
+}
+
 function parseComment(comment: unknown) {
   const rawComment = typeof comment === "string" ? comment.trim() : "";
   const contactMethodMatch = rawComment.match(/\n*\[Способ связи:\s*([^\]]+)\]\s*$/);
@@ -46,13 +63,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-
-    if (!token || !chatId) {
-      console.error("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID in environment variables");
+    const token = normalizeEnvironmentValue(
+      process.env.TELEGRAM_BOT_TOKEN,
+      "TELEGRAM_BOT_TOKEN",
+    );
+    if (!token) {
+      console.error("Missing TELEGRAM_BOT_TOKEN in environment variables");
       return NextResponse.json(
-        { error: "Ошибка конфигурации сервера (переменные Telegram не настроены)" },
+        { error: "Ошибка конфигурации сервера (Telegram-бот не настроен)" },
         { status: 500 }
       );
     }
@@ -105,8 +123,8 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        chat_id: chatId,
-        text: text,
+        chat_id: TELEGRAM_LEADS_GROUP_ID,
+        text,
         parse_mode: "HTML",
         link_preview_options: { is_disabled: true },
       }),
