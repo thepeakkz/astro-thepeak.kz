@@ -22,7 +22,12 @@ export default function HeroDuplicate({ content = {} }: { content?: HomeHeroCont
   const desktopTitle = content.title || "Маркетинг, который работает\nот идеи до результата";
   const mobileTitle = content.mobileTitle || "Маркетинг,\nкоторый работает\nот идеи до готового\nрезультата";
   const description = content.description || "Приходите к нам с задачей «сделать не как у всех».\nМы создаём маркетинг, который становится референсом для других.";
-  const customPosterUrl = content.posterUrl && !content.posterUrl.endsWith("/hero/bg-mobile-poster.jpg")
+  const isLegacyMobilePoster = content.posterUrl
+    ? ["/bg-mobile-poster.jpg", "/hero/bg-mobile-poster.jpg"].some((path) =>
+        content.posterUrl?.endsWith(path),
+      )
+    : false;
+  const customPosterUrl = content.posterUrl && !isLegacyMobilePoster
     ? content.posterUrl
     : undefined;
   const mobilePoster = customPosterUrl || "/hero-mobile-poster-v2.webp";
