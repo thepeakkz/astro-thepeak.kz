@@ -7,6 +7,23 @@ import { ANALYTICS_SESSION_COOKIE, ANALYTICS_VISITOR_COOKIE, isUuid } from "@/li
 
 export const prerender = false;
 
+const TELEGRAM_LEADS_GROUP_ID = "-5366887362";
+
+function normalizeEnvironmentValue(value: string | undefined, key: string) {
+  let normalized = value?.trim() || "";
+  const assignmentPrefix = `${key}=`;
+
+  if (normalized.startsWith(assignmentPrefix)) {
+    normalized = normalized.slice(assignmentPrefix.length).trim();
+  }
+
+  const hasMatchingQuotes =
+    (normalized.startsWith('"') && normalized.endsWith('"')) ||
+    (normalized.startsWith("'") && normalized.endsWith("'"));
+
+  return hasMatchingQuotes ? normalized.slice(1, -1).trim() : normalized;
+}
+
 function parseCookies(header: string | null) {
   return new Map((header || "").split(";").flatMap((pair) => {
     const separator = pair.indexOf("=");
@@ -37,9 +54,8 @@ export const POST: APIRoute = async ({ request }) => {
     if (!name) return json({ error: "Имя обязательно для заполнения" }, 400);
     if (!phone) return json({ error: "Телефон обязателен для заполнения" }, 400);
 
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-    if (!token || !chatId) return json({ error: "Ошибка конфигурации сервера (переменные Telegram не настроены)" }, 500);
+    const token = normalizeEnvironmentValue(process.env.TELEGRAM_BOT_TOKEN, "TELEGRAM_BOT_TOKEN");
+    if (!token) return json({ error: "Ошибка конфигурации сервера (Telegram-бот не настроен)" }, 500);
 
     const cookies = parseCookies(request.headers.get("cookie"));
     const attribution = parseUtmAttribution(cookies.get(UTM_COOKIE_NAME));
@@ -68,7 +84,7 @@ export const POST: APIRoute = async ({ request }) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: chatId,
+        chat_id: TELEGRAM_LEADS_GROUP_ID,
         text,
         parse_mode: "HTML",
         link_preview_options: { is_disabled: true },
