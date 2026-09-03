@@ -18,3 +18,6 @@ create policy "Allow anon keep_alive upsert"
 insert into public.keep_alive (id, updated_at)
 values ('heartbeat', now())
 on conflict (id) do update set updated_at = now();
+
+grant all on public.keep_alive to anon, authenticated;
+
