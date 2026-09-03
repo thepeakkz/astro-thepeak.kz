@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
+import React, { useState } from "react";
 import { motion, AnimatePresence, useAnimate } from "framer-motion";
 import { Plus, HelpCircle } from "lucide-react";
 import { IconPlus } from "@tabler/icons-react";
@@ -299,8 +298,6 @@ const galleryImages = [
 
 export default function WebDirectionClient() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
-  const [inView, setInView] = useState(false);
-  const statsRef = useRef<HTMLDivElement>(null);
 
   // Services Modal popup form state
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
@@ -369,21 +366,6 @@ export default function WebDirectionClient() {
     }
   };
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "200px", threshold: 0.01 }
-    );
-    if (statsRef.current) {
-      observer.observe(statsRef.current);
-    }
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <>
@@ -406,10 +388,7 @@ export default function WebDirectionClient() {
         />
 
         {/* ── 2. STATS BLOCK ── */}
-        <section
-          ref={statsRef}
-          className="relative py-16 border-b border-white/10 z-10 px-[var(--page-margin)] bg-black/10 select-none"
-        >
+        <section className="relative py-16 border-b border-white/10 z-10 px-[var(--page-margin)] bg-black/10 select-none">
           <div className="swiss-grid w-full items-stretch gap-y-12">
             {/* Stat 1 */}
             <div className="col-span-12 md:col-span-4 flex flex-col items-start gap-3 border-b md:border-b-0 pb-8 md:pb-0">

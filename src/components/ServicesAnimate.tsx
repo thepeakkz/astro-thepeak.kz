@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { motion, useAnimate, useScroll, useTransform } from "framer-motion";
+import { motion, useAnimate, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { MorphingText } from "@/components/ui/liquid-text";
 import { formatTypography } from "@/utils/typography";
 import PhoneInput from "@/components/ui/PhoneInput";
@@ -396,7 +396,7 @@ interface FeaturedServiceCardProps {
   service: FeaturedServiceItem;
   index: number;
   total: number;
-  progress: any;
+  progress: MotionValue<number>;
   onRequest: () => void;
   onCases?: () => void;
 }

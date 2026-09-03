@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
       // The site deliberately uses native img elements for tracking pixels,
       // animated duplicate marquees, WebGL fallbacks, and runtime remote media.
       "@next/next/no-img-element": "off",
+      "@next/next/no-page-custom-font": "off",
       "react-hooks/immutability": "off",
       "react-hooks/purity": "off",
       "react-hooks/refs": "off",
