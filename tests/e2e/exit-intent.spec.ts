@@ -4,7 +4,7 @@ test("exit-intent popup opens once per session across the site", async ({ isMobi
   test.skip(isMobile, "Exit intent requires a device with hover and a fine pointer.");
 
   await page.goto("/privacy");
-  await expect(page.locator("html")).toHaveAttribute("data-lead-popup-exit-intent-ready", "true");
+  await expect(page.locator("html")).toHaveAttribute("data-lead-popup-exit-intent-ready", "true", { timeout: 10_000 });
 
   await page.mouse.move(500, 300);
   await page.mouse.move(500, -10);

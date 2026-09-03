@@ -21,6 +21,8 @@ export default defineConfig({
     plugins: [tailwindcss()],
     define: {
       "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV || "production"),
+      "process.env.PLAYWRIGHT_TEST": JSON.stringify(process.env.PLAYWRIGHT_TEST || ""),
+      "process.env.CI": JSON.stringify(process.env.CI || ""),
     },
     resolve: {
       dedupe: ["react", "react-dom"],
