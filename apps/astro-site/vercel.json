@@ -1,9 +1,9 @@
 {
   "rewrites": [
-    { "source": "/admin", "destination": "https://legacy-admin.thepeak.kz/admin" },
-    { "source": "/admin/:path*", "destination": "https://legacy-admin.thepeak.kz/admin/:path*" },
-    { "source": "/api/admin/:path*", "destination": "https://legacy-admin.thepeak.kz/api/admin/:path*" },
-    { "source": "/admin-static/:path*", "destination": "https://legacy-admin.thepeak.kz/admin-static/:path*" }
+    { "source": "/admin", "destination": "https://thepeak-kz.vercel.app/admin" },
+    { "source": "/admin/:path*", "destination": "https://thepeak-kz.vercel.app/admin/:path*" },
+    { "source": "/api/admin/:path*", "destination": "https://thepeak-kz.vercel.app/api/admin/:path*" },
+    { "source": "/_next/:path*", "destination": "https://thepeak-kz.vercel.app/_next/:path*" }
   ],
   "redirects": [
     { "source": "/service/web", "destination": "/services/web", "permanent": true }
